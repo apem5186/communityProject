@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Registration Page</title>
+  <link rel="stylesheet" th:href="@{/css/register.css}" />
+</head>
+<body>
+<div class="container">
+  <form th:action="@{/signup}" th:object="${usersSignupDTO}" method="post">
+    <div class="input-group">
+      <label><b>Username</b>
+        <input id="username-input" type="text" th:field="*{username}" placeholder="Enter Username" required>
+        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</span>
+        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Check Username</span>
+        <i id="availability-icon" style="display:none"></i>
+      </label>
+      <button id="username-check" type="button" class="btn-check">Check Availability</button>
+      <input id="username-checked" type="hidden" th:field="*{usernameChecked}" value="false">
+    </div>
+
+    <div class="input-group">
+      <label><b>Password</b>
+      <input type="password" th:field="*{password1}" placeholder="Enter Password" name="password1" required>
+      </label>
+    </div>
+
+    <div class="input-group">
+      <label><b>Confirm Password</b>
+      <input type="password" th:field="*{password2}" placeholder="Confirm Password" name="password2" required>
+      <span th:if="${#fields.hasErrors('password2')}" th:errors="*{password2}">password is incorrect</span>
+      </label>
+    </div>
+
+    <div class="input-group">
+      <label><b>Email</b>
+      <input type="text" th:field="*{email}" placeholder="Enter Email" name="email" required>
+      </label>
+    </div>
+
+    <button type="submit" class="btn">Register</button>
+  </form>
+  <p class="login-text"><a href="/login">Back to Login</a></p>
+</div>
+
+<script th:inline="javascript">
+  document.getElementById("username-check").addEventListener("click", function() {
+    var username = document.getElementById("username-input").value;
+    var headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    fetch('/signup/checkUsername', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        username: username
+      })
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              var icon = document.getElementById("availability-icon");
+              if (data.exists) {
+                icon.style.display = "inline";
+                icon.textContent = "X"; // displays 'X' mark
+              } else {
+                icon.style.display = "inline";
+                icon.textContent = "✔"; // displays 'check' mark
+                document.getElementById("username-checked").value = true;
+              }
+            })
+            .catch(error => {
+              console.error('There has been a problem with your fetch operation:', error);
+            });
+  });
+</script>
+
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.community.communityproject.service;
 
+import com.community.communityproject.dto.UsersInfo;
 import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
@@ -27,6 +28,16 @@ public class UserService {
         users.setPassword(passwordEncoder.encode(password));
         users.setUserRole(UserRole.USER);
         userRepository.save(users);
+    }
+
+    public UsersInfo loadUser(String username) {
+        Users users = userRepository.findByUsername(username).orElseThrow();
+        UsersInfo usersInfo = UsersInfo.builder()
+                .username(users.getUsername())
+                .email(users.getEmail())
+                .userRole(users.getUserRole())
+                .build();
+        return usersInfo;
     }
 
 }

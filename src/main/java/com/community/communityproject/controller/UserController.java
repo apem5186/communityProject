@@ -1,5 +1,6 @@
 package com.community.communityproject.controller;
 
+import com.community.communityproject.dto.UsersInfo;
 import com.community.communityproject.dto.UsersSignupDTO;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -82,6 +84,12 @@ public class UserController {
         log.info("USERNAME : " + username);
         response.put("exists", userRepository.existsByUsername(username.get("username")));
         return response;
+    }
+
+    @GetMapping("/profile")
+    public String profile(Model model, Authentication authentication) {
+        model.addAttribute("user", userService.loadUser(authentication.getName()));
+        return "profile";
     }
 
 }

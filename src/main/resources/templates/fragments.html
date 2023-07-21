@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Template Fragments</title>
+</head>
+<body>
+<div th:fragment="header">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#" th:href="@{/}">My App</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <!-- Removed search form from here -->
+        <!-- if this <ul> tag removed, search-bar will be moved to left -->
+      </ul>
+
+      <!-- Add search form here -->
+      <form class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0 mr-5" type="submit">Search</button>
+      </form>
+
+      <div th:unless="${#authentication.principal}">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="#" th:href="@{/login}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" th:href="@{/signup}">Sign Up</a>
+            </li>
+        </ul>
+      </div>
+      <div th:if="${#authentication.principal}">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#" th:href="@{/}">Profile</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</div>
+
+
+<!-- Other code -->
+
+
+<div th:fragment="footer">
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Important Links</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" th:href="@{/about}">About Us</a></li>
+            <li><a href="#" th:href="@{/contact}">Contact Us</a></li>
+            <li><a href="#" th:href="@{/terms}">Terms and Conditions</a></li>
+            <li><a href="#" th:href="@{/privacy}">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6 text-md-right">
+          <small>&copy; 2023 communityProject</small>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+</body>
+</html>

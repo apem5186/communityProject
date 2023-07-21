@@ -1,5 +1,8 @@
 package com.community.communityproject.config;
 
+import com.community.communityproject.config.handler.CustomAuthenticationFailureHandler;
+import com.community.communityproject.config.handler.CustomAuthenticationSuccessHandler;
+import com.community.communityproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +26,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+    private final UserRepository userRepository;
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
@@ -33,10 +38,9 @@ public class WebSecurityConfig {
         return http
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
-                                .requestMatchers("/login").permitAll()
                                 .requestMatchers("/signup").permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/signup/checkUsername")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/h2-console")).permitAll()
+                                .requestMatchers("/signup/checkUsername").permitAll()
+                                .requestMatchers("/h2-console").permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .anyRequest().authenticated()
                                 )
@@ -52,7 +56,11 @@ public class WebSecurityConfig {
                                 )))
                 .formLogin((formLogin) ->
                         formLogin
-                                .loginPage("/login")).build();
+                                .loginPage("/login")
+                                .failureHandler(new CustomAuthenticationFailureHandler())
+                                .successHandler(new CustomAuthenticationSuccessHandler(userRepository))
+                                .permitAll()
+                                ).build();
     }
     @Bean
     public PasswordEncoder passwordEncoder() {

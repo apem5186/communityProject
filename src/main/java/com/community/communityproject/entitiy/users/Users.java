@@ -48,6 +48,18 @@ public class Users extends BaseEntity implements UserDetails {
         this.isLogin = isLogin;
     }
 
+    public static Users build(Users users) {
+
+        return new Users(
+                users.getId(),
+                users.getUsername(),
+                users.getPassword(),
+                users.getEmail(),
+                users.getUserRole(),
+                users.isLogin
+        );
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(userRole.getValue()));
@@ -55,21 +67,21 @@ public class Users extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

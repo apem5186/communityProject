@@ -1,19 +1,20 @@
 package com.community.communityproject.config;
 
-import com.community.communityproject.config.handler.CustomAuthenticationFailureHandler;
-import com.community.communityproject.config.handler.CustomAuthenticationSuccessHandler;
+import com.community.communityproject.config.handler.*;
 import com.community.communityproject.repository.UserRepository;
+import com.community.communityproject.service.jwt.AuthService;
+import com.community.communityproject.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,8 +26,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class WebSecurityConfig {
-
+    
     private final UserRepository userRepository;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final AuthService authService;
+    private final RedisService redisService;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -44,11 +50,18 @@ public class WebSecurityConfig {
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .anyRequest().authenticated()
                                 )
-                .csrf((csrf) ->
-                        csrf
-                                .ignoringRequestMatchers(
-                                        new AntPathRequestMatcher("/h2-console/**")
-                                ))
+                // 예외 처리
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling
+                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인가 실패
+                                .accessDeniedHandler(jwtAccessDeniedHandler))   // 인증 실패
+//                .csrf((csrf) ->
+//                        csrf
+//                                .ignoringRequestMatchers(
+//                                        new AntPathRequestMatcher("/h2-console/**")
+//                                ))
+                // csrf 비활성화
+                .csrf(AbstractHttpConfigurer::disable)
                 .headers((headers) ->
                         headers
                                 .addHeaderWriter(new XFrameOptionsHeaderWriter(
@@ -58,9 +71,18 @@ public class WebSecurityConfig {
                         formLogin
                                 .loginPage("/login")
                                 .failureHandler(new CustomAuthenticationFailureHandler())
-                                .successHandler(new CustomAuthenticationSuccessHandler(userRepository))
+                                .successHandler(new CustomAuthenticationSuccessHandler(userRepository,
+                                        authenticationManagerBuilder, authService))
                                 .permitAll()
-                                ).build();
+                                )
+                // TODO : 순환참조 및 추후 추가할 OAUTH2 등을 위해 logout은 controller 형식으로 바꿔야 할듯
+                .logout((logout) ->
+                        logout
+                                .logoutUrl("/logout")
+                                .addLogoutHandler(new CustomLogoutHandler())
+                                .invalidateHttpSession(true)
+                                .deleteCookies("refresh-token", "JSESSIONID")
+                                .logoutSuccessHandler(new CustomLogoutSuccessHandler(userRepository, authService, redisService))).build();
     }
     @Bean
     public PasswordEncoder passwordEncoder() {

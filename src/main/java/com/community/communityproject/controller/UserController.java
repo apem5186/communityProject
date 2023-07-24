@@ -137,4 +137,20 @@ public class UserController {
                     .build();
         }
     }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String requestAccessToken) {
+        authService.logout(requestAccessToken);
+        ResponseCookie responseCookie = ResponseCookie.from("refresh-token", "")
+                .maxAge(0)
+                .path("/")
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                .build();
+    }
+
 }

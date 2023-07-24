@@ -75,7 +75,7 @@ public class TokenProvider implements InitializingBean {
                 .claim(url, true)
                 .claim(USERNAME_KEY, username)
                 .claim(AUTHORITIES_KEY, authorities)
-                .signWith(signingKey, SignatureAlgorithm.ES512)
+                .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
 
         String refreshToken = Jwts.builder()

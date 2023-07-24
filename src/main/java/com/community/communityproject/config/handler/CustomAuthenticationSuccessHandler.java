@@ -15,6 +15,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -29,20 +31,20 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final AuthService authService;
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
      private final int COOKIE_EXPIRATION = 7776000; // 90일
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        Users users = userRepository.findByUsername(authentication.getName()).orElseThrow();
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword());
-        authentication = authenticationManagerBuilder.getObject()
-                        .authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        log.info("SECURITY AUTHENTICATION : " + SecurityContextHolder.getContext().getAuthentication().getName());
+        Users users = userRepository.findByUsername(authentication.getName()).orElseThrow();
+//        UsernamePasswordAuthenticationToken authenticationToken =
+//                new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword());
+//        authentication = authenticationManagerBuilder.getObject()
+//                        .authenticate(authentication);
         TokenDTO tokenDTO = authService.generateToken("Server", authentication.getName(), authService.getAuthorities(authentication));
-
         Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
         cookie.setMaxAge(COOKIE_EXPIRATION);
         cookie.setHttpOnly(true);
@@ -57,8 +59,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         users.setLogin(true);
         userRepository.save(users);
-        log.info("Authentication Info : " + authentication.getAuthorities());
-
-        response.sendRedirect("/");
+        log.info("Authentication Info : " + authentication.getPrincipal().toString() + " something : " + authentication.getName());
+        redirectStrategy.sendRedirect(request, response, "/");
     }
 }

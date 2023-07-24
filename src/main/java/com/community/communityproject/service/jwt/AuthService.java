@@ -1,6 +1,8 @@
 package com.community.communityproject.service.jwt;
 
 import com.community.communityproject.dto.TokenDTO;
+import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class AuthService {
+    private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
     private final RedisService redisService;
 
@@ -111,6 +114,11 @@ public class AuthService {
         String requestAccessToken = resolveToken(requestAccessTokenInHeader);
         String principal = getPrincipal(requestAccessToken);
 
+        // isLogin -> false
+        Users users = userRepository.findByUsername(principal).orElseThrow();
+        users.setLogin(false);
+        userRepository.save(users);
+
         // Redis에 저장되어 있는 RT 삭제
         String refreshTokenInRedis = redisService.getValues("RT(" + SERVER + "):" + principal);
         if (refreshTokenInRedis != null) {
@@ -122,6 +130,12 @@ public class AuthService {
         redisService.setValuesWithTimeout(requestAccessToken,
                 "logout",
                 expiration);
+
+        // SecurityContextHolder의 user 정보 삭제
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            SecurityContextHolder.clearContext();
+        }
     }
 
 }

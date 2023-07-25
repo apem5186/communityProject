@@ -8,6 +8,7 @@ import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,14 +46,23 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
-                "/css/**", "/js/**", "/img/**", "/signup/checkUsername");
+                "/css/**", "/js/**", "/img/**", "/signup/checkUsername")
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                // csrf 비활성화
+                .csrf(AbstractHttpConfigurer::disable)
+                // 비인증시 로그인 화면으로 이동됨, 사용안함
+                .httpBasic(AbstractHttpConfigurer::disable)
+                // REST API 기능을 이용할 것이므로 사용안함
+                .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .requestMatchers("/").permitAll()
+                                .requestMatchers("/fragments").permitAll()
+                                .requestMatchers("/login").permitAll()
                                 .requestMatchers("/signup").permitAll()
                                 .requestMatchers("/signup/checkUsername").permitAll()
                                 .requestMatchers("/h2-console").permitAll()
@@ -64,21 +74,19 @@ public class WebSecurityConfig {
                         exceptionHandling
                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인가 실패
                                 .accessDeniedHandler(jwtAccessDeniedHandler))   // 인증 실패
-                // csrf 비활성화
-                .csrf(AbstractHttpConfigurer::disable)
                 .headers((headers) ->
                         headers
                                 .addHeaderWriter(new XFrameOptionsHeaderWriter(
                                         XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN
                                 )))
-                .formLogin((formLogin) ->
-                        formLogin
-                                .loginPage("/login")
-                                .failureHandler(new CustomAuthenticationFailureHandler())
-                                .successHandler(new CustomAuthenticationSuccessHandler(userRepository,
-                                        authenticationManagerBuilder, authService))
-                                .permitAll()
-                                )
+//                .formLogin((formLogin) ->
+//                        formLogin
+//                                .loginPage("/login")
+//                                .failureHandler(new CustomAuthenticationFailureHandler())
+//                                .successHandler(new CustomAuthenticationSuccessHandler(userRepository,
+//                                        authenticationManagerBuilder, authService))
+//                                .permitAll()
+//                                )
                 .addFilterBefore(new JwtAuthenticationFilter(tokenProvider, userSecurityService), UsernamePasswordAuthenticationFilter.class)
                 // 세션 관리
                 .sessionManagement((sessionManagement) ->

@@ -32,7 +32,7 @@ public class TokenProvider implements InitializingBean {
     private final RedisService redisService;
 
     private static final String AUTHORITIES_KEY = "role";
-    private static final String USERNAME_KEY = "username";
+    private static final String EMAIL_KEY = "email";
     private static final String url = "https://localhost:8080";
 
     private final String secretKey;
@@ -64,7 +64,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     @Transactional
-    public TokenDTO createToken(String username, String authorities) {
+    public TokenDTO createToken(String email, String authorities) {
         Long now = System.currentTimeMillis();
 
         String accessToken = Jwts.builder()
@@ -73,7 +73,7 @@ public class TokenProvider implements InitializingBean {
                 .setExpiration(new Date(now + accessTokenValidityInMilliseconds))
                 .setSubject("access-token")
                 .claim(url, true)
-                .claim(USERNAME_KEY, username)
+                .claim(EMAIL_KEY, email)
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
@@ -103,7 +103,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     public Authentication getAuthentication(String token) {
-        String username = getClaims(token).get(USERNAME_KEY).toString();
+        String username = getClaims(token).get(EMAIL_KEY).toString();
         UserDetailsImpl userDetails = userSecurityService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }

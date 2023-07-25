@@ -6,6 +6,7 @@ import com.community.communityproject.service.jwt.TokenProvider;
 import io.jsonwebtoken.IncorrectClaimException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.net.http.HttpHeaders;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -37,8 +39,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        String requestUrl = request.getRequestURI();
+        String requestMethod = request.getMethod();
+        if ("GET".equals(requestMethod) && "/login".equals(requestUrl)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String accessToken = resolveToken(request);
-        System.out.println("JWTAUTHENTICATIONFILTER : " + accessToken);
         try { // 정상 토큰인지 검사
             if (accessToken != null && tokenProvider.validateAccessToken(accessToken)) {
                 Authentication authentication = tokenProvider.getAuthentication(accessToken);
@@ -47,10 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                log.info("hi+ " + authentication);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("Save authentication in SecurityContextHolder.");
             }
+
         } catch (IncorrectClaimException e) { // 잘못된 토큰일 경우
             SecurityContextHolder.clearContext();
             log.debug("Invalid JWT token.");
@@ -67,12 +74,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // HTTP Request 헤더로부터 토큰 추출
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        Enumeration<String> lists = request.getHeaderNames();
         System.out.println("USER PRINCIPAL : " + request.getUserPrincipal());
         System.out.println("NN : " + request.getContextPath());
         System.out.println("EXTRACT AT : " + bearerToken);
+
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
+        } else {
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("access-token"))
+                    return cookie.getValue();
+            }
         }
         return null;
     }

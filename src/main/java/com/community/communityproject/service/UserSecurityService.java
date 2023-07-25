@@ -18,10 +18,10 @@ public class UserSecurityService implements UserDetailsService {
 
 
     @Override
-    public UserDetailsImpl loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users users = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with username : " + username));
-        log.info("USER : " + users.getUsername() + " AND " + users.getPassword());
+    public UserDetailsImpl loadUserByUsername(String email) throws UsernameNotFoundException {
+        Users users = userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException("User not found with email : " + email));
+        log.info("USER : " + users.getEmail() + " AND " + users.getPassword());
         return new UserDetailsImpl(users);
     }
 }

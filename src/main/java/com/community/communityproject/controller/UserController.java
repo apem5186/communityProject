@@ -2,25 +2,28 @@ package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.UsersInfo;
+import com.community.communityproject.dto.UsersLoginDTO;
 import com.community.communityproject.dto.UsersSignupDTO;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.UserService;
 import com.community.communityproject.service.jwt.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,11 +36,39 @@ public class UserController {
     private final UserRepository userRepository;
     private final AuthService authService;
 
-    private final long COOKIE_EXPIRATION = 7776000; // 90일
+    private final int COOKIE_EXPIRATION = 7776000; // 90일
 
     @GetMapping("/login")
-    public String login() {
+    public String login(Model model) {
+        model.addAttribute("usersLoginDTO", new UsersLoginDTO());
         return "login";
+    }
+
+    @PostMapping("/login")
+    public String login(@ModelAttribute @Valid UsersLoginDTO usersLoginDTO, BindingResult bindingResult,
+                                   HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (bindingResult.hasErrors()) {
+            return "login";
+        }
+        // Users 등록 및 RT 저장
+        TokenDTO tokenDTO = authService.login(usersLoginDTO);
+
+        if (tokenDTO == null) {
+            log.info("-- user 정보가 틀림 -- at login controller");
+            bindingResult.rejectValue("Not found User", "usersLoginDTO", "Email 혹은 Password가 일치하지 않습니다.");
+            return "login";
+        }
+
+        // RT 저장
+        Cookie cookie = new Cookie("access-token", tokenDTO.getAccessToken());
+        cookie.setMaxAge(COOKIE_EXPIRATION);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
+
+        return "redirect:/";
     }
 
     @GetMapping("/signup")

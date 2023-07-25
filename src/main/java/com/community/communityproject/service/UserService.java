@@ -30,8 +30,8 @@ public class UserService {
         userRepository.save(users);
     }
 
-    public UsersInfo loadUser(String username) {
-        Users users = userRepository.findByUsername(username).orElseThrow();
+    public UsersInfo loadUser(String email) {
+        Users users = userRepository.findByEmail(email).orElseThrow();
         UsersInfo usersInfo = UsersInfo.builder()
                 .username(users.getUsername())
                 .email(users.getEmail())

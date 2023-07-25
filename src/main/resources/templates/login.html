@@ -12,15 +12,15 @@
         <a class="navbar-brand mr-0" href="#" th:href="@{/}">My App</a>
       </nav>
       <h2 class="text-center my-4">Login</h2>
-      <form th:action="@{/login}" method="post">
+      <form th:action="@{/login}" th:object="${usersLoginDTO}" method="post">
         <div class="form-group">
-          <label for="username"><b>Username</b></label>
-          <input type="text" id="username" placeholder="Enter Username" name="username" required class="form-control">
+          <label for="email"><b>Email</b></label>
+          <input type="email" th:field="*{email}" id="email" placeholder="Enter Email" required class="form-control">
         </div>
 
         <div class="form-group">
           <label for="password"><b>Password</b></label>
-          <input type="password" id="password" placeholder="Enter Password" name="password" required class="form-control">
+          <input type="password" th:field="*{password}" id="password" placeholder="Enter Password" required class="form-control">
         </div>
 
         <button type="submit" class="btn btn-primary">Login</button>

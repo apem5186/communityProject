@@ -20,11 +20,7 @@ public class MainController {
 
     @GetMapping("/")
     public String root(Authentication authentication, HttpServletRequest request) {
-        List<Cookie> cookieList = Arrays.stream(request.getCookies()).toList();
-        for (Cookie i : cookieList) {
-            System.out.println(i.getName());
-        }
-        System.out.println("AUTH : " + authentication.getName());
+
         return "main";
     }
 }

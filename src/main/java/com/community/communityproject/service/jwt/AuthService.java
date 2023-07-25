@@ -1,18 +1,22 @@
 package com.community.communityproject.service.jwt;
 
 import com.community.communityproject.dto.TokenDTO;
+import com.community.communityproject.dto.UsersLoginDTO;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.redis.RedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -26,8 +30,27 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
     private final RedisService redisService;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final String SERVER = "Server";
+
+    public TokenDTO login(UsersLoginDTO usersLoginDTO) {
+        Optional<Users> users = userRepository.findByEmail(usersLoginDTO.getEmail());
+        if (users.isEmpty()) {
+            return null;
+        } else {
+            log.info("== users 정보 : " + users.get().getEmail());
+            users.get().setLogin(true);
+            userRepository.save(users.get());
+        }
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(usersLoginDTO.getEmail(), usersLoginDTO.getPassword());
+
+        Authentication authentication = authenticationManagerBuilder.getObject()
+                .authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return generateToken(SERVER, authentication.getName(), getAuthorities(authentication));
+    }
 
     // AT가 만료일자만 초과한 유효한 토큰인지 검사
     public boolean validate(String requestAccessTokenInHeader) {
@@ -68,15 +91,15 @@ public class AuthService {
 
     // 토큰 발급
     @Transactional
-    public TokenDTO generateToken(String provider, String username, String authorities) {
+    public TokenDTO generateToken(String provider, String email, String authorities) {
         // RT가 이미 있을 경우
-        if(redisService.getValues("RT(" + provider + "):" + username) != null) {
-            redisService.deleteValues("RT(" + provider + "):" + username); // 삭제
+        if(redisService.getValues("RT(" + provider + "):" + email) != null) {
+            redisService.deleteValues("RT(" + provider + "):" + email); // 삭제
         }
 
         // AT, RT 생성 및 Redis에 RT 저장
-        TokenDTO tokenDTO = tokenProvider.createToken(username, authorities);
-        saveRefreshToken(provider, username, tokenDTO.getRefreshToken());
+        TokenDTO tokenDTO = tokenProvider.createToken(email, authorities);
+        saveRefreshToken(provider, email, tokenDTO.getRefreshToken());
         return tokenDTO;
     }
 

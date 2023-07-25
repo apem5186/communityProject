@@ -7,6 +7,7 @@ build/
 
 *.yml
 **/resources/data.sql
+**/resources/TODOLIST.text
 
 ### STS ###
 .apt_generated

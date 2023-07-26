@@ -53,6 +53,11 @@
           <li class="nav-item">
             <a class="nav-link" href="#" th:href="@{/profile}">Profile</a>
           </li>
+          <li class="nav-item">
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="nav-link" style="border: none; background-color: transparent; cursor: pointer;">Logout</button>
+            </form>
+          </li>
         </ul>
       </div>
     </div>

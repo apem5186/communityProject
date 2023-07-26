@@ -62,6 +62,7 @@ public class AuthService {
     // 토큰 재발급: validate 메서드가 true 반환할 때만 사용 -> AT, RT 재발급
     @Transactional
     public TokenDTO reissue(String requestAccessTokenInHeader, String requestRefreshToken) {
+        log.info("REISSUE 실행");
         String requestAccessToken = resolveToken(requestAccessTokenInHeader);
 
         Authentication authentication = tokenProvider.getAuthentication(requestAccessToken);
@@ -133,12 +134,12 @@ public class AuthService {
 
     // 로그아웃
     @Transactional
-    public void logout(String requestAccessTokenInHeader) {
-        String requestAccessToken = resolveToken(requestAccessTokenInHeader);
+    public void logout(String requestAccessToken) {
+        log.info("AUTH Service Logout Process");
         String principal = getPrincipal(requestAccessToken);
 
         // isLogin -> false
-        Users users = userRepository.findByUsername(principal).orElseThrow();
+        Users users = userRepository.findByEmail(principal).orElseThrow();
         users.setLogin(false);
         userRepository.save(users);
 
@@ -156,6 +157,7 @@ public class AuthService {
 
         // SecurityContextHolder의 user 정보 삭제
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Logout Auth : " + authentication.getName());
         if (authentication != null) {
             SecurityContextHolder.clearContext();
         }

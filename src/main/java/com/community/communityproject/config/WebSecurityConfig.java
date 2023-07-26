@@ -93,13 +93,14 @@ public class WebSecurityConfig {
                         sessionManagement
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // TODO : 순환참조 및 추후 추가할 OAUTH2 등을 위해 logout은 controller 형식으로 바꿔야 할듯
-//                .logout((logout) ->
-//                        logout
+                .logout((logout) ->
+                        logout
 //                                .logoutUrl("/logout")
-//                                .addLogoutHandler(new CustomLogoutHandler())
+//                                .logoutSuccessUrl("/login")
 //                                .invalidateHttpSession(true)
 //                                .deleteCookies("refresh-token", "JSESSIONID")
-//                                .logoutSuccessHandler(new CustomLogoutSuccessHandler(userRepository, authService, redisService)))
+//                                .clearAuthentication(true))
+                                .disable())
                                 .build();
     }
     @Bean

@@ -36,7 +36,8 @@ public class UserController {
     private final UserRepository userRepository;
     private final AuthService authService;
 
-    private final int COOKIE_EXPIRATION = 7776000; // 90일
+    private final int COOKIE_EXPIRATION = 60; // 90일
+    private final int ATCOOKIE_EXPIRATION = 30;
 
     @GetMapping("/login")
     public String login(Model model) {
@@ -46,7 +47,8 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@ModelAttribute @Valid UsersLoginDTO usersLoginDTO, BindingResult bindingResult,
-                                   HttpServletRequest request, HttpServletResponse response) throws IOException {
+                                   HttpServletRequest request, HttpServletResponse response,
+                        Model model) throws IOException {
         if (bindingResult.hasErrors()) {
             return "login";
         }
@@ -60,11 +62,18 @@ public class UserController {
         }
 
         // RT 저장
-        Cookie cookie = new Cookie("access-token", tokenDTO.getAccessToken());
+        Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
         cookie.setMaxAge(COOKIE_EXPIRATION);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
+
+        // AT 저장
+        Cookie atCookie = new Cookie("access-token", tokenDTO.getAccessToken());
+        atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
+        atCookie.setHttpOnly(true);
+        atCookie.setSecure(true);
+        response.addCookie(atCookie);
 
         response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
 
@@ -170,18 +179,46 @@ public class UserController {
     }
 
     // 로그아웃
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String requestAccessToken) {
-        authService.logout(requestAccessToken);
-        ResponseCookie responseCookie = ResponseCookie.from("refresh-token", "")
-                .maxAge(0)
-                .path("/")
-                .build();
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(@CookieValue(name = "access-token") String requestAccessToken) {
+//        authService.logout(requestAccessToken);
+//        ResponseCookie responseCookie = ResponseCookie.from("refresh-token", "")
+//                .maxAge(0)
+//                .path("/")
+//                .build();
+//
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+//                .build();
+//    }
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .build();
+    @PostMapping("/logout")
+    public String logout(@CookieValue(name = "access-token", required = false) String requestAccessToken,
+                         @CookieValue(name = "refresh-token", required = false) String requestRefreshToken,
+                         HttpServletResponse response) {
+        log.info("hihiihihhi");
+        if (requestAccessToken != null) {
+            authService.logout(requestAccessToken);
+        }
+
+        // access-token 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("access-token", "");
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
+
+        // refresh-token 쿠키 삭제
+        Cookie refreshTokenCookie = new Cookie("refresh-token", "");
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
+        return "redirect:/login";
     }
 
 }

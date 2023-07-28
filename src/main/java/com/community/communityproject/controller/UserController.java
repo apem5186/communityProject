@@ -1,23 +1,28 @@
 package com.community.communityproject.controller;
 
-import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.dto.UsersInfo;
-import com.community.communityproject.dto.UsersLoginDTO;
-import com.community.communityproject.dto.UsersSignupDTO;
+import com.community.communityproject.dto.*;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
+import com.community.communityproject.service.UserSecurityService;
 import com.community.communityproject.service.UserService;
 import com.community.communityproject.service.jwt.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -35,9 +40,22 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final UserSecurityService userSecurityService;
 
-    private final int COOKIE_EXPIRATION = 60; // 90일
-    private final int ATCOOKIE_EXPIRATION = 30;
+    private int RTCOOKIE_EXPIRATION;
+    private int ATCOOKIE_EXPIRATION;
+
+    @Autowired
+    public void setCookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int cookieExpiration) {
+        this.RTCOOKIE_EXPIRATION = cookieExpiration;
+    }
+
+    @Autowired
+    public void setAtCookieExpiration(@Value("${jwt.access-token-validity-in-seconds}") int atCookieExpiration) {
+        this.ATCOOKIE_EXPIRATION = atCookieExpiration;
+    }
+
+
 
     @GetMapping("/login")
     public String login(Model model) {
@@ -63,7 +81,7 @@ public class UserController {
 
         // RT 저장
         Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
-        cookie.setMaxAge(COOKIE_EXPIRATION);
+        cookie.setMaxAge(RTCOOKIE_EXPIRATION);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
@@ -133,11 +151,37 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String profile(Model model, Authentication authentication) {
+    public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication) {
         model.addAttribute("user", userService.loadUser(authentication.getName()));
+
+        if ("true".equals(editMode)) {
+            model.addAttribute("editingEnabled", true);
+        } else {
+            model.addAttribute("editingEnabled", false);
+        }
+
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        UsersEditDTO usersEditDTO = userService.loadEditUserInfo(currentUserEmail);
+
+        model.addAttribute("usersEditDTO", usersEditDTO);
+
+
         return "profile";
     }
 
+    @PostMapping("/profile")
+    public String editProfile(@ModelAttribute @Valid UsersEditDTO usersEditDTO, BindingResult bindingResult,
+                              HttpServletRequest request, HttpServletResponse response) {
+        if (bindingResult.hasErrors()) {
+            return "profile";
+        }
+        String beforeUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.editUser(usersEditDTO, beforeUserEmail, request, response);
+
+
+
+        return "redirect:/profile";
+    }
     @PostMapping("/auth/validate")
     public ResponseEntity<?> validate(@RequestHeader("Authorization") String requestAccessToken) {
         if (!authService.validate(requestAccessToken)) {
@@ -155,7 +199,7 @@ public class UserController {
         if (reissuedTokenDTO != null) { // 토큰 재발급 성공
             // RT 저장
             ResponseCookie responseCookie = ResponseCookie.from("refresh-token", reissuedTokenDTO.getRefreshToken())
-                    .maxAge(COOKIE_EXPIRATION)
+                    .maxAge(RTCOOKIE_EXPIRATION)
                     .httpOnly(true)
                     .secure(true)
                     .build();

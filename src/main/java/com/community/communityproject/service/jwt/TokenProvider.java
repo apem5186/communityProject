@@ -115,7 +115,8 @@ public class TokenProvider implements InitializingBean {
     // == 토큰 검증 == //
     public boolean validateRefreshToken(String refreshToken){
         try {
-            if (redisService.getValues(refreshToken).equals("delete")) { // 회원 탈퇴했을 경우
+            if (redisService.getValues(refreshToken) != null && // 이거 안해주면 token 있어도 NullPointerException 나옴
+                    redisService.getValues(refreshToken).equals("delete")) { // 회원 탈퇴했을 경우
                 return false;
             }
             Jwts.parserBuilder()
@@ -133,9 +134,10 @@ public class TokenProvider implements InitializingBean {
             log.error("Unsupported JWT token.");
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty.");
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.error("JWT Token is empty.");
         }
+
         return false;
     }
 

@@ -3,8 +3,11 @@ package com.community.communityproject.dto;
 import com.community.communityproject.entitiy.users.UserRole;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class UsersInfo {
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Profile</title>
+  <title>프로필</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -9,19 +9,111 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6 offset-md-3">
-      <h1>Your Profile</h1>
+      <h1>내 프로필</h1>
       <hr/>
-      <h3>Username: <span th:text="${#authentication.name}"></span></h3>
-      <h3>Email: <span th:text="${user.email}"></span></h3>
+
+      <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
+      <div th:if="${editingEnabled}">
+        <form th:action="@{/profile}" th:object="${usersEditDTO}" method="post">
+          <!-- 사용자명과 이메일을 위한 입력 필드 -->
+          <div class="form-group">
+            <label for="username">사용자명:</label>
+            <input type="text" class="form-control" th:field="*{username}" id="username">
+          </div>
+          <div class="form-group">
+            <label for="email">이메일:</label>
+            <input type="email" class="form-control" id="email" th:field="*{email}">
+          </div>
+          <div class="form-group">
+            <label for="password">비밀번호:</label>
+            <input type="password" class="form-control" id="password" th:field="*{password}">
+          </div>
+          <!-- 저장과 취소 버튼 -->
+          <button type="submit" class="btn btn-primary">저장</button>
+          <a type="button" class="btn btn-secondary" id="editCancel" onclick="cancelEditing()">취소</a>
+        </form>
+      </div>
+
+      <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
+      <div th:unless="${editingEnabled}">
+        <h3>사용자명: <span th:text="${user.getUsername()}"></span></h3>
+        <h3>이메일: <span th:text="${user.email}"></span></h3>
+      </div>
       <hr/>
-      <a th:href="@{/profile/edit}" class="btn btn-primary">Edit Profile</a>
-      <a th:href="@{/profile/posts}" class="btn btn-secondary">My Posts</a>
-      <a th:href="@{/profile/comments}" class="btn btn-secondary">My Comments</a>
+
+      <!-- 편집 모드를 전환하는 버튼 -->
+      <!-- Button to switch edit mode -->
+      <!-- Button to switch edit mode -->
+      <!-- Button to switch edit mode -->
+      <a href="" class="btn btn-primary" id="editBtn" onclick="toggleEditing()">
+        Edit profile
+      </a>
+
+
+      <a th:href="@{/profile/posts}" class="btn btn-secondary">내 게시물</a>
+      <a th:href="@{/profile/comments}" class="btn btn-secondary">내 댓글</a>
     </div>
   </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+  // 처음에는 편집 모드가 비활성화된 상태
+  let editingEnabled = false;
+  // 편집 모드를 전환하는 함수
+  function toggleEditing() {
+    console.log("Edit Mode");
+    let link = document.getElementById('editBtn');
+    let newEditingEnabled = link.href.indexOf("edit=true") === -1; // Check if "edit=true" is not already in the URL
+    console.log(newEditingEnabled);
+
+    // Update the href attribute with the new value
+    if (newEditingEnabled) {
+      link.href = "/profile?edit=true";
+      $("form").show();
+      $("h3").hide();
+    } else {
+      link.href = "/profile";
+      $("form").hide();
+      $("h3").show();
+    }
+
+    editingEnabled = newEditingEnabled;
+  }
+
+  // 편집 가능한 요소와 편집 불가능한 요소를 표시/숨김 처리하는 함수
+  // function showHideElements(editingEnabled) {
+  //   if (editingEnabled) {
+  //     console.log("show")
+  //     // 편집 가능한 양식 표시하고 편집 불가능한 요소 숨김
+  //     $("form").show();
+  //     $("h3").hide();
+  //   } else {
+  //     console.log("hide")
+  //     // 편집 불가능한 요소 표시하고 편집 가능한 양식 숨김
+  //     $("form").hide();
+  //     $("h3").show();
+  //   }
+  // }
+
+  // 편집 취소 시 편집 모드를 비활성화하고 원래 화면으로 돌아감
+  function cancelEditing() {
+    let link = document.getElementById('editCancel');
+    link.href = "/profile";
+    $("form").hide();
+    $("h3").show();
+  }
+
+  // 페이지 로드 시 showHideElements 함수 호출하여 적절한 요소를 표시함
+  // $(document).ready(function() {
+  //   showHideElements();
+  // });
+</script>
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
 </body>
 </html>

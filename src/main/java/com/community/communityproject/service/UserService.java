@@ -7,6 +7,8 @@ import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
+import com.community.communityproject.service.jwt.TokenProvider;
+import com.community.communityproject.service.redis.RedisService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Map;
 
 @Slf4j
@@ -38,8 +41,14 @@ public class UserService {
 
     private final UserSecurityService userSecurityService;
 
+    private final TokenProvider tokenProvider;
+
+    private final RedisService redisService;
+
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
+
+    private final String SERVER = "Server";
 
     @Autowired
     public void setCookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int cookieExpiration) {
@@ -119,23 +128,6 @@ public class UserService {
 
             userRepository.save(users);
 
-
-
-
-            // Update the SecurityContext with the modified user's information
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//            UserDetails updatedUserDetails = userSecurityService.loadUserByUsername(usersEditDTO.getEmail());
-//
-//            // Create a new Authentication object with the updated user details
-//            Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
-//                updatedUserDetails,
-//                authentication.getCredentials(),
-//                updatedUserDetails.getAuthorities()
-//            );
-//
-//            // Set the new Authentication object in the SecurityContextHolder
-//            SecurityContextHolder.getContext().setAuthentication(newAuthentication);
-
             TokenDTO tokenDTO = authService.reissue(at, rt);
 
             // RT 저장
@@ -154,6 +146,65 @@ public class UserService {
 
             response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
         }
+    }
+
+    @Transactional
+    public String deleteUsers(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        String rt = null;
+        String at = null;
+        for (Cookie c : cookies) {
+            if (c.getName().equals("refresh-token"))
+                rt = c.getValue();
+            else if (c.getName().equals("access-token")) {
+                at = c.getValue();
+            }
+        }
+        String email = null;
+
+
+        // authService.validate가 true를 반환하면 at 만료일자 초과로 재발급
+        if (authService.validate(at)) {
+            TokenDTO tokenDTO = authService.reissue(at, rt);
+            // tokenDTO가 null이면 rt가 없거나 탈취가능성 있음
+            if (tokenDTO == null) {
+                authService.logout(at, "logout");
+                return null;
+            }
+        } else {
+            email = authService.getPrincipal(at);
+        }
+
+        String refreshTokenInRedis = redisService.getValues("RT(" + SERVER + "):" + email);
+        if (refreshTokenInRedis == null) { // Redis에 저장되어 있는 RT가 없을 경우
+            return null; // -> 재로그인 요청
+        }
+        // 요청된 RT의 유효성 검사 & Redis에 저장되어 있는 RT와 같은지 비교
+        if(!tokenProvider.validateRefreshToken(rt) || !refreshTokenInRedis.equals(rt)) {
+            redisService.deleteValues("RT(" + SERVER + "):" + email); // 탈취 가능성 -> 삭제
+            return null; // -> 재로그인 요청
+        }
+        Users users = userRepository.findByEmail(email).orElseThrow();
+        // access-token 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("access-token", "");
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
+
+        // refresh-token 쿠키 삭제
+        Cookie refreshTokenCookie = new Cookie("refresh-token", "");
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
+        authService.logout(at, "delete");
+        userRepository.delete(users);
+
+        return "ok";
     }
 
 }

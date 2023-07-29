@@ -214,14 +214,25 @@ public class UserController {
 
         return "redirect:/profile";
     }
-    @PostMapping("/auth/validate")
-    public ResponseEntity<?> validate(@RequestHeader("Authorization") String requestAccessToken) {
-        if (!authService.validate(requestAccessToken)) {
-            return ResponseEntity.status(HttpStatus.OK).build();  // 재발급 필요 x
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();  // 재발급 필요
+
+    @PostMapping("/delete/users")
+    public String deleteUsers(HttpServletRequest request, HttpServletResponse response,
+                              RedirectAttributes redirectAttributes) {
+        String result = userService.deleteUsers(request, response);
+        if (result == null) {
+            redirectAttributes.addAttribute("error", "deleteError");
+            return "redirect:/login";
         }
+        return "redirect:/";
     }
+//    @PostMapping("/auth/validate")
+//    public ResponseEntity<?> validate(@RequestHeader("Authorization") String requestAccessToken) {
+//        if (!authService.validate(requestAccessToken)) {
+//            return ResponseEntity.status(HttpStatus.OK).build();  // 재발급 필요 x
+//        } else {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();  // 재발급 필요
+//        }
+//    }
 
     @PostMapping("/auth/reissue")
     public ResponseEntity<?> reissue(@CookieValue(name = "refresh-token") String requestRefreshToken,
@@ -254,28 +265,13 @@ public class UserController {
         }
     }
 
-    // 로그아웃
-//    @PostMapping("/logout")
-//    public ResponseEntity<?> logout(@CookieValue(name = "access-token") String requestAccessToken) {
-//        authService.logout(requestAccessToken);
-//        ResponseCookie responseCookie = ResponseCookie.from("refresh-token", "")
-//                .maxAge(0)
-//                .path("/")
-//                .build();
-//
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-//                .build();
-//    }
-
     @PostMapping("/logout")
     public String logout(@CookieValue(name = "access-token", required = false) String requestAccessToken,
                          @CookieValue(name = "refresh-token", required = false) String requestRefreshToken,
                          HttpServletResponse response) {
         log.info("hihiihihhi");
         if (requestAccessToken != null) {
-            authService.logout(requestAccessToken);
+            authService.logout(requestAccessToken, "logout");
         }
 
         // access-token 쿠키 삭제

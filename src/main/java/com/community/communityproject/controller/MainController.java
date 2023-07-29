@@ -25,7 +25,7 @@ public class MainController {
     private final TokenProvider tokenProvider;
     @GetMapping("/")
     public String root(Authentication authentication, HttpServletResponse response, Model model,
-                       @CookieValue("access-token") String accessToken) {
+                       @CookieValue(value = "access-token", required = false) String accessToken) {
 
         log.info("MAIN PAGE ACCESSTOKEN : " + accessToken);
         model.addAttribute("accessToken", accessToken);

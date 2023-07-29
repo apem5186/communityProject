@@ -53,8 +53,7 @@ public class AuthService {
     }
 
     // AT가 만료일자만 초과한 유효한 토큰인지 검사
-    public boolean validate(String requestAccessTokenInHeader) {
-        String requestAccessToken = resolveToken(requestAccessTokenInHeader);
+    public boolean validate(String requestAccessToken) {
         return tokenProvider.validateAccessTokenOnlyExpired(requestAccessToken); // true = 재발급
     }
 
@@ -132,7 +131,7 @@ public class AuthService {
 
     // 로그아웃
     @Transactional
-    public void logout(String requestAccessToken) {
+    public void logout(String requestAccessToken, String logoutOrDelete) {
         log.info("AUTH Service Logout Process");
         String principal = getPrincipal(requestAccessToken);
 
@@ -147,11 +146,19 @@ public class AuthService {
             redisService.deleteValues("RT(" + SERVER + "):" + principal);
         }
 
-        // Redis에 로그아웃 처리한 AT 저장
-        long expiration = tokenProvider.getTokenExpirationTime(requestAccessToken) - new Date().getTime();
-        redisService.setValuesWithTimeout(requestAccessToken,
-                "logout",
-                expiration);
+        // Redis에 로그아웃 처리한 AT 저장 계정 삭제면 value를 "delete"로
+        if (logoutOrDelete.equals("logout")) {
+            long expiration = tokenProvider.getTokenExpirationTime(requestAccessToken) - new Date().getTime();
+            redisService.setValuesWithTimeout(requestAccessToken,
+                    "logout",
+                    expiration);
+        } else {
+            long expiration = tokenProvider.getTokenExpirationTime(requestAccessToken) - new Date().getTime();
+            redisService.setValuesWithTimeout(requestAccessToken,
+                    "delete",
+                    expiration);
+        }
+
 
         // SecurityContextHolder의 user 정보 삭제
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

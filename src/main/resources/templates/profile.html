@@ -47,9 +47,6 @@
       <hr/>
 
       <!-- 편집 모드를 전환하는 버튼 -->
-      <!-- Button to switch edit mode -->
-      <!-- Button to switch edit mode -->
-      <!-- Button to switch edit mode -->
       <a href="" class="btn btn-primary" id="editBtn" onclick="toggleEditing()">
         Edit profile
       </a>
@@ -57,6 +54,10 @@
 
       <a th:href="@{/profile/posts}" class="btn btn-secondary">내 게시물</a>
       <a th:href="@{/profile/comments}" class="btn btn-secondary">내 댓글</a>
+
+      <form id="deleteForm" action="#" th:action="@{/delete/users}" method="post">
+        <button type="button" onclick="confirmDelete()">Delete</button>
+      </form>
     </div>
   </div>
 </div>
@@ -64,6 +65,15 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+
+  function confirmDelete() {
+    let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
+    if (result) {
+      // 사용자가 '확인'을 클릭하면, 폼을 제출합니다.
+      document.getElementById('deleteForm').submit();
+    }
+  }
+
   // 처음에는 편집 모드가 비활성화된 상태
   let editingEnabled = false;
   // 편집 모드를 전환하는 함수

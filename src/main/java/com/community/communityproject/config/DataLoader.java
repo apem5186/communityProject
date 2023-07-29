@@ -4,10 +4,12 @@ import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
@@ -37,5 +39,13 @@ public class DataLoader implements CommandLineRunner {
         users.setLogin(false);
         users.setUserRole(UserRole.USER);
         userRepository.save(users);
+
+        Users users2 = new Users();
+        users2.setEmail("user02@email.com");
+        users2.setUsername("user02");
+        users2.setPassword(passwordEncoder.encode("2222"));
+        users2.setLogin(false);
+        users2.setUserRole(UserRole.USER);
+        userRepository.save(users2);
     }
 }

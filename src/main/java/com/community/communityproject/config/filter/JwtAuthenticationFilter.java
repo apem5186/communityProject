@@ -83,9 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 // response엔 header에 Authorization과 Cookie에 refresh-token
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        log.info("USER PRINCIPAL : " + request.getUserPrincipal());
-        log.info("NN : " + request.getContextPath());
-        log.info("EXTRACT AT : " + bearerToken);
 
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);

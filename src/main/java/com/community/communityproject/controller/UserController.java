@@ -27,6 +27,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -171,11 +173,41 @@ public class UserController {
 
     @PostMapping("/profile")
     public String editProfile(@ModelAttribute @Valid UsersEditDTO usersEditDTO, BindingResult bindingResult,
-                              HttpServletRequest request, HttpServletResponse response) {
-        if (bindingResult.hasErrors()) {
-            return "profile";
-        }
+                              HttpServletRequest request, HttpServletResponse response,
+                              RedirectAttributes redirectAttributes) {
+
         String beforeUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        // redirect 할 때 param 추가
+        String redirectUrl = UriComponentsBuilder.fromPath("/profile")
+                .queryParam("edit", "true")
+                .toUriString();
+
+        // Check if usersEditDTO is null
+        if (usersEditDTO == null) {
+            // Handle the case when usersEditDTO is null (e.g., log an error or return an error page)
+            // For simplicity, you can return "profile" to stay on the profile page
+            // Add the "edit=true" parameter to the redirect URL
+            return "redirect:/profile" + redirectAttributes;
+        }
+
+        // 중복 체크
+        String dupleCheck = userService.editUserCheck(usersEditDTO, beforeUserEmail);
+        log.info("DUPLE CHECK : " + dupleCheck);
+        if (dupleCheck.equals("usernameError")) {
+            redirectAttributes.addAttribute("edit", "true");
+            redirectAttributes.addAttribute("usernameError", "That Username already exists.");
+            return "redirect:/profile";
+        } else if (dupleCheck.equals("emailError")) {
+            redirectAttributes.addAttribute("edit", "true");
+            redirectAttributes.addAttribute("emailError", "That Email already exists.");
+            return "redirect:/profile";
+        }
+
+        if (bindingResult.hasErrors()) {
+            // Add the "edit=true" parameter to the redirect URL
+            return "redirect:" + redirectUrl;
+        }
+
         userService.editUser(usersEditDTO, beforeUserEmail, request, response);
 
 

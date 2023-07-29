@@ -79,6 +79,20 @@ public class UserService {
         return usersEditDTO;
     }
 
+    public String editUserCheck(UsersEditDTO usersEditDTO, String beforeEmail) {
+        Users users = userRepository.findByEmail(beforeEmail).orElseThrow();
+        // 기존 이메일이 아닌데 바꿀려는 이메일이 이미 존재하면
+        if (!users.getEmail().equals(usersEditDTO.getEmail()) && userRepository.existsByEmail(usersEditDTO.getEmail())) {
+            return "emailError";
+        }
+        // 기존 유저네임이 아닌데 바꿀려는 유저네임이 이미 존재하면
+        if (!users.getUsername().equals(usersEditDTO.getUsername()) && userRepository.existsByUsername(usersEditDTO.getUsername())) {
+            return "usernameError";
+        }
+
+        return "ok";
+    }
+
     @Transactional
     public void editUser(UsersEditDTO usersEditDTO, String beforeEmail, HttpServletRequest request,
                          HttpServletResponse response) {

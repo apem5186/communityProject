@@ -16,6 +16,14 @@
       <div th:if="${editingEnabled}">
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
         <form th:action="@{/profile}" th:object="${usersEditDTO}" method="post">
+          <div>
+            <img src="" th:src="@{'/' + ${profileImage.filePath}}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
+                 alt="Profile Image"/>
+            <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
+            <br>
+            <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
+            <button class="btn btn-primary mt-2" type="button" id="defaultImage">Default Image</button>
+          </div>
           <div th:if="${param.usernameError != null or param.emailError != null}">
             <span class="text-danger" th:text="${param.usernameError != null ? param.usernameError[0] : ''}"></span>
             <span class="text-danger" th:text="${param.emailError != null ? param.emailError[0] : ''}"></span>
@@ -41,6 +49,8 @@
 
       <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
       <div th:unless="${editingEnabled}">
+        <img src="" th:src="@{'/' + ${profileImage.filePath}}" style="width: 100px; height: 100px;"
+             alt="Profile Image"/>
         <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
         <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
       </div>
@@ -97,21 +107,6 @@
     editingEnabled = newEditingEnabled;
   }
 
-  // 편집 가능한 요소와 편집 불가능한 요소를 표시/숨김 처리하는 함수
-  // function showHideElements(editingEnabled) {
-  //   if (editingEnabled) {
-  //     console.log("show")
-  //     // 편집 가능한 양식 표시하고 편집 불가능한 요소 숨김
-  //     $("form").show();
-  //     $("h3").hide();
-  //   } else {
-  //     console.log("hide")
-  //     // 편집 불가능한 요소 표시하고 편집 가능한 양식 숨김
-  //     $("form").hide();
-  //     $("h3").show();
-  //   }
-  // }
-
   // 편집 취소 시 편집 모드를 비활성화하고 원래 화면으로 돌아감
   function cancelEditing() {
     let link = document.getElementById('editCancel');
@@ -124,6 +119,26 @@
   // $(document).ready(function() {
   //   showHideElements();
   // });
+
+  // When the profile image preview is clicked, trigger the file input click event
+  document.getElementById("profile-image-preview").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+  });
+
+  // When a file is selected, display it in the profile image preview
+  document.getElementById("profile-image").addEventListener("change", function(e) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("profile-image-preview").src = e.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+  });
+
+  // Change the default image
+  document.getElementById("defaultImage").addEventListener("click", function() {
+    document.getElementById("profile-image").value = "";
+    document.getElementById("profile-image-preview").src = "/profileImage/default/profile_default.jpg";
+  });
 </script>
 <style>
   .hidden {

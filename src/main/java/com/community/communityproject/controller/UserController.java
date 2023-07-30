@@ -1,6 +1,7 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.*;
+import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.UserSecurityService;
@@ -154,8 +155,9 @@ public class UserController {
 
     @GetMapping("/profile")
     public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication) {
+        ProfileImage profileImage = userService.getProfileImage(authentication.getName());
         model.addAttribute("user", userService.loadUser(authentication.getName()));
-
+        model.addAttribute("profileImage", profileImage);
         if ("true".equals(editMode)) {
             model.addAttribute("editingEnabled", true);
         } else {
@@ -187,11 +189,13 @@ public class UserController {
             // Handle the case when usersEditDTO is null (e.g., log an error or return an error page)
             // For simplicity, you can return "profile" to stay on the profile page
             // Add the "edit=true" parameter to the redirect URL
+            log.info("USERS EDIT IS NULL");
             return "redirect:/profile" + redirectAttributes;
         }
 
         // 중복 체크
         String dupleCheck = userService.editUserCheck(usersEditDTO, beforeUserEmail);
+        log.info("PROFILE CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
         log.info("DUPLE CHECK : " + dupleCheck);
         if (dupleCheck.equals("usernameError")) {
             redirectAttributes.addAttribute("edit", "true");
@@ -205,6 +209,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             // Add the "edit=true" parameter to the redirect URL
+            log.info("SOMETHING IS WRONG");
             return "redirect:" + redirectUrl;
         }
 

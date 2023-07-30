@@ -21,10 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -35,8 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Date;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -155,9 +149,33 @@ public class UserService {
             else if (c.getName().equals("access-token"))
                 at = c.getValue();
         }
+        boolean atCheck = authService.validate(at); // true 면 유효기간 초과한거임
+        if (atCheck) {
+            // 토큰 재발행
+            TokenDTO tokenDTO = authService.reissue(at, rt);
 
+            // RT 저장
+            Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
+            cookie.setMaxAge(RTCOOKIE_EXPIRATION);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            response.addCookie(cookie);
 
-        if (at != null && rt != null) {
+            // AT 저장
+            Cookie atCookie = new Cookie("access-token", tokenDTO.getAccessToken());
+            atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
+            atCookie.setHttpOnly(true);
+            atCookie.setSecure(true);
+            response.addCookie(atCookie);
+
+            response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
+            // 다시 집어넣기
+            at = tokenDTO.getAccessToken();
+            rt = tokenDTO.getRefreshToken();
+        }
+        boolean rtCheck = tokenProvider.validateRefreshToken(rt); // false면 뭔가 이상한거
+        log.info("PROFILE NAME CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
+        if (!atCheck && rtCheck) {
             log.info("EDIT USER INFO START AT : " + at);
             log.info("RT : " + rt);
             Users users = userRepository.findByEmail(beforeEmail).orElseThrow();
@@ -168,6 +186,11 @@ public class UserService {
 
             userRepository.save(users);
 
+            MultipartFile multipartFile = usersEditDTO.getProfileImage();
+            String filePath = editProfileImage(multipartFile, usersEditDTO.getEmail());
+            log.info("EDIT PROFILE IMAGE SUCCESS FILE PATH : " + filePath);
+
+            // 토큰 재발행
             TokenDTO tokenDTO = authService.reissue(at, rt);
 
             // RT 저장
@@ -252,6 +275,40 @@ public class UserService {
         return profileImageRepository.findByUsers(users);
     }
 
+    /**
+     * 프로필 이미지 수정 할 때 씀
+     * @param multipartFile
+     * @param email
+     * @return filePath
+     */
+    private String editProfileImage(MultipartFile multipartFile, String email) {
+        String originName = multipartFile.getOriginalFilename();
+        String filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
+        long fileSize = multipartFile.getSize();
+
+        if(originName.equals("profile_default.jpg") || originName.isEmpty()) {
+            // 이미 기본 이미지거나 프로필 사진을 취소했으면 그냥 경로 리턴
+            return filePath;
+        } else {
+            filePath = saveProfileImage(multipartFile); // 파일 저장하는 부분
+        }
+
+        // 프로필 이미지 수정
+        ProfileImage profileImage = getProfileImage(email);
+        profileImage.setOriginName(originName);
+        profileImage.setFilePath(filePath);
+        profileImage.setFileSize(fileSize);
+        profileImageRepository.save(profileImage);
+
+        // 수정된 경로 리턴
+        return filePath;
+    }
+
+    /**
+     * 회원가입 및 프로필 이미지 수정 용도
+     * @param multipartFile
+     * @return file path
+     */
     private String saveProfileImage(MultipartFile multipartFile) {
         try {
             Path uploadDir = Paths.get("profileImage", "userImg");

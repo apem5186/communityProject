@@ -3,8 +3,11 @@ package com.community.communityproject.service;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.UsersEditDTO;
 import com.community.communityproject.dto.UsersInfo;
+import com.community.communityproject.dto.UsersSignupDTO;
+import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.repository.ProfileImageRepository;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
@@ -24,7 +27,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.Map;
 
@@ -34,6 +44,8 @@ import java.util.Map;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final ProfileImageRepository profileImageRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -61,13 +73,41 @@ public class UserService {
     }
 
     @Transactional
-    public void signup(String username, String email, String password) {
+    public void signup(UsersSignupDTO usersSignupDTO) {
+
         Users users = new Users();
-        users.setUsername(username);
-        users.setEmail(email);
-        users.setPassword(passwordEncoder.encode(password));
+        users.setUsername(usersSignupDTO.getUsername());
+        users.setEmail(usersSignupDTO.getEmail());
+        users.setPassword(passwordEncoder.encode(usersSignupDTO.getPassword1()));
         users.setUserRole(UserRole.USER);
+
+        MultipartFile multipartFile = usersSignupDTO.getProfileImage();
+        String originName = multipartFile.getOriginalFilename();
+        String filePath;
+        long fileSize = multipartFile.getSize();
+
+        // 기본 프로필
+        if(originName.equals("profile_default.jpg") || originName.isEmpty()) {
+            originName = "profile_default.jpg";
+            filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
+            fileSize = 8636L;
+        } else {
+            filePath = saveProfileImage(multipartFile); // 파일 저장하는 부분
+        }
+        log.info("========================");
+        log.info("========================");
+        log.info("FILE SIZE = " + fileSize);
+        log.info("========================");
+        log.info("========================");
+        ProfileImage profileImage = ProfileImage.builder()
+                        .originName(originName)
+                        .filePath(filePath)
+                        .fileSize(fileSize)
+                        .users(users)
+                        .build();
+
         userRepository.save(users);
+        profileImageRepository.save(profileImage);
     }
 
     public UsersInfo loadUser(String email) {
@@ -205,6 +245,56 @@ public class UserService {
         userRepository.delete(users);
 
         return "ok";
+    }
+
+    public ProfileImage getProfileImage(String email) {
+        Users users = userRepository.findByEmail(email).orElseThrow();
+        return profileImageRepository.findByUsers(users);
+    }
+
+    private String saveProfileImage(MultipartFile multipartFile) {
+        try {
+            Path uploadDir = Paths.get("profileImage", "userImg");
+
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            // 파일의 확장자 추출
+            String originalFileExtension;
+            String contentType = multipartFile.getContentType();
+
+            // 확장자명이 존재하지 않을 경우 처리 x
+            if (ObjectUtils.isEmpty(contentType)) {
+                log.error("The extension name does not exist.");
+                log.error("File Name : " + multipartFile.getOriginalFilename());
+                throw new RuntimeException("Invalid content type");
+            } else {
+                if (contentType. contains("image/jpeg"))
+                    originalFileExtension = ".jpg";
+                else if (contentType. contains("image/png"))
+                    originalFileExtension = ".png";
+                else {
+                    log.error("Only extensions of jpg and png are allowed.");
+                    log.error("File Name : " + multipartFile.getOriginalFilename());
+                    throw new RuntimeException("Invalid content type");
+                }
+            }
+
+            String filename = System.currentTimeMillis() + "_profileImage_" + multipartFile.getOriginalFilename();
+
+            // Build the file path
+            Path filePath = uploadDir.resolve(filename);
+
+            // Write the file to the filesystem
+            Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+
+            // Return the file path
+            return Paths.get("profileImage", "userImg", filename).toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

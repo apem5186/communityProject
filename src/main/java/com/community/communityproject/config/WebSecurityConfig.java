@@ -46,7 +46,7 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
-                "/css/**", "/js/**", "/img/**", "/signup/checkUsername")
+                "/css/**", "/js/**", "/img/**", "/signup/checkUsername", "/profileImage/**")
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
     }
     @Bean

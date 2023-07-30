@@ -129,7 +129,7 @@ public class UserController {
         }
 
         try {
-            userService.signup(usersSignupDTO.getUsername(), usersSignupDTO.getEmail(), usersSignupDTO.getPassword1());
+            userService.signup(usersSignupDTO);
         } catch (DataIntegrityViolationException e) {
             e.printStackTrace();
             bindingResult.reject("signupFailed", "이미 등록된 사용자입니다.");

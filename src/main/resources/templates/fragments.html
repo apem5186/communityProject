@@ -51,7 +51,9 @@
             <i class="fas fa-bell"></i>3</span>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" th:href="@{/profile}">Profile</a>
+            <button class="nav-item bg-transparent" style="padding:0; border: none;">
+              <img src="path_to_default_image" th:src="@{'/' + ${profileImage.filePath}}" alt="Profile Image" style="width:40px;height:40px;border-radius:50%;">
+            </button>
           </li>
           <li class="nav-item">
             <form th:action="@{/logout}" method="post">

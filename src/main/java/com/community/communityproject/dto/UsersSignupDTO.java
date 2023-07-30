@@ -1,10 +1,12 @@
 package com.community.communityproject.dto;
 
+import com.community.communityproject.entitiy.users.ProfileImage;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -25,4 +27,6 @@ public class UsersSignupDTO {
     private String email;
 
     private boolean usernameChecked;
+
+    private MultipartFile profileImage;
 }

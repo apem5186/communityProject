@@ -12,7 +12,14 @@
         <a class="navbar-brand mr-0" href="#" th:href="@{/}">My App</a>
       </nav>
       <h2 class="text-center my-4">Registration</h2>
-      <form th:action="@{/signup}" th:object="${usersSignupDTO}" method="post">
+      <form th:action="@{/signup}" th:object="${usersSignupDTO}" method="post" enctype="multipart/form-data">
+        <div>
+          <img src="/profileImage/default/profile_default.jpg" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
+               alt="Profile Image"/>
+          <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
+          <br>
+          <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
+        </div>
         <div class="form-group">
           <label for="username-input"><b>Username</b></label>
           <input id="username-input" type="text" th:field="*{username}" placeholder="Enter Username" required class="form-control">
@@ -88,6 +95,20 @@
         });
     }
 
+  });
+
+  // When the profile image preview is clicked, trigger the file input click event
+  document.getElementById("profile-image-preview").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+  });
+
+  // When a file is selected, display it in the profile image preview
+  document.getElementById("profile-image").addEventListener("change", function(e) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("profile-image-preview").src = e.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
   });
 </script>
 

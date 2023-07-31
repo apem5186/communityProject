@@ -26,7 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,6 +56,9 @@ public class UserService {
     private int ATCOOKIE_EXPIRATION;
 
     private final String SERVER = "Server";
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
     @Autowired
     public void setCookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int cookieExpiration) {
@@ -87,6 +91,13 @@ public class UserService {
             fileSize = 8636L;
         } else {
             filePath = saveProfileImage(multipartFile); // 파일 저장하는 부분
+            log.info("==========================");
+            log.info("==========================");
+            log.info("==========================");
+            log.info(filePath);
+            log.info("==========================");
+            log.info("==========================");
+            log.info("==========================");
         }
         log.info("========================");
         log.info("========================");
@@ -309,49 +320,106 @@ public class UserService {
      * @param multipartFile
      * @return file path
      */
+//    private String saveProfileImage(MultipartFile multipartFile) {
+//        try {
+//            Path dir = Paths.get(uploadDir);
+//            log.info("UPLOADDIR : " + dir.toAbsolutePath());
+//            if (!Files.exists(dir)) {
+//                Files.createDirectories(dir);
+//            }
+//
+//            // 파일의 확장자 추출
+//            String originalFileExtension;
+//            String contentType = multipartFile.getContentType();
+//
+//            // 확장자명이 존재하지 않을 경우 처리 x
+//            if (ObjectUtils.isEmpty(contentType)) {
+//                log.error("The extension name does not exist.");
+//                log.error("File Name : " + multipartFile.getOriginalFilename());
+//                throw new RuntimeException("Invalid content type");
+//            } else {
+//                if (contentType. contains("image/jpeg"))
+//                    originalFileExtension = ".jpg";
+//                else if (contentType. contains("image/png"))
+//                    originalFileExtension = ".png";
+//                else {
+//                    log.error("Only extensions of jpg and png are allowed.");
+//                    log.error("File Name : " + multipartFile.getOriginalFilename());
+//                    throw new RuntimeException("Invalid content type");
+//                }
+//            }
+//
+//            String filename = "profileImage_" + System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
+//
+//            // Build the file path
+//            Path filePath = dir.resolve(filename);
+//
+//            try {
+//                log.info("FILE PATH : " + filePath);
+//                // Write the file to the filesystem
+//                // 저장할 땐 절대경로
+//                Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+//                log.info("File exists? : " + Files.exists(filePath));
+//            } catch (IOException e) {
+//                throw new RuntimeException("Could not store file : " + multipartFile.getOriginalFilename());
+//            }
+//
+//
+//            // Return the file path
+//            // 리턴값은 절대경로 주면 안됨
+//            return Paths.get("profileImage", "userImg", filename).toString();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
     private String saveProfileImage(MultipartFile multipartFile) {
-        try {
-            Path uploadDir = Paths.get("profileImage", "userImg");
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
+        String originalFileExtension;
+        String contentType = multipartFile.getContentType();
 
-            // 파일의 확장자 추출
-            String originalFileExtension;
-            String contentType = multipartFile.getContentType();
-
-            // 확장자명이 존재하지 않을 경우 처리 x
-            if (ObjectUtils.isEmpty(contentType)) {
-                log.error("The extension name does not exist.");
+        if (ObjectUtils.isEmpty(contentType)) {
+            log.error("The extension name does not exist.");
+            log.error("File Name : " + multipartFile.getOriginalFilename());
+            throw new RuntimeException("Invalid content type");
+        } else {
+            if (contentType.contains("image/jpeg"))
+                originalFileExtension = ".jpg";
+            else if (contentType.contains("image/png"))
+                originalFileExtension = ".png";
+            else {
+                log.error("Only extensions of jpg and png are allowed.");
                 log.error("File Name : " + multipartFile.getOriginalFilename());
                 throw new RuntimeException("Invalid content type");
-            } else {
-                if (contentType. contains("image/jpeg"))
-                    originalFileExtension = ".jpg";
-                else if (contentType. contains("image/png"))
-                    originalFileExtension = ".png";
-                else {
-                    log.error("Only extensions of jpg and png are allowed.");
-                    log.error("File Name : " + multipartFile.getOriginalFilename());
-                    throw new RuntimeException("Invalid content type");
-                }
             }
-
-            String filename = System.currentTimeMillis() + "_profileImage_" + multipartFile.getOriginalFilename();
-
-            // Build the file path
-            Path filePath = uploadDir.resolve(filename);
-
-            // Write the file to the filesystem
-            Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-
-            // Return the file path
-            return Paths.get("profileImage", "userImg", filename).toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+
+        String filename = "profileImage_" + System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
+
+        File file = new File(dir + File.separator + filename);
+
+        try {
+            log.info("File PATH : " + file.getAbsolutePath());
+            multipartFile.transferTo(file);
+            log.info("File exists? : " + file.exists());
+        } catch (IOException e) {
+            log.error("ERROR : " + e);
+            throw new RuntimeException("Could not store file : " + multipartFile.getOriginalFilename());
+        }
+
+        return Paths.get("profileImage", "userImg", filename).toString();
+    }
+
+    public String findImage(String email) {
+        Users users = userRepository.findByEmail(email).orElseThrow();
+
+        ProfileImage profileImage = profileImageRepository.findByUsers(users);
+
+        return profileImage.getFilePath();
     }
 
 }

@@ -8,6 +8,7 @@ build/
 *.yml
 **/resources/data.sql
 **/resources/TODOLIST.text
+**/resources/static/profileImage/userImg/**
 
 ### STS ###
 .apt_generated

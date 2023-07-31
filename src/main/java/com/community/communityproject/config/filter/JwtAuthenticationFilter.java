@@ -36,6 +36,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
     private final UserSecurityService userSecurityService;
+
+    // profileImage 루트 필터검사 안함
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        if (path.startsWith("/profileImage/")) {
+            return true;
+        }
+        return super.shouldNotFilter(request);
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUrl = request.getRequestURI();

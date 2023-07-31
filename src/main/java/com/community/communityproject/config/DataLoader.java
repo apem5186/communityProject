@@ -31,6 +31,9 @@ public class DataLoader implements CommandLineRunner {
         long fileSize = 8636L;
         String originName = "profile_default.jpg";
 
+        String filePath2 = Paths.get("profileImage", "userImg", "profileImage_attach.jpg").toString();
+        long fileSize2 = 14577L;
+        String originName2 = "profileImage_attach.jpg";
 
 
         Users users = new Users();
@@ -66,5 +69,28 @@ public class DataLoader implements CommandLineRunner {
 
         userRepository.save(users2);
         profileImageRepository.save(profileImage2);
+
+        Users users3 = new Users();
+        users3.setEmail("user03@email.com");
+        users3.setUsername("user03");
+        users3.setPassword(passwordEncoder.encode("3333"));
+        users3.setLogin(false);
+        users3.setUserRole(UserRole.USER);
+
+        ProfileImage profileImage3 = ProfileImage.builder()
+                .originName(originName2)
+                .filePath(filePath2)
+                .fileSize(fileSize2)
+                .users(users3)
+                .build();
+        log.info("************************************");
+        log.info("************************************");
+        log.info("************************************");
+        log.info(filePath2);
+        log.info("************************************");
+        log.info("************************************");
+        log.info("************************************");
+        userRepository.save(users3);
+        profileImageRepository.save(profileImage3);
     }
 }

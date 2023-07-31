@@ -26,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.AntPathMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -43,12 +44,12 @@ public class WebSecurityConfig {
     private final UserSecurityService userSecurityService;
 
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
-                "/css/**", "/js/**", "/img/**", "/signup/checkUsername", "/profileImage/**")
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
+//                "/css/**", "/js/**", "/img/**", "/signup/checkUsername")
+//                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
+//    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -67,13 +68,19 @@ public class WebSecurityConfig {
                                 .requestMatchers("/signup/checkUsername").permitAll()
                                 .requestMatchers("/h2-console").permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/profileImage/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/profileImage/userImg/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/img/**")).permitAll()
                                 .anyRequest().authenticated()
                                 )
                 // 예외 처리
-                .exceptionHandling((exceptionHandling) ->
-                        exceptionHandling
-                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인가 실패
-                                .accessDeniedHandler(jwtAccessDeniedHandler))   // 인증 실패
+//                .exceptionHandling((exceptionHandling) ->
+//                        exceptionHandling
+//                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인가 실패
+//                                .accessDeniedHandler(jwtAccessDeniedHandler))   // 인증 실패
                 .headers((headers) ->
                         headers
                                 .addHeaderWriter(new XFrameOptionsHeaderWriter(

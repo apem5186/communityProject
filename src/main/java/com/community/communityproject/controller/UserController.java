@@ -155,9 +155,9 @@ public class UserController {
 
     @GetMapping("/profile")
     public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication) {
-        ProfileImage profileImage = userService.getProfileImage(authentication.getName());
+        String profileUrl = userService.findImage(authentication.getName());
         model.addAttribute("user", userService.loadUser(authentication.getName()));
-        model.addAttribute("profileImage", profileImage);
+        model.addAttribute("profileImage", profileUrl);
         if ("true".equals(editMode)) {
             model.addAttribute("editingEnabled", true);
         } else {
@@ -174,7 +174,7 @@ public class UserController {
     }
 
     @PostMapping("/profile")
-    public String editProfile(@ModelAttribute @Valid UsersEditDTO usersEditDTO, BindingResult bindingResult,
+    public String editProfile(@Valid UsersEditDTO usersEditDTO, BindingResult bindingResult,
                               HttpServletRequest request, HttpServletResponse response,
                               RedirectAttributes redirectAttributes) {
 
@@ -195,7 +195,6 @@ public class UserController {
 
         // 중복 체크
         String dupleCheck = userService.editUserCheck(usersEditDTO, beforeUserEmail);
-        log.info("PROFILE CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
         log.info("DUPLE CHECK : " + dupleCheck);
         if (dupleCheck.equals("usernameError")) {
             redirectAttributes.addAttribute("edit", "true");
@@ -210,6 +209,7 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             // Add the "edit=true" parameter to the redirect URL
             log.info("SOMETHING IS WRONG");
+            log.error("ERROR : " + bindingResult.getFieldError());
             return "redirect:" + redirectUrl;
         }
 

@@ -15,9 +15,9 @@
       <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
       <div th:if="${editingEnabled}">
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
-        <form th:action="@{/profile}" th:object="${usersEditDTO}" method="post">
+        <form th:action="@{/profile}" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
           <div>
-            <img src="" th:src="@{'/' + ${profileImage.filePath}}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
+            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
                  alt="Profile Image"/>
             <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
             <br>
@@ -49,7 +49,7 @@
 
       <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
       <div th:unless="${editingEnabled}">
-        <img src="" th:src="@{'/' + ${profileImage.filePath}}" style="width: 100px; height: 100px;"
+        <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;"
              alt="Profile Image"/>
         <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
         <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>

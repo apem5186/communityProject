@@ -65,7 +65,8 @@ public class AmazonS3ResourceStorage {
             // s3에 저장
             amazonS3Client.putObject(new PutObjectRequest(bucket, fullPath, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
-            log.info("aws s3 file path : " + amazonS3Client.getUrl(bucket, filename));
+            log.info("aws s3 file path : " + amazonS3Client.getUrl(bucket, filename
+                    .substring(filename.indexOf("/") + 1)));
             return bucket + "/" + fullPath;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -31,7 +31,7 @@ public class Users extends BaseEntity {
     @Column
     private boolean isLogin = false;
 
-    @OneToOne(mappedBy = "users", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ProfileImage profileImage;
 
     public Users(Long id, String username, String password, String email,

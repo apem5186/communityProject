@@ -32,10 +32,12 @@ public class MainController {
     public String root(HttpServletResponse response, Model model,
                        @CookieValue(value = "access-token", required = false) String accessToken) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String filePath = userService.findImage(authentication.getName());
-        model.addAttribute("profileImage", filePath);
-        log.info("MAIN PAGE ACCESSTOKEN : " + accessToken);
-        model.addAttribute("accessToken", accessToken);
+        if (authentication.isAuthenticated()) {
+            String filePath = userService.findImage(authentication.getName());
+            model.addAttribute("profileImage", filePath);
+            log.info("MAIN PAGE ACCESSTOKEN : " + accessToken);
+            model.addAttribute("accessToken", accessToken);
+        }
         return "main";
     }
 }

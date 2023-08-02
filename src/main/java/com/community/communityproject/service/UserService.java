@@ -1,5 +1,6 @@
 package com.community.communityproject.service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.UsersEditDTO;
@@ -55,10 +56,15 @@ public class UserService {
 
     private final AmazonS3ResourceStorage amazonS3ResourceStorage;
 
+    private final AmazonS3Client amazonS3Client;
+
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
 
     private final String SERVER = "Server";
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     private final String PROFILE_PATH = "profileImage/userImg/";
 
@@ -241,7 +247,6 @@ public class UserService {
         }
         String email = null;
 
-
         // authService.validate가 true를 반환하면 at 만료일자 초과로 재발급
         if (authService.validate(at)) {
             TokenDTO tokenDTO = authService.reissue(at, rt);
@@ -280,12 +285,23 @@ public class UserService {
         refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
 
+        ProfileImage profileImage = profileImageRepository.findByUsers(users);
+        String path = profileImage.getFilePath();
+        String filename = path.substring(path.indexOf("/") + 1);
+
         authService.logout(at, "delete");
         userRepository.delete(users);
+        // 프로필 사진 삭제
+        amazonS3Client.deleteObject(bucket, filename);
 
         return "ok";
     }
 
+    /**
+     * 프로필 이미지 수정 할 때 씀
+     * @param email
+     * @return profileImage
+     */
     public ProfileImage getProfileImage(String email) {
         Users users = userRepository.findByEmail(email).orElseThrow();
         return profileImageRepository.findByUsers(users);
@@ -301,16 +317,32 @@ public class UserService {
         String originName = multipartFile.getOriginalFilename();
         String filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
         long fileSize = multipartFile.getSize();
-
+        ProfileImage profileImage = getProfileImage(email);
+        // 현재 filePath 가져오기
+        String path = profileImage.getFilePath();
+        // 맨 첫번째 "/" 이후의 문자열
+        String filename = path.substring(path.indexOf("/") + 1);
         if(originName.equals("profile_default.jpg") || originName.isEmpty()) {
+            // 만약 디폴트 이미지 말고 다른 이미지가 존재하면
+            if (amazonS3Client.doesObjectExist(bucket, filename)) {
+                // s3에서 기존 이미지 삭제
+                amazonS3Client.deleteObject(bucket, filename);
+                profileImage.setOriginName("profile_default.jpg");
+                profileImage.setFilePath("profileImage\\default\\profile_default.jpg");
+                profileImage.setFileSize(8636L);
+                // db에 기본 이미지로 저장
+                profileImageRepository.save(profileImage);
+            }
             // 이미 기본 이미지거나 프로필 사진을 취소했으면 그냥 경로 리턴
             return filePath;
         } else {
-            filePath = saveProfileImage(multipartFile); // 파일 저장하는 부분
+            // 일단 저장
+            filePath = amazonS3ResourceStorage.store(PROFILE_PATH, multipartFile);
+            // 저장했으면 이전 이미지 삭제
+            amazonS3Client.deleteObject(bucket, filename);
         }
 
         // 프로필 이미지 수정
-        ProfileImage profileImage = getProfileImage(email);
         profileImage.setOriginName(originName);
         profileImage.setFilePath(filePath);
         profileImage.setFileSize(fileSize);
@@ -419,12 +451,26 @@ public class UserService {
         return Paths.get("profileImage", "userImg", filename).toString();
     }
 
+    /**
+     * 프로필 이미지 가져올 때 사용
+     * 기본 프로필이면 로컬에 있는 이미지
+     * 아니면 s3에 있는 이미지 가져옴
+     * @param email
+     * @return profileImage.getFilePath() or amazonS3Client.getUrl().toString()
+     */
     public String findImage(String email) {
         Users users = userRepository.findByEmail(email).orElseThrow();
 
         ProfileImage profileImage = profileImageRepository.findByUsers(users);
-
-        return profileImage.getFilePath();
+        // 기본 프로필이면 로컬에 있는 디폴트 프로필 url 반환
+        if (profileImage.getOriginName().equals("profile_default.jpg")) {
+            return profileImage.getFilePath();
+        }
+        String path = profileImage.getFilePath();
+        // 맨 첫번째 "/" 이후의 문자열
+        String filename = path.substring(path.indexOf("/") + 1);
+        // s3에 있는 이미지 가져옴
+        return amazonS3Client.getUrl(bucket, filename).toString();
     }
 
 }

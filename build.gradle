@@ -30,6 +30,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.projectlombok:lombok:1.18.20'
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
     // jwt
@@ -37,6 +40,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.0.4'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.1'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.1'
+    // aws
+    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-aws
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.6.RELEASE'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

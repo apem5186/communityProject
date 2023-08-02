@@ -1,5 +1,6 @@
 package com.community.communityproject.service;
 
+import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.UsersEditDTO;
 import com.community.communityproject.dto.UsersInfo;
@@ -52,10 +53,14 @@ public class UserService {
 
     private final RedisService redisService;
 
+    private final AmazonS3ResourceStorage amazonS3ResourceStorage;
+
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
 
     private final String SERVER = "Server";
+
+    private final String PROFILE_PATH = "profileImage/userImg/";
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -78,19 +83,19 @@ public class UserService {
         users.setEmail(usersSignupDTO.getEmail());
         users.setPassword(passwordEncoder.encode(usersSignupDTO.getPassword1()));
         users.setUserRole(UserRole.USER);
-
         MultipartFile multipartFile = usersSignupDTO.getProfileImage();
         String originName = multipartFile.getOriginalFilename();
         String filePath;
         long fileSize = multipartFile.getSize();
 
         // 기본 프로필
-        if(originName.equals("profile_default.jpg") || originName.isEmpty()) {
+        if(originName.isEmpty() || originName.equals("profile_default.jpg")) {
             originName = "profile_default.jpg";
             filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
             fileSize = 8636L;
         } else {
-            filePath = saveProfileImage(multipartFile); // 파일 저장하는 부분
+            // s3에 파일 저장
+            filePath = amazonS3ResourceStorage.store(PROFILE_PATH, multipartFile);
             log.info("==========================");
             log.info("==========================");
             log.info("==========================");

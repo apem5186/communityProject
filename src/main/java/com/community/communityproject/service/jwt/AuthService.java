@@ -5,9 +5,14 @@ import com.community.communityproject.dto.UsersLoginDTO;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.redis.RedisService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -34,6 +39,17 @@ public class AuthService {
 
     private final String SERVER = "Server";
 
+    private int RTCOOKIE_EXPIRATION;
+    private int ATCOOKIE_EXPIRATION;
+
+    @Autowired
+    public void setRtcookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int rtCookieExpiration) {
+        this.RTCOOKIE_EXPIRATION = rtCookieExpiration;
+    }
+    @Autowired
+    public void setATCOOKIE_EXPIRATION(@Value("${jwt.access-token-validity-in-seconds}") int atCookieExpiration) {
+        this.ATCOOKIE_EXPIRATION = atCookieExpiration;
+    }
     public TokenDTO login(UsersLoginDTO usersLoginDTO) {
         Optional<Users> users = userRepository.findByEmail(usersLoginDTO.getEmail());
         if (users.isEmpty()) {
@@ -166,6 +182,72 @@ public class AuthService {
         if (authentication != null) {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    /**
+     * 토큰 검증 rt에 문제 있으면 null
+     * @param response
+     * @param request
+     * @return tokenDTO or null
+     */
+    public TokenDTO validateToken(HttpServletResponse response, HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        String at = null;
+        String rt = null;
+        for (Cookie c : cookies) {
+            if (c.getName().equals("refresh-token"))
+                rt = c.getValue();
+            else if (c.getName().equals("access-token"))
+                at = c.getValue();
+        }
+        TokenDTO tokenDTO = new TokenDTO(at, rt);
+        boolean atCheck = validate(at); // true 면 유효기간 초과한거임
+        boolean rtCheck = tokenProvider.validateRefreshToken(rt); // false면 뭔가 이상한거
+        // at 유효기간 초과이고 rt가 true이면
+        if (atCheck && rtCheck) {
+            // 토큰 재발행
+            tokenDTO = reissue(tokenDTO.getAccessToken(),
+                    tokenDTO.getRefreshToken());
+            // 다시 집어넣기
+            at = tokenDTO.getAccessToken();
+            rt = tokenDTO.getRefreshToken();
+            // 쿠키랑 헤더 재설정
+            setCookie(response, at, rt);
+            log.info("AT EXPIRED, REISSUE");
+            log.info("AT : " + at);
+            log.info("RT : " + rt);
+            return tokenDTO;
+        } else if (!atCheck && rtCheck) {   // at ok rt ok
+            return tokenDTO;
+        } else {    // 나머지 경우는 rt가 false인 경우이니 null return
+            return null;
+        }
+    }
+
+    /**
+     * cookie와 response header에 토큰을 설정함
+     * @param response
+     * @param at
+     * @param rt
+     */
+    public void setCookie(HttpServletResponse response,
+                                    String at, String rt) {
+        // RT 저장
+        Cookie rtCookie = new Cookie("refresh-token", rt);
+        rtCookie.setMaxAge(RTCOOKIE_EXPIRATION);
+        rtCookie.setHttpOnly(true);
+        rtCookie.setSecure(true);
+        response.addCookie(rtCookie);
+
+        // AT 저장
+        Cookie atCookie = new Cookie("access-token", at);
+        atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
+        atCookie.setHttpOnly(true);
+        atCookie.setSecure(true);
+        response.addCookie(atCookie);
+
+        response.setHeader("Authorization", "Bearer " + at);
+
     }
 
 }

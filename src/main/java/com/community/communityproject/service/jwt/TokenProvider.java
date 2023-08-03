@@ -2,14 +2,13 @@ package com.community.communityproject.service.jwt;
 
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.entitiy.users.UserDetailsImpl;
-import com.community.communityproject.service.UserSecurityService;
+import com.community.communityproject.service.users.UserSecurityService;
 import com.community.communityproject.service.redis.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;

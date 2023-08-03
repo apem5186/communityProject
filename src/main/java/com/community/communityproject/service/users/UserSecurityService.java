@@ -1,4 +1,4 @@
-package com.community.communityproject.service;
+package com.community.communityproject.service.users;
 
 import com.community.communityproject.entitiy.users.UserDetailsImpl;
 import com.community.communityproject.entitiy.users.Users;

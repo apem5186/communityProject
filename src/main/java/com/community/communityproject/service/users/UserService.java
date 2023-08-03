@@ -1,4 +1,4 @@
-package com.community.communityproject.service;
+package com.community.communityproject.service.users;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
@@ -29,11 +29,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 @Slf4j
 @Service
@@ -162,44 +158,11 @@ public class UserService {
     public void editUser(UsersEditDTO usersEditDTO, String beforeEmail, HttpServletRequest request,
                          HttpServletResponse response) {
 
-        Cookie[] cookies = request.getCookies();
-        String at = null;
-        String rt = null;
-        for (Cookie c : cookies) {
-            if (c.getName().equals("refresh-token"))
-                rt = c.getValue();
-            else if (c.getName().equals("access-token"))
-                at = c.getValue();
-        }
-        boolean atCheck = authService.validate(at); // true 면 유효기간 초과한거임
-        if (atCheck) {
-            // 토큰 재발행
-            TokenDTO tokenDTO = authService.reissue(at, rt);
 
-            // RT 저장
-            Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
-            cookie.setMaxAge(RTCOOKIE_EXPIRATION);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            response.addCookie(cookie);
-
-            // AT 저장
-            Cookie atCookie = new Cookie("access-token", tokenDTO.getAccessToken());
-            atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
-            atCookie.setHttpOnly(true);
-            atCookie.setSecure(true);
-            response.addCookie(atCookie);
-
-            response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
-            // 다시 집어넣기
-            at = tokenDTO.getAccessToken();
-            rt = tokenDTO.getRefreshToken();
-        }
-        boolean rtCheck = tokenProvider.validateRefreshToken(rt); // false면 뭔가 이상한거
         log.info("PROFILE NAME CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
-        if (!atCheck && rtCheck) {
-            log.info("EDIT USER INFO START AT : " + at);
-            log.info("RT : " + rt);
+        // 토큰 검증
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (!tokenDTO.isEmpty()) {
             Users users = userRepository.findByEmail(beforeEmail).orElseThrow();
             users.setEmail(usersEditDTO.getEmail());
             users.setUsername(usersEditDTO.getUsername());
@@ -211,25 +174,11 @@ public class UserService {
             MultipartFile multipartFile = usersEditDTO.getProfileImage();
             String filePath = editProfileImage(multipartFile, usersEditDTO.getEmail());
             log.info("EDIT PROFILE IMAGE SUCCESS FILE PATH : " + filePath);
-
             // 토큰 재발행
-            TokenDTO tokenDTO = authService.reissue(at, rt);
-
-            // RT 저장
-            Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
-            cookie.setMaxAge(RTCOOKIE_EXPIRATION);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            response.addCookie(cookie);
-
-            // AT 저장
-            Cookie atCookie = new Cookie("access-token", tokenDTO.getAccessToken());
-            atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
-            atCookie.setHttpOnly(true);
-            atCookie.setSecure(true);
-            response.addCookie(atCookie);
-
-            response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
+            tokenDTO = authService.reissue(tokenDTO.getAccessToken(),
+                    tokenDTO.getRefreshToken());
+            // 토큰 재발급 후 쿠키랑 헤더에 저장
+            authService.setCookie(response, tokenDTO.getAccessToken(), tokenDTO.getRefreshToken());
         }
     }
 

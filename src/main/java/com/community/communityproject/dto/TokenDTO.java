@@ -15,4 +15,9 @@ public class TokenDTO {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
+
+    // 둘 다 있으면 false 반환
+    public boolean isEmpty() {
+        return accessToken.isEmpty() || refreshToken.isEmpty();
+    }
 }

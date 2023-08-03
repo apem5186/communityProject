@@ -1,29 +1,22 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.*;
-import com.community.communityproject.entitiy.users.ProfileImage;
-import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.UserRepository;
-import com.community.communityproject.service.UserSecurityService;
-import com.community.communityproject.service.UserService;
+import com.community.communityproject.service.users.UserSecurityService;
+import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.jwt.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -81,22 +74,9 @@ public class UserController {
             bindingResult.rejectValue("Not found User", "usersLoginDTO", "Email 혹은 Password가 일치하지 않습니다.");
             return "login";
         }
-
-        // RT 저장
-        Cookie cookie = new Cookie("refresh-token", tokenDTO.getRefreshToken());
-        cookie.setMaxAge(RTCOOKIE_EXPIRATION);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        response.addCookie(cookie);
-
-        // AT 저장
-        Cookie atCookie = new Cookie("access-token", tokenDTO.getAccessToken());
-        atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
-        atCookie.setHttpOnly(true);
-        atCookie.setSecure(true);
-        response.addCookie(atCookie);
-
-        response.setHeader("Authorization", "Bearer " + tokenDTO.getAccessToken());
+        // 쿠키랑 헤더 설정
+        authService.setCookie(response, tokenDTO.getAccessToken(),
+                tokenDTO.getRefreshToken());
 
         return "redirect:/";
     }

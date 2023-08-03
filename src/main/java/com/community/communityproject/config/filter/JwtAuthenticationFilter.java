@@ -1,8 +1,6 @@
 package com.community.communityproject.config.filter;
 
-import com.community.communityproject.entitiy.users.Users;
-import com.community.communityproject.repository.UserRepository;
-import com.community.communityproject.service.UserSecurityService;
+import com.community.communityproject.service.users.UserSecurityService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import io.jsonwebtoken.IncorrectClaimException;
 import jakarta.servlet.FilterChain;
@@ -21,10 +19,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.net.http.HttpHeaders;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
 
 /**
  * 출처 : https://velog.io/@u-nij/JWT-JWT-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0-3-JwtAuthenticationFilter-JwtAccessDeniedHandler-JwtAuthenticationEntryPoint

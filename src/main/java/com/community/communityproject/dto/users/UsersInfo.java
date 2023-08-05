@@ -1,4 +1,4 @@
-package com.community.communityproject.dto;
+package com.community.communityproject.dto.users;
 
 import com.community.communityproject.entitiy.users.UserRole;
 import lombok.Builder;

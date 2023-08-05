@@ -1,4 +1,4 @@
-package com.community.communityproject.dto;
+package com.community.communityproject.dto.users;
 
 import lombok.Getter;
 import lombok.Setter;

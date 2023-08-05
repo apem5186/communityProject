@@ -11,6 +11,12 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static com.community.communityproject.config.MultipartUtil.createPath;
 
 @Component
 @Slf4j
@@ -37,6 +43,23 @@ public class AmazonS3ResourceStorage {
                     filename = "profileImage_" + System.currentTimeMillis() +
                             "_" + multipartFile.getOriginalFilename();
                     fullPath = "image/" + fullPath + filename;
+                    file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
+                } else if (result.equals("boardImage")) {
+                    // 경로에서 category 추출
+                    String[] parts = fullPath.split("/");
+                    String category = parts[1];
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String today = sdf.format(new Date() + "/");
+
+                    Path folderPath = Path.of(createPath("images/" + fullPath, today));
+                    log.info("FOLDER PATH : " + folderPath);
+                    // 폴더 없으면 생성
+                    if (!Files.exists(folderPath)) {
+                        Files.createDirectories(folderPath);
+                    }
+                    // 여기 fullPath는 끝에 "/"이 없음
+                    filename = "/" + today + "boardImage_" + System.currentTimeMillis() +
+                            "_" + multipartFile.getOriginalFilename();
                     file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
                 } else {
                     throw new RuntimeException("올바르지 않은 경로입니다.");

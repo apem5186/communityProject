@@ -1,5 +1,6 @@
 package com.community.communityproject.controller;
 
+import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.service.board.BoardService;
@@ -27,7 +28,7 @@ public class BoardController {
     public String list(Model model, @PathVariable String path,
                        @RequestParam(value = "page", defaultValue = "1") int page,
                        @RequestParam(value = "kw", defaultValue = "") String kw) {
-        Page<Board> paging = this.boardService.getBoardList(page, kw, path);
+        Page<BoardListResponseDTO.BoardDTO> paging = this.boardService.getBoardListDTO(page, kw, path);
         model.addAttribute("category", path);
         model.addAttribute("paging", paging);
         model.addAttribute("kw", kw);

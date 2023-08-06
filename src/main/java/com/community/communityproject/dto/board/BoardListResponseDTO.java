@@ -2,50 +2,73 @@ package com.community.communityproject.dto.board;
 
 import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.entitiy.board.BoardImage;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.community.communityproject.entitiy.users.ProfileImage;
+import com.community.communityproject.entitiy.users.Users;
+import lombok.*;
+import org.springframework.data.domain.Page;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class BoardListResponseDTO {
 
-    private String title;
+    @Getter
+    @Setter
+    public class BoardDTO {
+        private String title;
+        private String content;
+        private int hits;
+        private int reviewCnt;
+        private int likeCnt;
+        private String category;
+        private List<String> imgPathList;
+        private UsersDTO users;
+        private ProfileImgDTO profilePath;
 
-    private String content;
-
-    private int hits;
-
-    private int reviewCnt;
-
-    private int likeCnt;
-
-    private String category;
-
-    private List<String> imgPathList;
-
-    private String username;
-
-    private String profileImgPath;
-
-    @Builder
-    public BoardListResponseDTO(Board board) {
-        List<BoardImage> boardImages = board.getBoardImages();
-//        boardImages.forEach(boardImage -> {
-//            imgPathList.add(boardImage.getFilePath());
-//        });
-        this.title = board.getTitle();
-        this.content = board.getContent();
-        this.hits = board.getHits();
-        this.reviewCnt = board.getReviewCnt();
-        this.likeCnt = board.getLikeCnt();
-        this.category = board.getCategory().toString();
-        this.imgPathList = boardImages.stream().map(BoardImage::getFilePath).collect(Collectors.toList());
-        this.username = board.getUsers().getUsername();
-        this.profileImgPath = board.getUsers().getProfileImage().getFilePath();
+        public BoardDTO(Board board) {
+            this.title = board.getTitle();
+            this.content = board.getContent();
+            this.hits = board.getHits();
+            this.reviewCnt = board.getReviewCnt();
+            this.likeCnt = board.getLikeCnt();
+            this.category = board.getCategory().toString();
+            this.imgPathList = new ArrayList<>();
+            for(BoardImage image : board.getBoardImages()) {
+                this.imgPathList.add(image.getFilePath());
+            }
+            this.users = new UsersDTO(board.getUsers());
+            this.profilePath = new ProfileImgDTO(board.getUsers().getProfileImage());
+        }
     }
+
+    @Getter
+    @Setter
+    public class UsersDTO{
+        private String username;
+        private String email;
+
+        public UsersDTO(Users users) {
+            this.username = users.getUsername();
+            this.email = users.getEmail();
+        }
+    }
+
+    @Getter
+    @Setter
+    public class ProfileImgDTO{
+        private String path;
+
+        public ProfileImgDTO(ProfileImage profileImage) {
+            this.path = profileImage.getFilePath();
+        }
+    }
+
+    public BoardDTO getBoardDTO(Board board) {
+        return new BoardDTO(board);
+    }
+
 }

@@ -7,6 +7,7 @@ import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.entitiy.board.BoardImage;
 import com.community.communityproject.entitiy.board.Category;
+import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.BoardImageRepository;
 import com.community.communityproject.repository.BoardRepository;
@@ -20,16 +21,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -50,18 +49,27 @@ public class BoardService {
 
     /**
      * keyword, category를 이용해 게시글을 리턴함
+     * BoardListResponseDTO를 사용
      * @param page
      * @param kw
      * @param category
-     * @return Page<Board> board
+     * @return boardDTO
      */
-    public Page<Board> getBoardList(int page, String kw, String category) {
+    public Page<BoardListResponseDTO.BoardDTO> getBoardListDTO(int page, String kw, String category) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("regDate"));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Specification<Board> spec = search(kw);
         spec = spec.and(category(category));
-        return this.boardRepository.findAll(spec, pageable);
+        Page<Board> boards =  boardRepository.findAll(spec, pageable);
+
+        // Convert each Board entity to BoardDTO
+        List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()
+                .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                .collect(Collectors.toList());
+
+        // Return a new PageImpl with the converted DTOs
+        return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
     }
 
     /**

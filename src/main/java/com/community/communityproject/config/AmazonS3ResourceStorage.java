@@ -29,6 +29,7 @@ public class AmazonS3ResourceStorage {
     private final AmazonS3Client amazonS3Client;
 
     public String store(String fullPath, MultipartFile multipartFile) {
+        String sp = File.separator;
         File file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
         String contentType = multipartFile.getContentType();
         String filename;
@@ -42,24 +43,29 @@ public class AmazonS3ResourceStorage {
                 if (result.equals("profileImage")) {
                     filename = "profileImage_" + System.currentTimeMillis() +
                             "_" + multipartFile.getOriginalFilename();
-                    fullPath = "image/" + fullPath + filename;
+                    fullPath = "image" + "/" + fullPath + filename;
                     file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
                 } else if (result.equals("boardImage")) {
                     // 경로에서 category 추출
                     String[] parts = fullPath.split("/");
                     String category = parts[1];
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String today = sdf.format(new Date() + "/");
+                    String today = sdf.format(new Date()) + "/";
 
-                    Path folderPath = Path.of(createPath("images/" + fullPath, today));
+                    Path folderPath = Path.of(createPath(fullPath, today));
+
                     log.info("FOLDER PATH : " + folderPath);
                     // 폴더 없으면 생성
-                    if (!Files.exists(folderPath)) {
-                        Files.createDirectories(folderPath);
+                    if (!Files.exists(Path.of(
+                            MultipartUtil.getLocalHomeDirectory() +"/"+ folderPath))) {
+                        Files.createDirectories(Path.of(
+                                MultipartUtil.getLocalHomeDirectory() +"/"+ folderPath));
+                        log.info("create folder");
                     }
-                    // 여기 fullPath는 끝에 "/"이 없음
-                    filename = "/" + today + "boardImage_" + System.currentTimeMillis() +
+                    filename = "boardImage_" + System.currentTimeMillis() +
                             "_" + multipartFile.getOriginalFilename();
+                    String path = folderPath.toString().replace('\\', '/');
+                    fullPath = path + "/" + filename;
                     file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
                 } else {
                     throw new RuntimeException("올바르지 않은 경로입니다.");
@@ -85,12 +91,12 @@ public class AmazonS3ResourceStorage {
             }
             // 로컬에 일단 저장
             multipartFile.transferTo(file);
+
             // s3에 저장
             amazonS3Client.putObject(new PutObjectRequest(bucket, fullPath, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
-            log.info("aws s3 file path : " + amazonS3Client.getUrl(bucket, filename
-                    .substring(filename.indexOf("/") + 1)));
-            return bucket + "/" + fullPath;
+            log.info("aws s3 file path : " + amazonS3Client.getUrl(bucket, fullPath));
+            return amazonS3Client.getUrl(bucket, fullPath).toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

@@ -1,5 +1,6 @@
 package com.community.communityproject.entitiy.board;
 
+import com.community.communityproject.entitiy.BaseEntity;
 import com.community.communityproject.entitiy.users.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Table
-public class Board {
+public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,14 +25,18 @@ public class Board {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    // columnDefinition = "TEXT"는 글자수를 제한 할 수 없을 때 사용
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    private Long hits;
+    @Column(columnDefinition = "integer default 0")
+    private int hits;
 
-    private Long reviewCnt;
+    @Column(columnDefinition = "integer default 0")
+    private int reviewCnt;
 
-    private Long likeCnt;
+    @Column(columnDefinition = "integer default 0")
+    private int likeCnt;
 
     @NotNull
     @Enumerated(EnumType.STRING)

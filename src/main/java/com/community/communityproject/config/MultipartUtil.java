@@ -8,7 +8,7 @@ import java.util.UUID;
  * 출처 : https://antdev.tistory.com/93
  */
 public class MultipartUtil {
-    private static final String BASE_DIR ="images";
+    private static final String BASE_DIR ="image";
 
 
     /**

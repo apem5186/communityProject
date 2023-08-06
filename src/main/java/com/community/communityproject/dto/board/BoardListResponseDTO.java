@@ -18,11 +18,11 @@ public class BoardListResponseDTO {
 
     private String content;
 
-    private Long hits;
+    private int hits;
 
-    private Long reviewCnt;
+    private int reviewCnt;
 
-    private Long likeCnt;
+    private int likeCnt;
 
     private String category;
 

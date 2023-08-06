@@ -5,6 +5,7 @@ import com.community.communityproject.service.jwt.TokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -22,10 +23,9 @@ public class MainController {
     @GetMapping("/")
     public String root(HttpServletResponse response, Model model,
                        @CookieValue(value = "access-token", required = false) String accessToken) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            String filePath = userService.findImage(authentication.getName());
-            model.addAttribute("profileImage", filePath);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
             log.info("MAIN PAGE ACCESSTOKEN : " + accessToken);
             model.addAttribute("accessToken", accessToken);
         }

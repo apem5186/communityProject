@@ -64,6 +64,8 @@ public class WebSecurityConfig {
                                 .requestMatchers("/signup").permitAll()
                                 .requestMatchers("/signup/checkUsername").permitAll()
                                 .requestMatchers("/h2-console").permitAll()
+                                .requestMatchers("/community", "/notice", "/knowledge", "/questions").permitAll()
+                                //.requestMatchers(new AntPathRequestMatcher("/community/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/profileImage/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/profileImage/userImg/**")).permitAll()

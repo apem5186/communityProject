@@ -65,6 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                log.info("정상 유저");
                 log.debug("Save authentication in SecurityContextHolder.");
             } else {
                 log.debug("Invalid or missing access token.");

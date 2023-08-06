@@ -1,12 +1,14 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.board.BoardRequestDTO;
+import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.service.board.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -21,8 +23,16 @@ public class BoardController {
 
     private final BoardService boardService;
 
-//    @GetMapping("/community")
-//    public List<>
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
+    public String list(Model model, @PathVariable String path,
+                       @RequestParam(value = "page", defaultValue = "1") int page,
+                       @RequestParam(value = "kw", defaultValue = "") String kw) {
+        Page<Board> paging = this.boardService.getBoardList(page, kw, path);
+        model.addAttribute("category", path);
+        model.addAttribute("paging", paging);
+        model.addAttribute("kw", kw);
+        return "board/" + path;
+    }
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/new")
     public String post(Model model,
@@ -44,8 +54,8 @@ public class BoardController {
             bindingResult.getAllErrors().forEach(error -> {
                 System.out.println(error.getDefaultMessage());
             });}
-            boardService.postBoard(response, request, boardRequestDTO);
-            return "redirect:/" + path;
+        boardService.postBoard(response, request, boardRequestDTO);
+        return "redirect:/" + path;
 
     }
 }

@@ -1,36 +1,55 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Community</title>
 <!--    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">-->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        div.flex.flex-row {
+            display: flex;
+        }
+
+        div.container {
+            font-weight: bold;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        a:hover {
+            color: cornflowerblue;
+        }
+
+        a.custom-username {
+            font-weight: normal;
+            color: gray;
+        }
+    </style>
 </head>
 <body>
 <div th:insert="~{fragments :: header}"></div>
-<div class="jumbotron jumbotron-fluid bg-gray-700 text-white">
-    <div class="container">
-        <h1 class="display-4">Community</h1>
+<div class="progress" style="height: inherit; width: 70%; border-radius: 10px; margin-top: 20px; margin-left: 10px;">
+    <div class="progress-bar color-gray progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="50" style="width: 100%; text-align: left">
+        <h1 class="display-5">Community</h1>
         <p class="lead">Join our community and share your thoughts.</p>
     </div>
 </div>
-<style>
-    div.flex.flex-row {
-        display: flex;
-    }
-</style>
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12 d-flex justify-content-between">
-            <a sec:authorize="isAuthenticated()" th:href="@{/community/new}" class="btn btn-primary">작성하기</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/community/new}" class="btn btn-primary" style="font-weight: bold;">작성하기</a>
             <!-- 인증 받지 않은 사용자라면 공간만 차지 -->
             <div sec:authorize="isAnonymous()" style="flex: 1"></div>
             <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
                     최신순
                 </button>
-                <div class="dropdown-menu" aria-labelledby="sortDropdown">
+                <div class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
                     <a class="dropdown-item" href="?sort=LATEST">최신순</a>
                     <a class="dropdown-item" href="?sort=VOTE_COUNT">추천순</a>
                     <a class="dropdown-item" href="?sort=COMMENT_COUNT">댓글순</a>
@@ -39,15 +58,15 @@
             </div>
         </div>
     </div>
-    <ul th:each="board : ${paging}" class="py-4">
+    <ul th:each="board : ${paging}" class="py-1 list-unstyled">
         <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
         <li class="flex flex-col border-top">
             <!-- 프로필 사진 및 사용자 이름 -->
             <div class="flex shrink-0 items-center gap-x-1">
-                <a th:href="@{'#'}">
+                <a th:href="@{'#'}" class="link-dark">
                     <img th:src="${board.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                 </a>
-                <a class="truncate pl-1 text-xs font-normal text-gray-700 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-200 sm:text-sm"
+                <a class="truncate pl-1 text-xs font-normal custom-username"
                    th:href="@{'#'}" th:text="${board.users.username}"></a>
             </div>
             <!-- 게시글 제목 -->
@@ -99,23 +118,80 @@
         </li>
     </ul>
 </div>
-    <!-- Pagination placeholder -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
+<!-- 페이징 처리 시작 -->
+<div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+                <span>처음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+                <span>이전</span>
+            </a>
+        </li>
+        <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+        <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+            <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+        </li>
+        <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <!-- 1부터 번호 생성, page에 값 넣음 -->
+        <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+            예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+        <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+        <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+            th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+            th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+            <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+        </li>
+        <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+            6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+        <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+        </li>
+        <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+                <span>다음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+                <span>마지막</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- 페이징 처리 끝 -->
+<!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
+<form th:action="@{/community}" method="get" id="searchForm">
+    <input type="hidden" id="kw" name="kw" th:value="${kw}">
+    <input type="hidden" id="page" name="page" th:value="${paging.number}">
+</form>
 <div th:insert="~{fragments :: footer}"></div>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js"></script>
+<script layout:fragment="script" type='text/javascript'>
 
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function(element) {
+        element.addEventListener('click', function() {
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('searchForm').submit();
+        });
+    });
+
+    const btn_search = document.getElementById("btn_search");
+    btn_search.addEventListener('click', function() {
+        document.getElementById('kw').value = document.getElementById('search_kw').value;
+        document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 0페이지부터 조회한다.
+        document.getElementById('searchForm').submit();
+    });
+</script>
 </body>
 </html>

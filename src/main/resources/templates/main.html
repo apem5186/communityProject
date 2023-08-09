@@ -3,18 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <div th:insert="~{fragments :: linkCSS}"></div>
+    <style>
+        div.flex.flex-row {
+            display: flex;
+        }
+        a.custom-link {
+            color: black;
+        }
+        a.custom-link:hover {
+            color: cornflowerblue;
+            text-decoration: none;
+        }
+
+        a.custom-username {
+            font-weight: normal;
+            color: gray;
+        }
+    </style>
 </head>
 <body>
 <div th:insert="~{fragments :: header}"></div>
 <h1>Welcome, <span th:text="${#authentication.getName()}"></span></h1>
+<div class="container mt-5 px-4">
+    <div class="container">
+        <div class="row">
+            <!-- Community -->
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <div class="p-3 me-2 fw-bold fs-5" onclick="location.href='/community';"
+                         style="cursor: pointer;">
+                        <!-- 여기에 Community의 내용을 추가하세요 -->
+                        Community
+                    </div>
+                </div>
+                <!-- community의 게시글 -->
+                <div th:insert="~{fragments :: community_main_post}"></div>
+            </div>
+            <div class="col-sm-1 mx-2"></div>
+            <!-- Questions -->
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <div class="p-3 me-2 fw-bold fs-5" onclick="location.href='/questions';"
+                         style="cursor: pointer;">
+                        <!-- 여기에 Questions의 내용을 추가하세요 -->
+                        Questions
+                    </div>
+                </div>
+                <!-- Questions의 게시글 -->
+                <div th:insert="~{fragments :: questions_main_post}"></div>
+            </div>
+        </div>
+    </div>
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            &lt;!&ndash; Community의 게시글 &ndash;&gt;-->
+<!--            <div th:insert="~{fragments :: community_main_post}"></div>-->
+<!--            <div class="col-sm-1"></div>-->
+<!--            &lt;!&ndash; Questions의 게시글 &ndash;&gt;-->
+<!--            <div th:insert="~{fragments :: questions_main_post}"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <div class="container">
+        <div class="row">
+            <!-- Notice -->
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <div class="p-3 me-2 fw-bold fs-5" onclick="location.href='/notice';"
+                         style="cursor: pointer;">
+                        <!-- 여기에 Notice의 내용을 추가하세요 -->
+                        Notice
+                    </div>
+                </div>
+                <!-- Notice의 게시글 -->
+                <div th:insert="~{fragments :: notice_main_post}"></div>
+            </div>
+            <div class="col-sm-1 mx-2"></div>
+            <!-- Knowledge -->
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <div class="p-3 me-2 fw-bold fs-5" onclick="location.href='/knowledge';"
+                         style="cursor: pointer;">
+                        <!-- 여기에 Knowledge의 내용을 추가하세요 -->
+                        Knowledge
+                    </div>
+                </div>
+                <!-- Knowledge의 게시글 -->
+                <div th:insert="~{fragments :: knowledge_main_post}"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
 <script th:inline="javascript">
     let accessToken = /*[[${accessToken}]]*/ '';
 
     console.log('Access Token : ', accessToken);
 </script>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

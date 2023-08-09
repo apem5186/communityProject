@@ -72,6 +72,19 @@ public class BoardService {
         return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
     }
 
+    public List<BoardListResponseDTO.BoardDTO> getBoardListDTO5(String category) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc("regDate"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(sorts));
+        Specification<Board> spec = category(category);
+        Page<Board> boards =  boardRepository.findAll(spec, pageable);
+
+        // Convert each Board entity to BoardDTO
+        return boards.getContent().stream()
+                .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                .collect(Collectors.toList());
+    }
+
     /**
      * 게시글 등록 부분
      * 토큰 검사 진행 후 이미지 없으면 게시글만 등록

@@ -19,6 +19,7 @@ public class BoardListResponseDTO {
     @Getter
     @Setter
     public class BoardDTO {
+        private Long bid;
         private String title;
         private String content;
         private int hits;
@@ -30,6 +31,7 @@ public class BoardListResponseDTO {
         private ProfileImgDTO profilePath;
 
         public BoardDTO(Board board) {
+            this.bid = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
             this.hits = board.getHits();

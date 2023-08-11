@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+    <style>
+        a.custom-hover {
+            font-weight: bold;
+            color: black;
+        }
+        a.custom-hover:hover {
+            color: cornflowerblue;
+        }
+
+        .text-container {
+            min-height: 100px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="d-flex justify-content-center">
+    <div class="w-75">
+        <div class="d-flex align-items-center mt-5">
+            <div class="flex-grow-1 border-top"></div>
+            <span class="px-3 bg-white" th:text="${board.getCategory()}"></span>
+            <div class="flex-grow-1 border-top"></div>
+        </div>
+        <div class="d-flex align-items-center flex-row">
+            <a href="#">
+                <img class="img-fluid rounded-full" th:src="@{'/' + ${board.getProfilePath().getPath()}}" alt="프로필 사진"
+                style="height: 40px; width: 40px">
+            </a>
+            <div class="ms-1 d-flex align-items-start flex-column">
+                <a class="ps-1 custom-hover text-decoration-none" href="#" th:text="${board.users.getUsername()}"></a>
+                <div class="flex items-center text-sm font-normal">
+                    <span>
+                        <!-- 조회수 -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 16px; height: 16px;" >
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span th:text="${board.hits}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <h1 class="fs-2 fw-bold my-4" th:text="${board.getTitle()}"></h1>
+
+        <div th:if="${#lists.size(board.getImgPathList) > 0}" id="carouselIndicators" class="carousel slide carousel-fade">
+            <div class="carousel-indicators" aria-hidden="true">
+                <button th:each="img, iterStat : ${board.getImgPathList}" type="button" style="filter: invert(1)" data-bs-target="#carouselIndicators" th:data-bs-slide-to="${iterStat.index}" th:class="${iterStat.first} ? 'active' : ''" aria-label="Slide + ${iterStat.count}"></button>
+            </div>
+            <div class="carousel-inner">
+                <div th:each="img, iterStat : ${board.getImgPathList}" th:class="${iterStat.first} ? 'carousel-item active d-flex justify-content-center' : 'carousel-item d-flex justify-content-center'">
+                    <div th:if="${#lists.size(board.getImgPathList) > 1}">
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" style="filter: invert(1)" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                    </div>
+                    <img th:src="@{${img}}" class="d-block mx-auto w-75 h-auto" style="width: 500px" alt="Image">
+                    <div th:if="${#lists.size(board.getImgPathList) > 1}">
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" style="filter: invert(1)" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+<!--            <div th:if="${#lists.size(board.getImgPathList) > 1}">-->
+<!--                <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">-->
+<!--                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
+<!--                    <span class="visually-hidden">Previous</span>-->
+<!--                </button>-->
+<!--                <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">-->
+<!--                    <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
+<!--                    <span class="visually-hidden">Next</span>-->
+<!--                </button>-->
+<!--            </div>-->
+        </div>
+
+        <div class="text-start fs-4 text-container" th:text="${board.getContent()}"></div>
+        <div class="border-top mt-4"></div>
+    </div>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    let errorMessage = /*[[${errorMessage}]]*/ 'default value';
+
+    if (errorMessage && errorMessage !== 'default value') {
+        alert(errorMessage);
+        window.location.href = '/boardDetail';
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

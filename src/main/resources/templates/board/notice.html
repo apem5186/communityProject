@@ -71,7 +71,7 @@
             <!-- 게시글 제목 -->
             <div class="my-2">
                 <a class="line-clamp-1 w-fit truncate whitespace-normal break-all text-sm font-semibold leading-6 text-gray-900 hover:text-blue-500 dark:text-gray-100 dark:hover:text-blue-200 sm:text-base"
-                   th:href="@{'#'}" th:text="${board.title}"></a>
+                   th:href="@{'/notice/' + ${board.bid}}" th:text="${board.title}"></a>
             </div>
             <div class="flex">
                 <div class="flex flex-row items-center justify-content-end gap-x-2 text-gray-700 dark:text-gray-300">
@@ -173,7 +173,16 @@
 </form>
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
-<script layout:fragment="script" type='text/javascript'>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+
+    /*<![CDATA[*/
+    let errorMessage = /*[[${errorMessage}]]*/ 'default value';
+
+    if (errorMessage && errorMessage !== 'default value') {
+        alert(errorMessage);
+        window.location.href = '/notice';
+    }
+    /*]]>*/
 
     const page_elements = document.getElementsByClassName("page-link");
     Array.from(page_elements).forEach(function(element) {

@@ -1,6 +1,7 @@
 package com.community.communityproject.service.board;
 
 import com.community.communityproject.config.AmazonS3ResourceStorage;
+import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
@@ -46,6 +47,20 @@ public class BoardService {
     private String bucket;
 
     private final String BOARD_PATH = "boardImage/";
+
+    /**
+     * 한 게시글의 데이터를 가져오기 위한 service
+     * @param bid
+     * @return BoardListResponseDTO.BoardDTO
+     */
+    @Transactional
+    public BoardListResponseDTO.BoardDTO getBoard(Long bid) {
+        Board board = boardRepository.getReferenceById(bid);
+        if (board.getContent().isEmpty()) {
+            throw new BoardNotFoundException();
+        }
+        return new BoardListResponseDTO().new BoardDTO(board);
+    }
 
     /**
      * keyword, category를 이용해 게시글을 리턴함

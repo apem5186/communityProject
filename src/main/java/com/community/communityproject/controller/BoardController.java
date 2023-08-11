@@ -35,6 +35,14 @@ public class BoardController {
         return "board/" + path;
     }
 
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/{bid}")
+    public String getBoard(Model model, @PathVariable String path,
+                           @PathVariable String bid) {
+        BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
+        model.addAttribute("board", boardDTO);
+        return "board/boardDetail";
+    }
+
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/new")
     public String post(Model model,
                        @PathVariable String path) {

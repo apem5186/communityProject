@@ -47,7 +47,7 @@
             </li>
             <li class="nav-item">
               <button class="nav-item bg-transparent" style="padding:0; border: none;" onclick="window.location.href='/profile'">
-                <img src="path_to_profile_image" th:src="${profileImage}" alt="Profile Image" style="width:40px;height:40px;border-radius:50%;">
+                <img src="path_to_profile_image" th:src="@{'/' + ${profileImage}}" alt="Profile Image" style="width:40px;height:40px;border-radius:50%;">
               </button>
             </li>
             <li class="nav-item">
@@ -176,7 +176,7 @@
         <div class="my-2 ps-2 mb-0 mt-0">
           <a class="text-decoration-none custom-link"
              style="font-weight: bold;"
-             th:href="@{'#'}" th:text="${boardC.title}"></a>
+             th:href="@{'/community/' + ${boardC.bid}}" th:text="${boardC.title}"></a>
         </div>
       </li>
     </ul>
@@ -263,7 +263,7 @@
         <div class="my-2 ps-2 mb-0 mt-0">
           <a class="text-decoration-none custom-link"
              style="font-weight: bold;"
-             th:href="@{'#'}" th:text="${boardQ.title}"></a>
+             th:href="@{'/questions/' + ${boardQ.bid}}" th:text="${boardQ.title}"></a>
         </div>
       </li>
     </ul>
@@ -350,7 +350,7 @@
         <div class="my-2 ps-2 mb-0 mt-0">
           <a class="text-decoration-none custom-link"
              style="font-weight: bold;"
-             th:href="@{'#'}" th:text="${boardN.title}"></a>
+             th:href="@{'/notice/' + ${boardN.bid}}" th:text="${boardN.title}"></a>
         </div>
       </li>
     </ul>
@@ -437,7 +437,7 @@
         <div class="my-2 ps-2 mb-0 mt-0">
           <a class="text-decoration-none custom-link"
              style="font-weight: bold;"
-             th:href="@{'#'}" th:text="${boardKN.title}"></a>
+             th:href="@{'/knowledge/' + ${boardKN.bid}}" th:text="${boardKN.title}"></a>
         </div>
       </li>
     </ul>

@@ -174,17 +174,6 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
-
-    /*<![CDATA[*/
-    let errorMessage = /*[[${errorMessage}]]*/ 'default value';
-
-    if (errorMessage && errorMessage !== 'default value') {
-        console.log(errorMessage);
-        alert(errorMessage);
-        window.location.href = '/community';
-    }
-    /*]]>*/
-
     const page_elements = document.getElementsByClassName("page-link");
     Array.from(page_elements).forEach(function(element) {
         element.addEventListener('click', function() {

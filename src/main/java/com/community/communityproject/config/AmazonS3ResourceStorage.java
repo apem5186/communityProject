@@ -11,10 +11,13 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import static com.community.communityproject.config.MultipartUtil.createPath;
 
@@ -41,8 +44,9 @@ public class AmazonS3ResourceStorage {
                 String result = fullPath.substring(0, index);
                 // 프로필 이미지일 경우
                 if (result.equals("profileImage")) {
+                    // s3에 한글 파일명 깨져서 UUID 돌림
                     filename = "profileImage_" + System.currentTimeMillis() +
-                            "_" + multipartFile.getOriginalFilename();
+                            "_" + UUID.randomUUID();
                     fullPath = "image" + "/" + fullPath + filename;
                     file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
                 } else if (result.equals("boardImage")) {
@@ -62,8 +66,9 @@ public class AmazonS3ResourceStorage {
                                 MultipartUtil.getLocalHomeDirectory() +"/"+ folderPath));
                         log.info("create folder");
                     }
+                    // s3에 한글 파일명 잘 안올라가서 그냥 랜덤 돌림
                     filename = "boardImage_" + System.currentTimeMillis() +
-                            "_" + multipartFile.getOriginalFilename();
+                            "_" + UUID.randomUUID();
                     String path = folderPath.toString().replace('\\', '/');
                     fullPath = path + "/" + filename;
                     file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
@@ -91,7 +96,6 @@ public class AmazonS3ResourceStorage {
             }
             // 로컬에 일단 저장
             multipartFile.transferTo(file);
-
             // s3에 저장
             amazonS3Client.putObject(new PutObjectRequest(bucket, fullPath, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead));

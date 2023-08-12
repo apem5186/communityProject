@@ -101,6 +101,19 @@ public class TokenProvider implements InitializingBean {
         }
     }
 
+    // == 토큰 헤더 추출 == //
+    public JwsHeader<?> getHeader(String token) {
+        try {
+            Jws<Claims> jws = Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token);
+
+            return (JwsHeader<?>) jws.getHeader();
+        } catch (ExpiredJwtException e) {
+            return (JwsHeader<?>) e.getHeader();
+        }
+    }
     public Authentication getAuthentication(String token) {
         String username = getClaims(token).get(EMAIL_KEY).toString();
         UserDetailsImpl userDetails = userSecurityService.loadUserByUsername(username);

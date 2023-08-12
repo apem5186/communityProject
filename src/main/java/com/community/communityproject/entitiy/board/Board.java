@@ -4,10 +4,7 @@ import com.community.communityproject.entitiy.BaseEntity;
 import com.community.communityproject.entitiy.users.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +44,12 @@ public class Board extends BaseEntity {
 
     @ManyToOne(targetEntity = Users.class)
     private Users users;
+
+    public void edit(String title, String content, String category) {
+        this.title = title;
+        this.content = content;
+        this.category = Category.valueOf(category);
+    }
 
     @Builder
     public Board (String title, String content, Category category, Users users) {

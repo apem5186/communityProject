@@ -1,5 +1,6 @@
 package com.community.communityproject.controller;
 
+import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.entitiy.board.Board;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -66,5 +68,30 @@ public class BoardController {
         boardService.postBoard(response, request, boardRequestDTO);
         return "redirect:/" + path;
 
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/edit/{bid}")
+    public String edit(Model model,
+                       @PathVariable String path,
+                       @PathVariable String bid) {
+        BoardEditRequestDTO boardEditRequestDTO = boardService.setEditBoard(Long.valueOf(bid));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        boardEditRequestDTO.setEmail(email);
+        model.addAttribute("boardEditRequestDTO", boardEditRequestDTO);
+        model.addAttribute("category", path);
+        model.addAttribute("bid", bid);
+        return "/board/boardEdit";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{path:(?:community|notice|questions|knowledge)}/edit/{bid}")
+    public String edit(@PathVariable String path, @PathVariable String bid, Model model,
+                       BoardEditRequestDTO boardEditRequestDTO, HttpServletRequest request,
+                       HttpServletResponse response) {
+        boardService.editBoard(request, response, boardEditRequestDTO);
+        BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
+        model.addAttribute("board", boardDTO);
+        return String.format("redirect:/%s/%s", boardDTO.getCategory().toLowerCase(), bid);
     }
 }

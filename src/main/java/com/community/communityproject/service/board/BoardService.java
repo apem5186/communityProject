@@ -1,8 +1,11 @@
 package com.community.communityproject.service.board;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
+import com.community.communityproject.dto.board.BoardDTOInterface;
+import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.entitiy.board.Board;
@@ -14,8 +17,11 @@ import com.community.communityproject.repository.BoardImageRepository;
 import com.community.communityproject.repository.BoardRepository;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
+import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.users.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -28,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,7 +48,9 @@ public class BoardService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final AuthService authService;
+    private final TokenProvider tokenProvider;
     private final AmazonS3ResourceStorage amazonS3ResourceStorage;
+    private final AmazonS3Client amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -117,7 +126,6 @@ public class BoardService {
         log.info("BoardRequestDTO : " + boardRequestDTO.getTitle());
         log.info("content : " + boardRequestDTO.getContent());
         log.info("category : " + boardRequestDTO.getCategory());
-        log.info("");
         log.info("=============================================");
         log.info("=============================================");
         log.info("=============================================");
@@ -132,27 +140,100 @@ public class BoardService {
                     .build();
             // db에 이미지 넣을라면 게시글 정보 먼저 넣어야 함
             boardRepository.save(board);
-            List<MultipartFile> images = boardRequestDTO.getBoardImage();
-            if (images != null && !images.isEmpty() && !images.get(0).isEmpty()) {
-                List<MultipartFile> multipartFiles = boardRequestDTO.getBoardImage();
-                // ex) "boardImage/community"
-                String fullPath = BOARD_PATH + boardRequestDTO.getCategory();
-                for (MultipartFile multipartFile:
-                     multipartFiles) {
-                    String filePath = amazonS3ResourceStorage.store(fullPath, multipartFile);
-                    BoardImage boardImage = BoardImage.builder()
-                            .originFilename(multipartFile.getOriginalFilename())
-                            .filePath(filePath)
-                            .fileSize(multipartFile.getSize())
-                            .board(board)
-                            .build();
-
-                    boardImageRepository.save(boardImage);
-                }
-            }
+            postS3(boardRequestDTO, board);
         }
     }
 
+    public BoardEditRequestDTO setEditBoard(Long bid) {
+        Board board = boardRepository.getReferenceById(bid);
+        BoardEditRequestDTO boardEditRequestDTO = new BoardEditRequestDTO();
+        boardEditRequestDTO.setBid(bid);
+        boardEditRequestDTO.setTitle(board.getTitle());
+        boardEditRequestDTO.setCategory(board.getCategory().toString());
+        boardEditRequestDTO.setContent(board.getContent());
+        return boardEditRequestDTO;
+    }
+
+    /**
+     * board를 수정함 이미지가 있을때와 없을때로 구분
+     * @param request
+     * @param response
+     * @param boardEditRequestDTO
+     */
+    @Transactional
+    public void editBoard(HttpServletRequest request, HttpServletResponse response, BoardEditRequestDTO boardEditRequestDTO){
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            // 저장할 이미지가 있든 없든 일단 지움
+            ArrayList<BoardImage> boardImages = boardImageRepository.findBoardImageByBoardId(boardEditRequestDTO.getBid());
+            for (BoardImage boardImage :
+                    boardImages) {
+                String path = trimUrlToPath(boardImage.getFilePath());
+                if (amazonS3Client.doesObjectExist(bucket, path)) {
+                    amazonS3Client.deleteObject(bucket, path);
+                }
+                boardImageRepository.delete(boardImage);
+            }
+            // 저장할 이미지가 없다면 board만 수정
+            Board board = boardRepository.getReferenceById(boardEditRequestDTO.getBid());
+            board.edit(boardEditRequestDTO.getTitle(), boardEditRequestDTO.getContent(),
+                    boardEditRequestDTO.getCategory().toUpperCase());
+            boardRepository.save(board);
+            // 저장할 이미지가 있다면 s3에 올림
+            if (!boardEditRequestDTO.getBoardImage().isEmpty()) {
+                postS3(boardEditRequestDTO, board);
+            }
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
+
+    /**
+     * filePath를 bucket url을 짤라서 반환함
+     * @param fullUrl
+     * @return path
+     */
+    public String trimUrlToPath(String fullUrl) {
+        int imageIndex = fullUrl.indexOf("/image");
+
+        if(imageIndex != -1) {
+            return fullUrl.substring(imageIndex + 1);
+        }
+        return fullUrl; // "/image"가 없는 경우 원래 URL 반환
+    }
+
+    /**
+     * s3에 board 이미지를 업로드 editBoard와 postBoard에 쓰임
+     * @param dto
+     * @param board
+     */
+    public void postS3(BoardDTOInterface dto, Board board) {
+        List<MultipartFile> images = dto.getBoardImage();
+        if (images != null && !images.isEmpty() && !images.get(0).isEmpty()) {
+            List<MultipartFile> multipartFiles = dto.getBoardImage();
+            // ex) "boardImage/community"
+            String fullPath = BOARD_PATH + dto.getCategory();
+            for (MultipartFile multipartFile:
+                    multipartFiles) {
+                String filePath = amazonS3ResourceStorage.store(fullPath, multipartFile);
+                BoardImage boardImage = BoardImage.builder()
+                        .originFilename(multipartFile.getOriginalFilename())
+                        .filePath(filePath)
+                        .fileSize(multipartFile.getSize())
+                        .board(board)
+                        .build();
+
+                boardImageRepository.save(boardImage);
+            }
+        }
+    }
     private Specification<Board> category(String category) {
         return new Specification<Board>() {
             @Override

@@ -13,7 +13,10 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
-public class BoardRequestDTO implements BoardDTOInterface{
+public class BoardEditRequestDTO implements BoardDTOInterface{
+
+    @NotEmpty
+    private Long bid;
 
     @NotEmpty
     private String title;
@@ -29,4 +32,5 @@ public class BoardRequestDTO implements BoardDTOInterface{
     @NotEmpty
     @Email
     private String email;
+
 }

@@ -6,10 +6,14 @@
         window.onload = function() {
             let errorMessage = /*[[${errorMessage}]]*/ 'default value';
             let errorNumber = /*[[${errorNumber}]]*/ '0';
-            if (errorMessage && errorMessage !== 'default value') {
+            if (errorMessage && errorMessage !== 'default value' && errorNumber !== '4') {
                 console.log(errorMessage);
                 alert(errorMessage);
                 window.history.back();  // 브라우저의 뒤로 가기 기능을 트리거
+            } else if (errorNumber === '4') {
+                console.log(errorMessage);
+                alert(errorMessage);
+                window.location.href = '/login';
             }
         }
     </script>

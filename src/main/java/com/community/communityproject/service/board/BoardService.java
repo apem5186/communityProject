@@ -196,6 +196,38 @@ public class BoardService {
     }
 
     /**
+     * Board 삭제
+     * @param request
+     * @param response
+     * @param bid
+     */
+    @Transactional
+    public void deleteBoard(HttpServletRequest request, HttpServletResponse response, Long bid) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Board board = boardRepository.getReferenceById(bid);
+            // 일단 s3에 있는 이미지 지움
+            ArrayList<BoardImage> boardImages = boardImageRepository.findBoardImageByBoardId(bid);
+            for (BoardImage boardImage :
+                    boardImages) {
+                String path = trimUrlToPath(boardImage.getFilePath());
+                if (amazonS3Client.doesObjectExist(bucket, path))
+                    amazonS3Client.deleteObject(bucket, path);
+            }
+            boardRepository.delete(board);
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
+
+    /**
      * filePath를 bucket url을 짤라서 반환함
      * @param fullUrl
      * @return path

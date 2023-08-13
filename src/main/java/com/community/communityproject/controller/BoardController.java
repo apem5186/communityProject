@@ -94,4 +94,13 @@ public class BoardController {
         model.addAttribute("board", boardDTO);
         return String.format("redirect:/%s/%s", boardDTO.getCategory().toLowerCase(), bid);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{path:(?:community|notice|questions|knowledge)}/delete/{bid}")
+    public String delete(@PathVariable String path, @PathVariable String bid, Model model,
+                         HttpServletRequest request, HttpServletResponse response,
+                         @RequestParam String id) {
+        boardService.deleteBoard(request, response, Long.valueOf(id));
+        return String.format("redirect:/%s", path);
+    }
 }

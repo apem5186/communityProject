@@ -9,9 +9,16 @@
 <body>
 <div th:insert="~{fragments :: header}"></div>
 <div class="container w-75 justify-content-center">
-    <span class="fw-bold fs-1 my-3" style="display: inline-block">
-        게시글 수정
-    </span>
+    <div class="d-flex align-items-center">
+        <span class="fw-bold fs-1 my-3">
+            게시글 수정
+        </span>
+        <form th:action="@{'/' + ${category} + '/' + delete + '/' + ${bid}}" method="post" class="ms-auto"
+        onsubmit="return confirmDelete()">
+            <input type="hidden" name="id" th:value="${bid}"/>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
     <form th:action="@{'/' + ${category} + '/' + edit + '/' + ${bid}}" th:object="${boardEditRequestDTO}" method="post" enctype="multipart/form-data">
         <div class="input-group my-3">
             <label class="input-group-text" for="category">Category</label>
@@ -69,6 +76,10 @@
         const input = document.getElementById('boardImage');
         input.value = '';
         document.getElementById('preview').innerHTML = '';
+    }
+
+    function confirmDelete() {
+        return window.confirm("삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
     }
 </script>
 </body>

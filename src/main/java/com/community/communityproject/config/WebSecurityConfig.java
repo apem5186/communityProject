@@ -76,6 +76,7 @@ public class WebSecurityConfig {
                                 .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/img/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/ac/**")).hasRole("ADMIN")
                                 .anyRequest().authenticated()
                                 )
                 // 예외 처리

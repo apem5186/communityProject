@@ -35,6 +35,22 @@ public class DataLoader implements CommandLineRunner {
         long fileSize2 = 14577L;
         String originName2 = "profileImage_attach.jpg";
 
+        Users adminUsers = new Users();
+        adminUsers.setEmail("admin01@email.com");
+        adminUsers.setUsername("admin01");
+        adminUsers.setPassword(passwordEncoder.encode("0000"));
+        adminUsers.setLogin(false);
+        adminUsers.setUserRole(UserRole.ADMIN);
+
+        ProfileImage adminProfileImage = ProfileImage.builder()
+                .originName(originName)
+                .filePath(filePath)
+                .fileSize(fileSize)
+                .users(adminUsers)
+                .build();
+
+        userRepository.save(adminUsers);
+        profileImageRepository.save(adminProfileImage);
 
         Users users = new Users();
         users.setEmail("user01@email.com");

@@ -5,11 +5,9 @@ import com.community.communityproject.entitiy.board.BoardImage;
 import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.Users;
 import lombok.*;
-import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter

@@ -7,10 +7,12 @@ import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.service.board.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @Controller
@@ -39,9 +44,31 @@ public class BoardController {
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/{bid}")
     public String getBoard(Model model, @PathVariable String path,
-                           @PathVariable String bid) {
+                           @PathVariable String bid, HttpSession session, HttpServletRequest request) {
+        Long boardId = Long.valueOf(bid);
+        // 세션에 저장된 조회한 게시글 ID 목록을 가져옵니다.
+        Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
+        if (viewedBoards == null) {
+            viewedBoards = new HashSet<>();
+        }
+
+        // 해당 게시글을 이전에 조회하지 않았다면 조회수를 증가시킵니다.
+        if (!viewedBoards.contains(boardId)) {
+            boardService.updateHits(Math.toIntExact(boardId));
+            viewedBoards.add(boardId);
+            session.setAttribute("viewedBoards", viewedBoards);
+        }
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
+        String isRecommend = this.boardService.isRecommend();
         model.addAttribute("board", boardDTO);
+        // 권한이 있는 사용자만
+        if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
+            // 이 게시글에 추천이나 비추천을 눌렀던 사용자라면
+            if (isRecommend != null) {
+                // 뭘 눌렀는지 모델에 추가시킴
+                model.addAttribute("isRecommend", isRecommend);
+            }
+        }
         return "board/boardDetail";
     }
 
@@ -102,5 +129,21 @@ public class BoardController {
                          @RequestParam String id) {
         boardService.deleteBoard(request, response, Long.valueOf(id));
         return String.format("redirect:/%s", path);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/like/{bid}")
+    public String likeBoard(@PathVariable String path, @PathVariable String bid,
+                            HttpServletRequest request, HttpServletResponse response) {
+        boardService.likeBoard(Long.valueOf(bid), response, request, true);
+        return String.format("redirect:/%s/%s", path, bid);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/dislike/{bid}")
+    public String disLikeBoard(@PathVariable String path, @PathVariable String bid,
+                            HttpServletRequest request, HttpServletResponse response) {
+        boardService.likeBoard(Long.valueOf(bid), response, request, false);
+        return String.format("redirect:/%s/%s", path, bid);
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -92,12 +92,93 @@
         </div>
 
         <div class="text-start fs-4 text-container" th:text="${board.getContent()}"></div>
+        <div class="container text-container">
+            <div sec:authorize="isAuthenticated()" class="row justify-content-end">
+                <div class="col-sm-auto pe-0">
+                    <a href="javascript:void(0);" class="unrecommended btn btn-outline-dark align-items-center"
+                       th:data-uri="@{|/${board.getCategory().toLowerCase()}/dislike/${board.getBid()}|}">
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                </div>
+                <div class="col-sm-auto">
+                    <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                </div>
+                <div class="col-sm-auto ps-0">
+                    <a href="javascript:void(0);" class="recommend btn btn-outline-dark align-items-center" type="button"
+                       th:data-uri="@{|/${board.getCategory().toLowerCase()}/like/${board.getBid()}|}">
+                        <i class="bi bi-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div sec:authorize="isAnonymous()" class="row justify-content-end">
+                <div class="col-sm-auto pe-0">
+                    <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                </div>
+                <div class="col-sm-auto">
+                    <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                </div>
+                <div class="col-sm-auto ps-0">
+                    <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                        <i class="bi bi-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
         <div class="border-top mt-4"></div>
     </div>
 </div>
 
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+    let isRecommend = /*[[${isRecommend}]]*/ 'none';
+    const recommend_elements = document.getElementsByClassName("recommend");
+    const unrecommended_elements = document.getElementsByClassName("unrecommended");
+    // 추천을 누른 상태면
+    if (isRecommend !== 'none' && isRecommend === 'recommend') {
+        for (let i = 0; i < recommend_elements.length; i++) {
+            // 추천 버튼 파랗게 만들고 활성화시킴
+            recommend_elements[i].classList.remove('btn-outline-dark');
+            recommend_elements[i].classList.remove('disabled');
+            recommend_elements[i].classList.add('btn-outline-primary');
+        }
+        for (let i = 0; i < unrecommended_elements.length; i++) {
+            // 비추 버튼 비활시킴
+            unrecommended_elements[i].classList.add('disabled');
+        }
+    // 비추 누른 상태면
+    } else if (isRecommend !== 'none' && isRecommend === 'unrecommended') {
+        for (let i = 0; i < unrecommended_elements.length; i++) {
+            // 비추 버튼 빨갛게 만들고 활성화 시킴
+            unrecommended_elements[i].classList.remove('disabled');
+            unrecommended_elements[i].classList.remove('btn-outline-dark');
+            unrecommended_elements[i].classList.add('btn-outline-danger');
+        }
+        for (let i = 0; i < recommend_elements.length; i++) {
+            // 추천 버튼 비활시킴
+            recommend_elements[i].classList.add('disabled');
+        }
+    }
+    Array.from(recommend_elements).forEach(function (element) {
+        element.addEventListener('click', function () {
+            location.href = this.dataset.uri;
+        })
+    })
+    Array.from(unrecommended_elements).forEach(function (element) {
+        element.addEventListener('click', function () {
+            location.href = this.dataset.uri;
+        })
+    })
 
+    function redirectLogin() {
+        const isConfirmed = confirm("로그인 하셔야 이용 가능합니다. 로그인 하시겠습니까?");
+
+        if (isConfirmed) {
+            window.location.href = "/login";
+        }
+    }
+</script>
 </body>
 </html>

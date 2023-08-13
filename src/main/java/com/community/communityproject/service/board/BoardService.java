@@ -10,10 +10,13 @@ import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.entitiy.board.BoardImage;
+import com.community.communityproject.entitiy.board.BoardLike;
 import com.community.communityproject.entitiy.board.Category;
 import com.community.communityproject.entitiy.users.ProfileImage;
+import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
 import com.community.communityproject.repository.BoardImageRepository;
+import com.community.communityproject.repository.BoardLikeRepository;
 import com.community.communityproject.repository.BoardRepository;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
@@ -27,14 +30,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Role;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +60,7 @@ public class BoardService {
     private final TokenProvider tokenProvider;
     private final AmazonS3ResourceStorage amazonS3ResourceStorage;
     private final AmazonS3Client amazonS3Client;
+    private final BoardLikeRepository boardLikeRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -227,6 +237,72 @@ public class BoardService {
         }
     }
 
+    /**
+     * 게시글 방문할 때 조회수를 늘림 늘리는 방식은 HTTP Session을 이용
+     * @param id
+     */
+    @Transactional
+    public void updateHits(Integer id) {
+        this.boardRepository.updateHits(id);
+    }
+
+    /**
+     * 게시글 추천, 비추천 로직
+     * @param id
+     * @param response
+     * @param request
+     * @param status
+     */
+    @Transactional
+    public void likeBoard(Long id, HttpServletResponse response, HttpServletRequest request, boolean status) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            // 일단 Board랑 Users 가져옴
+            Board board = boardRepository.getReferenceById(id);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
+            // 추천 버튼을 눌렀으면
+            if (status) {
+                // 추천 버튼을 누른적이 없을 때
+                if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
+                    board.increaseLikeCnt();
+                    BoardLike boardLike = new BoardLike(board, users, "recommend");
+                    boardLikeRepository.save(boardLike);
+                } else {    // 있을 때
+                    board.decreaseLikeCnt();
+                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users);
+                    boardLikeRepository.delete(boardLike);
+                }
+            } else {    // 비추천 버튼을 눌렀으면
+                // 비추천 버튼을 누른적이 없을 때
+                if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
+                    board.decreaseLikeCnt();
+                    BoardLike boardLike = new BoardLike(board, users, "unrecommended");
+                    boardLikeRepository.save(boardLike);
+                } else {    // 있을 때
+                    board.increaseLikeCnt();
+                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users);
+                    boardLikeRepository.delete(boardLike);
+                }
+            }
+        }
+    }
+
+    /**
+     * recommend인지 unrecommended인지 판별
+     * isRecommend 필드의 자료형이 boolean이 아닌 이유는
+     * 회원이 아예 추천을 안한 게시글을 방문했을 때의 경우를 판단하기 힘들어서
+     * @return null 아니면 recommend or unrecommended
+     */
+    public String isRecommend() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Users users = userRepository.findByEmail(email).orElseThrow();
+        if (boardLikeRepository.findByUsers(users).isPresent()) {
+            return boardLikeRepository.findByUsers(users).get().getIsRecommend();
+        }
+        return null;
+    }
     /**
      * filePath를 bucket url을 짤라서 반환함
      * @param fullUrl

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table
 public class Board extends BaseEntity {
 
@@ -30,10 +30,10 @@ public class Board extends BaseEntity {
     private int hits;
 
     @Column(columnDefinition = "integer default 0")
-    private int reviewCnt;
+    private int likeCnt;
 
     @Column(columnDefinition = "integer default 0")
-    private int likeCnt;
+    private int reviewCnt;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -57,5 +57,13 @@ public class Board extends BaseEntity {
         this.content = content;
         this.category = category;
         this.users = users;
+    }
+
+    public void increaseLikeCnt() {
+        this.likeCnt += 1;
+    }
+
+    public void decreaseLikeCnt() {
+        this.likeCnt -= 1;
     }
 }

@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Role;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.endpoint.InvalidEndpointRequestException;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -263,6 +264,10 @@ public class BoardService {
             Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
             // 추천 버튼을 눌렀으면
             if (status) {
+                // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
+                if (isRecommend() != null && isRecommend().equals("unrecommended")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
+                }
                 // 추천 버튼을 누른적이 없을 때
                 if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
                     board.increaseLikeCnt();
@@ -274,6 +279,10 @@ public class BoardService {
                     boardLikeRepository.delete(boardLike);
                 }
             } else {    // 비추천 버튼을 눌렀으면
+                // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
+                if (isRecommend() != null && isRecommend().equals("recommend")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
+                }
                 // 비추천 버튼을 누른적이 없을 때
                 if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
                     board.decreaseLikeCnt();

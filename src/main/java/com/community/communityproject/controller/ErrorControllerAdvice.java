@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.endpoint.InvalidEndpointRequestException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
  * 2 : BoardNotFound
  * 3 : UserNotFound
  * 4 : TokenExpired
+ * 5 : InvalidEndpointRequest
  */
 @Slf4j
 @ControllerAdvice
@@ -71,6 +73,19 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "토큰이 만료되었습니다. 다시 로그인을 해 주세요.");
         mav.addObject("errorNumber", "4");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(InvalidEndpointRequestException.class)
+    public ModelAndView handleInvalidEndpointRequest(InvalidEndpointRequestException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "잘못된 접근입니다.");
+        mav.addObject("errorNumber", "5");
         mav.setViewName("errorPage");
         return mav;
     }

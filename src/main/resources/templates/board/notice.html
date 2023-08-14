@@ -41,29 +41,42 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12 d-flex justify-content-between">
-            <a sec:authorize="isAuthenticated()" th:href="@{/notice/new}" class="btn btn-primary" style="font-weight: bold;">작성하기</a>
-            <!-- 인증 받지 않은 사용자라면 공간만 차지 -->
-            <div sec:authorize="isAnonymous()" style="flex: 1"></div>
+            <!-- 왼쪽 항목: 작성하기 버튼 -->
+            <a sec:authorize="isAuthenticated()" th:href="@{/community/new}" class="btn btn-primary" style="font-weight: bold;">작성하기</a>
+
+            <!-- 공간만 차지하는 div -->
+            <div sec:authorize="isAnonymous()" style="flex: 0"></div>
+
+            <!-- 중앙 항목: 검색 폼. -->
+            <div class="row justify-content-center">
+                <div class="col pe-1">
+                    <input class="form-control" type="search" id="search_kw" th:value="${kw}"
+                           placeholder="Search" aria-label="Search">
+                </div>
+                <div class="col-auto px-0">
+                    <button class="btn btn-outline-success" id="btn_search">Search</button>
+                </div>
+            </div>
+
+            <!-- 오른쪽 항목: 드롭다운 메뉴 -->
             <div class="dropdown">
-                <!-- parameter에서 값을 가져와서 button 텍스트로 지정함 값이 없다면 default인 '최신순' -->
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
                     [[${#strings.equals(param.sort, 'VOTE_COUNT') ? '추천순' :
                     #strings.equals(param.sort, 'COMMENT_COUNT') ? '댓글순' :
                     #strings.equals(param.sort, 'HITS_COUNT') ? '조회순' : '최신순'}]]
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
-                    <!-- parameter에 자신의 값이 없어야 나타남 '최신순'은 파라미터에 값이 없어도 안나타남 -->
                     <li th:if="${param.sort != null && param.sort.toString() != 'LATEST'}">
-                        <a class="dropdown-item" href="?sort=LATEST">최신순</a>
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateSortParam('LATEST')">최신순</a>
                     </li>
                     <li th:if="${param.sort == null || param.sort.toString() != 'VOTE_COUNT'}">
-                        <a class="dropdown-item" href="?sort=VOTE_COUNT">추천순</a>
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateSortParam('VOTE_COUNT')">추천순</a>
                     </li>
                     <li th:if="${param.sort == null || param.sort.toString() != 'COMMENT_COUNT'}">
-                        <a class="dropdown-item" href="?sort=COMMENT_COUNT">댓글순</a>
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateSortParam('COMMENT_COUNT')">댓글순</a>
                     </li>
                     <li th:if="${param.sort == null || param.sort.toString() != 'HITS_COUNT'}">
-                        <a class="dropdown-item" href="?sort=HITS_COUNT">조회순</a>
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateSortParam('HITS_COUNT')">조회순</a>
                     </li>
                 </ul>
             </div>
@@ -182,6 +195,7 @@
 <form th:action="@{/notice}" method="get" id="searchForm">
     <input type="hidden" id="kw" name="kw" th:value="${kw}">
     <input type="hidden" id="page" name="page" th:value="${paging.number}">
+    <input type="hidden" id="sort" name="sort" th:value="${param.sort}" th:if="${param.sort != null}">
 </form>
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
@@ -201,6 +215,17 @@
         document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 0페이지부터 조회한다.
         document.getElementById('searchForm').submit();
     });
+
+    function updateSortParam(newSortValue) {
+        let currentURL = window.location.href;
+        let url = new URL(currentURL);
+
+        // 쿼리 파라미터 업데이트 (이미 존재하면 값을 바꾸고, 없으면 추가)
+        url.searchParams.set('sort', newSortValue);
+
+        // 변경된 URL로 리디렉션
+        window.location.href = url.toString();
+    }
 </script>
 </body>
 </html>

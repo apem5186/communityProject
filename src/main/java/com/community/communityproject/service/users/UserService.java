@@ -54,6 +54,7 @@ public class UserService {
 
     private final AmazonS3Client amazonS3Client;
 
+
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
 
@@ -416,10 +417,27 @@ public class UserService {
             return profileImage.getFilePath();
         }
         String path = profileImage.getFilePath();
+
+        path = trimUrlToPath(path);
+
         // 맨 첫번째 "/" 이후의 문자열
-        String filename = path.substring(path.indexOf("/") + 1);
+        // String filename = path.substring(path.indexOf("/") + 1);
         // s3에 있는 이미지 가져옴
-        return amazonS3Client.getUrl(bucket, filename).toString();
+        return amazonS3Client.getUrl(bucket, path).toString();
+    }
+
+    /**
+     * filePath를 bucket url을 짤라서 반환함
+     * @param fullUrl
+     * @return path
+     */
+    public String trimUrlToPath(String fullUrl) {
+        int imageIndex = fullUrl.indexOf("/image");
+
+        if(imageIndex != -1) {
+            return fullUrl.substring(imageIndex + 1);
+        }
+        return fullUrl; // "/image"가 없는 경우 원래 URL 반환
     }
 
 }

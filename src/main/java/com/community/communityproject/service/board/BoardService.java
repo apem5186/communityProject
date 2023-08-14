@@ -388,10 +388,11 @@ public class BoardService {
                 //Join<Board, Comment> c = q.join("commentList", JoinType.LEFT);
 
                 return cb.or(cb.like(q.get("title"), "%" + kw + "%"), // 제목
-                        cb.like(q.get("content"), "%" + kw + "%"),   // 내용
+                        cb.like(q.get("content"), "%" + kw + "%"));   // 내용
                         // 추가 예정
                         //cb.like(c.get("content"), "%" + kw + "%"),   // 댓글 내용
-                        cb.like(u1.get("username"), "%" + kw + "%")); // 게시글 작성자
+                        // 작성자는 필요하면 추가
+                        // cb.like(u1.get("username"), "%" + kw + "%")); // 게시글 작성자
             }
         };
     }

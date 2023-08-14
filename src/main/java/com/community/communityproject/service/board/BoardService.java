@@ -90,9 +90,12 @@ public class BoardService {
      * @param category
      * @return boardDTO
      */
-    public Page<BoardListResponseDTO.BoardDTO> getBoardListDTO(int page, String kw, String category) {
+    public Page<BoardListResponseDTO.BoardDTO> getBoardListDTO(int page, String kw, String sort, String category) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("regDate"));
+        // 정렬 기준 LATEST, VOTE_COUNT, COMMENT_COUNT, HITS_COUNT
+        // default = LATEST
+        sort = sort(sort);
+        sorts.add(Sort.Order.desc(sort));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Specification<Board> spec = search(kw);
         spec = spec.and(category(category));
@@ -295,6 +298,20 @@ public class BoardService {
                 }
             }
         }
+    }
+
+    /**
+     * 정렬 기준 "LATEST"는 default로 "regDate"가 됨
+     * @param sort
+     * @return result
+     */
+    public String sort(String sort) {
+        return switch (sort) {
+            case "VOTE_COUNT" -> "likeCnt";
+            case "COMMENT_COUNT" -> "reviewCnt";
+            case "HITS_COUNT" -> "hits";
+            default -> "regDate";
+        };
     }
 
     /**

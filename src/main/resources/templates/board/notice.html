@@ -45,15 +45,27 @@
             <!-- 인증 받지 않은 사용자라면 공간만 차지 -->
             <div sec:authorize="isAnonymous()" style="flex: 1"></div>
             <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
-                    최신순
+                <!-- parameter에서 값을 가져와서 button 텍스트로 지정함 값이 없다면 default인 '최신순' -->
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.sort, 'VOTE_COUNT') ? '추천순' :
+                    #strings.equals(param.sort, 'COMMENT_COUNT') ? '댓글순' :
+                    #strings.equals(param.sort, 'HITS_COUNT') ? '조회순' : '최신순'}]]
                 </button>
-                <div class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
-                    <a class="dropdown-item" href="?sort=LATEST">최신순</a>
-                    <a class="dropdown-item" href="?sort=VOTE_COUNT">추천순</a>
-                    <a class="dropdown-item" href="?sort=COMMENT_COUNT">댓글순</a>
-                    <a class="dropdown-item" href="?sort=HITS_COUNT">조회순</a>
-                </div>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
+                    <!-- parameter에 자신의 값이 없어야 나타남 '최신순'은 파라미터에 값이 없어도 안나타남 -->
+                    <li th:if="${param.sort != null && param.sort.toString() != 'LATEST'}">
+                        <a class="dropdown-item" href="?sort=LATEST">최신순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'VOTE_COUNT'}">
+                        <a class="dropdown-item" href="?sort=VOTE_COUNT">추천순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'COMMENT_COUNT'}">
+                        <a class="dropdown-item" href="?sort=COMMENT_COUNT">댓글순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'HITS_COUNT'}">
+                        <a class="dropdown-item" href="?sort=HITS_COUNT">조회순</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

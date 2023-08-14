@@ -58,6 +58,25 @@ public class Board extends BaseEntity {
         this.category = category;
         this.users = users;
     }
+    
+    // 테스트 게시글 생성용
+    @Builder(builderMethodName = "TestBuilder")
+    public Board (String title, String content, Category category, Users users, int hits,
+                  int likeCnt, int reviewCnt) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.users = users;
+        this.hits = hits;
+        this.likeCnt = likeCnt;
+        this.reviewCnt = reviewCnt;
+    }
+
+    public void testBoardEdit (int hits, int likeCnt, int reviewCnt) {
+        this.hits = hits;
+        this.likeCnt = likeCnt;
+        this.reviewCnt = reviewCnt;
+    }
 
     public void increaseLikeCnt() {
         this.likeCnt += 1;

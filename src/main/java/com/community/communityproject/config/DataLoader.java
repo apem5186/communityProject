@@ -1,8 +1,11 @@
 package com.community.communityproject.config;
 
+import com.community.communityproject.entitiy.board.Board;
+import com.community.communityproject.entitiy.board.Category;
 import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.repository.BoardRepository;
 import com.community.communityproject.repository.ProfileImageRepository;
 import com.community.communityproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Component
@@ -22,6 +28,7 @@ public class DataLoader implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ProfileImageRepository profileImageRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BoardRepository boardRepository;
 
     @Override
     public void run(String... args) {
@@ -108,5 +115,28 @@ public class DataLoader implements CommandLineRunner {
         log.info("************************************");
         userRepository.save(users3);
         profileImageRepository.save(profileImage3);
+        List<Users> usersList = Arrays.asList(users, users2, users3);
+        List<Category> categoryList = Arrays.asList(
+                Category.COMMUNITY, Category.NOTICE, Category.KNOWLEDGE, Category.QUESTIONS);
+        for (int i = 1; i <= 300; i++) {
+            String title = String.format("게시글 테스트 제목:[%03d]", i);
+            String content = "게시글 테스트 내용";
+            Random random = new Random();
+            int[] randomInts = random.ints(3, 0, 150).toArray();
+            Users randomUser = usersList.get(random.nextInt(usersList.size()));
+            Category randomCategory = categoryList.get(random.nextInt(categoryList.size()));
+            Board board = Board.builder()
+                    .category(randomCategory)
+                    .title(title)
+                    .content(content)
+                    .users(randomUser)
+                    .build();
+            board.testBoardEdit(randomInts[0], randomInts[1], randomInts[2]);
+            boardRepository.save(board);
+            log.info("------------------------------------------------");
+            log.info("" + board.getHits() + board.getLikeCnt() + board.getReviewCnt());
+            Arrays.stream(randomInts).forEach(randomInt -> log.info(""+randomInt));
+            log.info("------------------------------------------------");
+        }
     }
 }

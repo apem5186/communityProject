@@ -34,8 +34,9 @@ public class BoardController {
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,
                        @RequestParam(value = "page", defaultValue = "1") int page,
-                       @RequestParam(value = "kw", defaultValue = "") String kw) {
-        Page<BoardListResponseDTO.BoardDTO> paging = this.boardService.getBoardListDTO(page, kw, path);
+                       @RequestParam(value = "kw", defaultValue = "") String kw,
+                       @RequestParam(value = "sort", defaultValue = "LATEST") String sort) {
+        Page<BoardListResponseDTO.BoardDTO> paging = this.boardService.getBoardListDTO(page, kw, sort, path);
         model.addAttribute("category", path);
         model.addAttribute("paging", paging);
         model.addAttribute("kw", kw);

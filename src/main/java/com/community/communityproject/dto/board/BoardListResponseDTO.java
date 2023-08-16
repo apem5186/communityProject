@@ -23,6 +23,7 @@ public class BoardListResponseDTO {
         private int hits;
         private int reviewCnt;
         private int likeCnt;
+        private int favoriteCnt;
         private String category;
         private List<String> imgPathList;
         private UsersDTO users;
@@ -35,6 +36,7 @@ public class BoardListResponseDTO {
             this.hits = board.getHits();
             this.reviewCnt = board.getReviewCnt();
             this.likeCnt = board.getLikeCnt();
+            this.favoriteCnt = board.getFavoriteCnt();
             this.category = board.getCategory().toString();
             this.imgPathList = new ArrayList<>();
             for(BoardImage image : board.getBoardImages()) {

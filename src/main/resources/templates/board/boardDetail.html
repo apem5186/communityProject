@@ -43,18 +43,22 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span th:text="${board.hits}"></span>
+                        <span th:text="${board.getHits()}"></span>
+                        <!-- 즐겨찾기 수 -->
+                        <i class="bi bi-star"></i>
+                        <span th:text="${board.getFavoriteCnt()}"></span>
                     </span>
                 </div>
             </div>
-                <div th:if="${board.users != null and #authentication.name.equals(board.users.email)}" class="ms-auto">
-                    <a type="button" class="btn btn-outline-danger" th:href="@{'/' + ${board.getCategory().toLowerCase()} + '/edit/' + ${board.getBid()}}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" fill="currentColor" class="bi bi-pencil-square" viewBox="0 2 16 16">
-                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
-                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path>
-                        </svg>
-                    </a>
-                </div>
+
+            <div th:if="${board.users != null and #authentication.name.equals(board.users.email)}" class="ms-auto">
+                <a type="button" class="btn btn-outline-danger" th:href="@{|/${board.getCategory().toLowerCase()}/edit/${board.getBid()}|}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" fill="currentColor" class="bi bi-pencil-square" viewBox="0 2 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path>
+                    </svg>
+                </a>
+            </div>
         </div>
         <h1 class="fs-2 fw-bold my-4" th:text="${board.getTitle()}"></h1>
 
@@ -93,36 +97,52 @@
 
         <div class="text-start fs-4 text-container" th:text="${board.getContent()}"></div>
         <div class="container text-container">
-            <div sec:authorize="isAuthenticated()" class="row justify-content-end">
-                <div class="col-sm-auto pe-0">
-                    <a href="javascript:void(0);" class="unrecommended btn btn-outline-dark align-items-center"
-                       th:data-uri="@{|/${board.getCategory().toLowerCase()}/dislike/${board.getBid()}|}">
-                        <i class="bi bi-chevron-down"></i>
-                    </a>
+            <div sec:authorize="isAuthenticated()" class="row">
+                <!-- 왼쪽 끝에 위치할 요소 -->
+                <div class="col-sm-auto fs-5 ps-0">
+                    <div class="btn-group">
+                        <a type="button" class="btn btn-outline-secondary p-2" style="--bs-btn-hover-bg: ghostwhite;" th:href="@{|/${board.getCategory().toLowerCase()}/favorite/${board.getBid()}|}">
+                            <i th:unless="${isFavorite}" class="bi bi-star" style="color: lightgrey"></i>
+                            <i th:if="${isFavorite}" class="bi bi-star-fill" style="color: sandybrown"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="col-sm-auto">
-                    <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
-                </div>
-                <div class="col-sm-auto ps-0">
-                    <a href="javascript:void(0);" class="recommend btn btn-outline-dark align-items-center" type="button"
-                       th:data-uri="@{|/${board.getCategory().toLowerCase()}/like/${board.getBid()}|}">
-                        <i class="bi bi-chevron-up"></i>
-                    </a>
+
+                <!-- 나머지 요소들 (오른쪽으로 정렬) -->
+                <div class="col d-flex justify-content-end">
+                    <div class="col-sm-auto pe-0">
+                        <a href="javascript:void(0);" class="unrecommended btn btn-outline-dark align-items-center"
+                           th:data-uri="@{|/${board.getCategory().toLowerCase()}/dislike/${board.getBid()}|}">
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-auto">
+                        <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                    </div>
+                    <div class="col-sm-auto ps-0">
+                        <a href="javascript:void(0);" class="recommend btn btn-outline-dark align-items-center" type="button"
+                           th:data-uri="@{|/${board.getCategory().toLowerCase()}/like/${board.getBid()}|}">
+                            <i class="bi bi-chevron-up"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div sec:authorize="isAnonymous()" class="row justify-content-end">
-                <div class="col-sm-auto pe-0">
-                    <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
-                        <i class="bi bi-chevron-down"></i>
-                    </a>
-                </div>
-                <div class="col-sm-auto">
-                    <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
-                </div>
-                <div class="col-sm-auto ps-0">
-                    <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
-                        <i class="bi bi-chevron-up"></i>
-                    </a>
+
+            <div sec:authorize="isAnonymous()" class="row">
+                <div class="col d-flex justify-content-end">
+                    <div class="col-sm-auto pe-0">
+                        <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-auto">
+                        <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                    </div>
+                    <div class="col-sm-auto ps-0">
+                        <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                            <i class="bi bi-chevron-up"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

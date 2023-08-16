@@ -35,6 +35,9 @@ public class Board extends BaseEntity {
     @Column(columnDefinition = "integer default 0")
     private int reviewCnt;
 
+    @Column(columnDefinition = "integer default 0")
+    private int favoriteCnt;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Category category;
@@ -62,7 +65,7 @@ public class Board extends BaseEntity {
     // 테스트 게시글 생성용
     @Builder(builderMethodName = "TestBuilder")
     public Board (String title, String content, Category category, Users users, int hits,
-                  int likeCnt, int reviewCnt) {
+                  int likeCnt, int reviewCnt, int favoriteCnt) {
         this.title = title;
         this.content = content;
         this.category = category;
@@ -70,12 +73,14 @@ public class Board extends BaseEntity {
         this.hits = hits;
         this.likeCnt = likeCnt;
         this.reviewCnt = reviewCnt;
+        this.favoriteCnt = favoriteCnt;
     }
 
-    public void testBoardEdit (int hits, int likeCnt, int reviewCnt) {
+    public void testBoardEdit (int hits, int likeCnt, int reviewCnt, int favoriteCnt) {
         this.hits = hits;
         this.likeCnt = likeCnt;
         this.reviewCnt = reviewCnt;
+        this.favoriteCnt = favoriteCnt;
     }
 
     public void increaseLikeCnt() {
@@ -85,4 +90,8 @@ public class Board extends BaseEntity {
     public void decreaseLikeCnt() {
         this.likeCnt -= 1;
     }
+
+    public void increaseFavoriteCnt() {this.favoriteCnt += 1;}
+
+    public void decreaseFavoriteCnt() {this.favoriteCnt -= 1;}
 }

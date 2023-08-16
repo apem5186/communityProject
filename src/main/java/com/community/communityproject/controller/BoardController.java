@@ -60,14 +60,18 @@ public class BoardController {
             session.setAttribute("viewedBoards", viewedBoards);
         }
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
-        String isRecommend = this.boardService.isRecommend();
+        String isRecommend = this.boardService.isRecommend(boardId);
         model.addAttribute("board", boardDTO);
         // 권한이 있는 사용자만
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
+            boolean isFavorite = this.boardService.hasFavoriteBoard(boardId);
             // 이 게시글에 추천이나 비추천을 눌렀던 사용자라면
             if (isRecommend != null) {
                 // 뭘 눌렀는지 모델에 추가시킴
                 model.addAttribute("isRecommend", isRecommend);
+            }
+            if (isFavorite) {
+                model.addAttribute("isFavorite", isFavorite);
             }
         }
         return "board/boardDetail";
@@ -137,6 +141,14 @@ public class BoardController {
     public String likeBoard(@PathVariable String path, @PathVariable String bid,
                             HttpServletRequest request, HttpServletResponse response) {
         boardService.likeBoard(Long.valueOf(bid), response, request, true);
+        return String.format("redirect:/%s/%s", path, bid);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/favorite/{bid}")
+    public String favoriteBoard(@PathVariable String path, @PathVariable String bid,
+                                HttpServletRequest request, HttpServletResponse response) {
+        boardService.favoriteBoard(Long.valueOf(bid), response, request);
         return String.format("redirect:/%s/%s", path, bid);
     }
 

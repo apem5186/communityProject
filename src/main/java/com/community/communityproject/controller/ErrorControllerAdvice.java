@@ -1,6 +1,8 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.config.exception.BoardNotFoundException;
+import com.community.communityproject.config.exception.FavoriteNotFoundException;
+import com.community.communityproject.config.exception.UserNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +21,8 @@ import org.springframework.web.servlet.ModelAndView;
  * 3 : UserNotFound
  * 4 : TokenExpired
  * 5 : InvalidEndpointRequest
+ * 6 : FavoriteNotFound
+ * 7 : UserNotFound
  */
 @Slf4j
 @ControllerAdvice
@@ -86,6 +90,32 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "잘못된 접근입니다.");
         mav.addObject("errorNumber", "5");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(FavoriteNotFoundException.class)
+    public ModelAndView handleFavoriteNotFound(FavoriteNotFoundException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "즐겨찾기를 누른 기록이 없습니다.");
+        mav.addObject("errorNumber", "6");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ModelAndView handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "사용자를 찾을 수 없습니다.");
+        mav.addObject("errorNumber", "7");
         mav.setViewName("errorPage");
         return mav;
     }

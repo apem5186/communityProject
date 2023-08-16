@@ -3,22 +3,18 @@ package com.community.communityproject.service.board;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.config.exception.BoardNotFoundException;
+import com.community.communityproject.config.exception.FavoriteNotFoundException;
+import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.BoardDTOInterface;
 import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
-import com.community.communityproject.entitiy.board.Board;
-import com.community.communityproject.entitiy.board.BoardImage;
-import com.community.communityproject.entitiy.board.BoardLike;
-import com.community.communityproject.entitiy.board.Category;
+import com.community.communityproject.entitiy.board.*;
 import com.community.communityproject.entitiy.users.ProfileImage;
 import com.community.communityproject.entitiy.users.UserRole;
 import com.community.communityproject.entitiy.users.Users;
-import com.community.communityproject.repository.BoardImageRepository;
-import com.community.communityproject.repository.BoardLikeRepository;
-import com.community.communityproject.repository.BoardRepository;
-import com.community.communityproject.repository.UserRepository;
+import com.community.communityproject.repository.*;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.users.UserService;
@@ -42,6 +38,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,6 +59,7 @@ public class BoardService {
     private final AmazonS3ResourceStorage amazonS3ResourceStorage;
     private final AmazonS3Client amazonS3Client;
     private final BoardLikeRepository boardLikeRepository;
+    private final BoardFavoriteRepository boardFavoriteRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -252,50 +250,79 @@ public class BoardService {
 
     /**
      * 게시글 추천, 비추천 로직
-     * @param id
+     * @param bid
      * @param response
      * @param request
      * @param status
      */
     @Transactional
-    public void likeBoard(Long id, HttpServletResponse response, HttpServletRequest request, boolean status) {
+    public void likeBoard(Long bid, HttpServletResponse response, HttpServletRequest request, boolean status) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            // 일단 Board랑 Users 가져옴
+            Board board = boardRepository.getReferenceById(bid);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
+            // 추천 버튼을 눌렀으면
+            if (status) {
+                // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
+                if (isRecommend(bid) != null && isRecommend(bid).equals("unrecommended")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
+                }
+                // 추천 버튼을 누른적이 없을 때
+                if (!hasFavoriteBoard(board, users)) {
+                    board.increaseLikeCnt();
+                    BoardLike boardLike = new BoardLike(board, users, "recommend");
+                    boardLikeRepository.save(boardLike);
+                } else {    // 있을 때
+                    board.decreaseLikeCnt();
+                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users).get();
+                    boardLikeRepository.delete(boardLike);
+                }
+            } else {    // 비추천 버튼을 눌렀으면
+                // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
+                if (isRecommend(bid) != null && isRecommend(bid).equals("recommend")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
+                }
+                // 비추천 버튼을 누른적이 없을 때
+                if (!hasFavoriteBoard(board, users)) {
+                    board.decreaseLikeCnt();
+                    BoardLike boardLike = new BoardLike(board, users, "unrecommended");
+                    boardLikeRepository.save(boardLike);
+                } else {    // 있을 때
+                    board.increaseLikeCnt();
+                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users).get();
+                    boardLikeRepository.delete(boardLike);
+                }
+            }
+        }
+    }
+
+    /**
+     * 즐찾 기능, 누른 적 없으면 테이블 생성, 있으면 테이블 제거
+     * @param id
+     * @param response
+     * @param request
+     */
+    @Transactional
+    public void favoriteBoard(Long id, HttpServletResponse response, HttpServletRequest request) {
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
             // 일단 Board랑 Users 가져옴
             Board board = boardRepository.getReferenceById(id);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
-            // 추천 버튼을 눌렀으면
-            if (status) {
-                // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
-                if (isRecommend() != null && isRecommend().equals("unrecommended")) {
-                    throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
-                }
-                // 추천 버튼을 누른적이 없을 때
-                if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
-                    board.increaseLikeCnt();
-                    BoardLike boardLike = new BoardLike(board, users, "recommend");
-                    boardLikeRepository.save(boardLike);
-                } else {    // 있을 때
-                    board.decreaseLikeCnt();
-                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users);
-                    boardLikeRepository.delete(boardLike);
-                }
-            } else {    // 비추천 버튼을 눌렀으면
-                // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
-                if (isRecommend() != null && isRecommend().equals("recommend")) {
-                    throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
-                }
-                // 비추천 버튼을 누른적이 없을 때
-                if (boardLikeRepository.findByBoardAndUsers(board, users) == null) {
-                    board.decreaseLikeCnt();
-                    BoardLike boardLike = new BoardLike(board, users, "unrecommended");
-                    boardLikeRepository.save(boardLike);
-                } else {    // 있을 때
-                    board.increaseLikeCnt();
-                    BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users);
-                    boardLikeRepository.delete(boardLike);
-                }
+            // 즐찾 누른적 없다면
+            if (!hasFavoriteBoard(board, users)) {
+                board.increaseFavoriteCnt();
+                BoardFavorite boardFavorite = new BoardFavorite(board, users);
+                boardFavoriteRepository.save(boardFavorite);
+            } else {    // 즐찾 누른적 있다면
+                board.decreaseFavoriteCnt();
+                // 만약 db에 데이터가 있어야 되는데 없다면 FavoriteNotFoundException 발생
+                BoardFavorite boardFavorite = boardFavoriteRepository.findByBoardAndUsers(board, users).orElseThrow(
+                        FavoriteNotFoundException::new);
+                boardFavoriteRepository.delete(boardFavorite);
             }
         }
     }
@@ -320,14 +347,49 @@ public class BoardService {
      * 회원이 아예 추천을 안한 게시글을 방문했을 때의 경우를 판단하기 힘들어서
      * @return null 아니면 recommend or unrecommended
      */
-    public String isRecommend() {
+    public String isRecommend(Long bid) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         Users users = userRepository.findByEmail(email).orElseThrow();
-        if (boardLikeRepository.findByUsers(users).isPresent()) {
-            return boardLikeRepository.findByUsers(users).get().getIsRecommend();
+        Board board = boardRepository.findById(bid).orElseThrow(BoardNotFoundException::new);
+        // 추천이나 비추를 누른 기록이 있다면
+        if (hasLikeBoard(board, users)) {
+            return boardLikeRepository.findByBoardAndUsers(board, users).get().getIsRecommend();
         }
+        // 없으면 null
         return null;
+    }
+
+    /**
+     * 일단 유저가 현재 있는 게시글을 추천이든 비추든 눌렀는지 확인함 뭐든 일단 눌렀으면
+     * true 아니면 false
+     * @param board
+     * @param users
+     * @return true or false
+     */
+    public boolean hasLikeBoard(Board board, Users users) {
+        return boardLikeRepository.findByBoardAndUsers(board, users).isPresent();
+    }
+
+    /**
+     * 유저가 즐찾을 눌렀는지 안눌렀는지
+     * @param board
+     * @param users
+     * @return true or false
+     */
+    public boolean hasFavoriteBoard(Board board, Users users) {
+        return boardFavoriteRepository.findByBoardAndUsers(board, users).isPresent();
+    }
+
+    /**
+     * controller용, [ROLE_USER] 혹은 [ROLE_ADMIN} 권한 확인 후 해야함
+     * @param bid
+     * @return true or false
+     */
+    public boolean hasFavoriteBoard(Long bid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Users users = userRepository.findByEmail(authentication.getName()).orElseThrow(UserNotFoundException::new);
+        return boardFavoriteRepository.findByBoard_idAndUsers_id(bid, users.getId()).isPresent();
     }
     /**
      * filePath를 bucket url을 짤라서 반환함
@@ -379,6 +441,7 @@ public class BoardService {
 
     private Specification<Board> search(String kw) {
         return new Specification<Board>() {
+            @Serial
             private static final long serialVersionUID = 1L;
             @Override
             public Predicate toPredicate(Root<Board> q, CriteriaQuery<?> query, CriteriaBuilder cb) {

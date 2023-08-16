@@ -122,7 +122,7 @@ public class DataLoader implements CommandLineRunner {
             String title = String.format("게시글 테스트 제목:[%03d]", i);
             String content = "게시글 테스트 내용";
             Random random = new Random();
-            int[] randomInts = random.ints(3, 0, 150).toArray();
+            int[] randomInts = random.ints(4, 0, 150).toArray();
             Users randomUser = usersList.get(random.nextInt(usersList.size()));
             Category randomCategory = categoryList.get(random.nextInt(categoryList.size()));
             Board board = Board.builder()
@@ -131,7 +131,7 @@ public class DataLoader implements CommandLineRunner {
                     .content(content)
                     .users(randomUser)
                     .build();
-            board.testBoardEdit(randomInts[0], randomInts[1], randomInts[2]);
+            board.testBoardEdit(randomInts[0], randomInts[1], randomInts[2], randomInts[3]);
             boardRepository.save(board);
             log.info("------------------------------------------------");
             log.info("" + board.getHits() + board.getLikeCnt() + board.getReviewCnt());

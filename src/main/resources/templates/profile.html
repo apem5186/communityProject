@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
   <title>프로필</title>
   <div th:insert="~{fragments :: linkCSS}"></div>
@@ -62,20 +62,77 @@
       </a>
 
 
-      <a th:href="@{/profile/posts}" class="btn btn-secondary">내 게시물</a>
+      <button class="getMyBoard btn btn-secondary">내 게시물</button>
       <a th:href="@{/profile/comments}" class="btn btn-secondary">내 댓글</a>
 
       <form id="deleteForm" action="#" th:action="@{/delete/users}" method="post">
         <button type="button" onclick="confirmDelete()">Delete</button>
       </form>
+      <form id="getMyBoardForm" th:action="@{/profile/posts}" method="post">
+        <input type="hidden" id="myBoardUsername" name="username" th:value="${user.getUsername()}">
+        <input type="hidden" id="myBoardEmail" name="email" th:value="${user.getEmail()}">
+        <!-- 내 게시글 눌렀을 때 생김 -->
+        <input type="hidden" th:if="${paging}" id="page" name="page" th:value="${paging.number} + 1">
+      </form>
     </div>
+      <div th:if="${paging}" id="boardFragment">
+        <div th:insert="~{fragments :: profile_my_board}"></div>
+      </div>
   </div>
 </div>
 
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
-<script>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
 
+  const board_elements = document.getElementsByClassName("getMyBoard");
+
+  /* 게시글을 보여줄지 말지 결정하는 변수 localStorage에 저장하고 기본값 false */
+  if (localStorage.getItem('isBoardVisible') === null) {
+    localStorage.setItem('isBoardVisible', 'false');
+  }
+
+  let isBoardVisible = JSON.parse(localStorage.getItem('isBoardVisible'));
+
+  /* ${paging}은 'getMyBoardForm'이 제출되면 생김 */
+  /*<![CDATA[*/
+  let paging = /*[[${paging}]]*/ null;
+  /*]]>*/
+  Array.from(board_elements).forEach(function(element) {
+    element.addEventListener('click', function() {
+      /* 처음 클릭하면 isBoardVisible이 true가 되서 localStorage에 저장됨 다시 클릭하면 반대 */
+      isBoardVisible = !isBoardVisible;
+      localStorage.setItem('isBoardVisible', isBoardVisible);
+      document.getElementById('getMyBoardForm').submit();
+    });
+  });
+
+  /* form 제출해서 paging Model 값 받아 왔으면 */
+  if (paging) {
+    const board_fragment = document.getElementById("boardFragment");
+    /* isBoardVisible이 false이면 'profile_my_board' fragment 숨기고 */
+    if (!isBoardVisible) {
+      board_fragment.setAttribute("hidden", "hidden");
+    } else {  /* 반대면 보여줌 */
+      board_fragment.removeAttribute("hidden");
+    }
+    /* 페이지 링크 눌렀을 때 실행되는 함수 */
+    addBoardScript();
+  }
+
+  function addBoardScript() {
+
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function (element) {
+      element.addEventListener('click', function () {
+        console.log("page-link clicked");
+        document.getElementById('page').value = this.dataset.page;
+        console.log("page value : " + document.getElementById('page').value);
+        console.log("dataset.page value : " + this.dataset.page);
+        document.getElementById('getMyBoardForm').submit();
+      });
+    });
+  }
   function confirmDelete() {
     let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
     if (result) {
@@ -125,6 +182,7 @@
     document.getElementById("profile-image").click();
   });
 
+  // 편집 모드 이전에는 "profile-image" 요소가 없으므로 console에서 오류남 나중에 고쳐야할듯
   // When a file is selected, display it in the profile image preview
   document.getElementById("profile-image").addEventListener("change", function(e) {
     let reader = new FileReader();
@@ -140,10 +198,5 @@
     document.getElementById("profile-image-preview").src = "/profileImage/default/profile_default.jpg";
   });
 </script>
-<style>
-  .hidden {
-    display: none;
-  }
-</style>
 </body>
 </html>

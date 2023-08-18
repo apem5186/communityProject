@@ -13,6 +13,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     Page<Board> findAll(Specification<Board> spec, Pageable pageable);
 
+    Page<Board> findAllByUsersEmail(String email, Pageable pageable);
+
     @Modifying
     @Query("update Board b set b.hits = b.hits + 1 where b.id =:id")
     int updateHits(@Param("id") Integer id);

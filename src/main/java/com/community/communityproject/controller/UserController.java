@@ -1,10 +1,12 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.*;
+import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
 import com.community.communityproject.dto.users.UsersLoginDTO;
 import com.community.communityproject.dto.users.UsersSignupDTO;
 import com.community.communityproject.repository.UserRepository;
+import com.community.communityproject.service.board.BoardService;
 import com.community.communityproject.service.users.UserSecurityService;
 import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.jwt.AuthService;
@@ -17,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -40,6 +44,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final UserSecurityService userSecurityService;
+    private final BoardService boardService;
 
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
@@ -138,9 +143,9 @@ public class UserController {
 
     @GetMapping("/profile")
     public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication) {
-        String profileUrl = userService.findImage(authentication.getName());
+        //String profileUrl = userService.findImage(authentication.getName());
         model.addAttribute("user", userService.loadUser(authentication.getName()));
-        model.addAttribute("profileImage", profileUrl);
+        //model.addAttribute("profileImage", profileUrl);
         if ("true".equals(editMode)) {
             model.addAttribute("editingEnabled", true);
         } else {
@@ -201,6 +206,22 @@ public class UserController {
 
 
         return "redirect:/profile";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/profile/posts")
+    public String profileBoards(HttpServletRequest request, HttpServletResponse response,
+                                Model model,
+                                @RequestParam(value = "page", defaultValue = "1") int page,
+                                @RequestParam(value = "username") String username,
+                                @RequestParam(value = "email") String email) {
+        Page<BoardListResponseDTO.BoardDTO> board = boardService.getMyBoardListDTO(page, response, request);
+        model.addAttribute("paging", board);
+        model.addAttribute("editingEnabled", false);
+        UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
+        model.addAttribute("user", usersEditDTO);
+
+        return "profile";
     }
 
     @PostMapping("/delete/users")

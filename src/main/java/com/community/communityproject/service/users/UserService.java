@@ -1,6 +1,7 @@
 package com.community.communityproject.service.users;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.S3Object;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
@@ -94,7 +95,7 @@ public class UserService {
         // 기본 프로필
         if(originName.isEmpty() || originName.equals("profile_default.jpg")) {
             originName = "profile_default.jpg";
-            filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
+            filePath = String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
             fileSize = 8636L;
         } else {
             // s3에 파일 저장
@@ -138,6 +139,20 @@ public class UserService {
         UsersEditDTO usersEditDTO = new UsersEditDTO();
         usersEditDTO.setEmail(users.getEmail());
         usersEditDTO.setUsername(users.getUsername());
+        return usersEditDTO;
+    }
+
+    /**
+     * 프로필에서 게시글이나 댓글 불러올 때 유저 정보도 넣을라고 만듦
+     * db안건드리고 UsersEditDTO 객체 생성
+     * @param email
+     * @param username
+     * @return usersEditDTO
+     */
+    public UsersEditDTO getUsersInfo(String email, String username) {
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setEmail(email);
+        usersEditDTO.setUsername(username);
         return usersEditDTO;
     }
 
@@ -265,7 +280,7 @@ public class UserService {
      */
     private String editProfileImage(MultipartFile multipartFile, String email) {
         String originName = multipartFile.getOriginalFilename();
-        String filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
+        String filePath = String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
         long fileSize = multipartFile.getSize();
         ProfileImage profileImage = getProfileImage(email);
         // 현재 filePath 가져오기

@@ -1,5 +1,6 @@
 package com.community.communityproject.config;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.entitiy.board.Category;
 import com.community.communityproject.entitiy.users.ProfileImage;
@@ -10,6 +11,7 @@ import com.community.communityproject.repository.ProfileImageRepository;
 import com.community.communityproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -29,12 +31,15 @@ public class DataLoader implements CommandLineRunner {
     private final ProfileImageRepository profileImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final BoardRepository boardRepository;
+    private final AmazonS3Client amazonS3Client;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     @Override
     public void run(String... args) {
+        String filePath = String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
 
-        String filePath;
-        filePath = Paths.get("profileImage", "default", "profile_default.jpg").toString();
         long fileSize = 8636L;
         String originName = "profile_default.jpg";
 

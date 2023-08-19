@@ -115,6 +115,40 @@ public class BoardService {
         }
     }
     /**
+     * TODO: 이거 해야함 BoardFavoriteRepository에서 method 끌고 와서 Board 객체 받아야함
+     * @param page
+     * @return boardDTO
+     */
+    public Page<BoardListResponseDTO.BoardDTO> getMyFavoriteListDTO(int page, HttpServletResponse response,
+                                                                 HttpServletRequest request) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            List<Sort.Order> sorts = new ArrayList<>();
+            sorts.add(Sort.Order.desc(sort("LATEST")));
+            Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+            Page<Board> boards = boardRepository.findAllByUsersEmail(email, pageable);
+
+            // Convert each Board entity to BoardDTO
+            List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()
+                    .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                    .collect(Collectors.toList());
+
+            // Return a new PageImpl with the converted DTOs
+            return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
+    /**
      * keyword, category를 이용해 게시글을 리턴함
      * BoardListResponseDTO를 사용
      * @param page

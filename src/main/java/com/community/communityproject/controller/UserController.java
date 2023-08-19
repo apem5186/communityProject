@@ -219,6 +219,7 @@ public class UserController {
         model.addAttribute("paging", board);
         model.addAttribute("editingEnabled", false);
         UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
+        model.addAttribute("usersEditDTO", new UsersEditDTO());
         model.addAttribute("user", usersEditDTO);
 
         return "profile";

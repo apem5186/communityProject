@@ -1,8 +1,12 @@
 package com.community.communityproject.entitiy.users;
 
 import com.community.communityproject.entitiy.BaseEntity;
+import com.community.communityproject.entitiy.board.BoardFavorite;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,6 +37,9 @@ public class Users extends BaseEntity {
 
     @OneToOne(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ProfileImage profileImage;
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.REMOVE)
+    private List<BoardFavorite> favoriteBoardsByUser = new ArrayList<>();
 
     public Users(Long id, String username, String password, String email,
                 UserRole userRole, boolean isLogin) {

@@ -3,6 +3,17 @@
 <head>
   <title>프로필</title>
   <div th:insert="~{fragments :: linkCSS}"></div>
+  <style>
+    .custom-hover {
+      color: black;
+      border: none;
+    }
+    .custom-hover:hover{
+      color: dodgerblue;
+      border-bottom: 3px solid dodgerblue;
+    }
+
+  </style>
 </head>
 <body>
 <div th:insert="~{fragments :: header}"></div>
@@ -13,17 +24,21 @@
       <hr/>
 
       <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
-      <div th:if="${editingEnabled}">
+      <div class="target-div d-none">
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
-        <form th:action="@{/profile}" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
-          <div>
-            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
-                 alt="Profile Image"/>
-            <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
-            <br>
-            <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
-            <button class="btn btn-primary mt-2" type="button" id="defaultImage">Default Image</button>
+        <form th:action="@{/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
+          <div class="container d-flex align-items-start justify-content-between">
+            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;" alt="Profile Image"/>
+            <!-- 편집 모드를 전환하는 버튼 -->
+              <div>
+                <a href="" class="editBtn btn btn-primary me-2" id="editBtnDisabled" onclick="toggleEditing(event)">Edit profile</a>
+                <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
+              </div>
           </div>
+          <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
+          <br>
+          <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
+          <button class="btn btn-primary mt-2" type="button" id="defaultImage">Default Image</button>
           <div th:if="${param.usernameError != null or param.emailError != null}">
             <span class="text-danger" th:text="${param.usernameError != null ? param.usernameError[0] : ''}"></span>
             <span class="text-danger" th:text="${param.emailError != null ? param.emailError[0] : ''}"></span>
@@ -48,31 +63,51 @@
       </div>
 
       <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
-      <div th:unless="${editingEnabled}">
-        <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;"
-             alt="Profile Image"/>
+      <div class="target-div">
+        <div class="container d-flex align-items-start justify-content-between">
+          <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+          <!-- 편집 모드를 전환하는 버튼 -->
+          <div>
+            <a href="" class="editBtn btn btn-primary me-2" id="editBtnEnabled" onclick="toggleEditing(event)">Edit profile</a>
+            <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
+          </div>
+        </div>
         <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
         <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
       </div>
+
+
       <hr/>
 
-      <!-- 편집 모드를 전환하는 버튼 -->
-      <a href="" class="btn btn-primary" id="editBtn" onclick="toggleEditing()">
-        Edit profile
-      </a>
 
 
-      <button class="getMyBoard btn btn-secondary">내 게시물</button>
-      <a th:href="@{/profile/comments}" class="btn btn-secondary">내 댓글</a>
+      <div class="buttonMenu btn-group">
+        <button type="button" class="getMyBoard btn btn-outline-light custom-hover">내 게시물</button>
+        <button type="button" class="getMyComment btn btn-outline-light custom-hover">내 댓글</button>
+        <button type="button" class="getMyFavorite btn btn-outline-light custom-hover">즐겨찾기</button>
+        <button type="button" class="getMyLike btn btn-outline-light custom-hover">좋아요</button>
+      </div>
 
-      <form id="deleteForm" action="#" th:action="@{/delete/users}" method="post">
-        <button type="button" onclick="confirmDelete()">Delete</button>
+
+      <form id="deleteForm" action="#" th:action="@{/delete/users}" method="post" class="deleteForm d-inline-block">
       </form>
       <form id="getMyBoardForm" th:action="@{/profile/posts}" method="post">
         <input type="hidden" id="myBoardUsername" name="username" th:value="${user.getUsername()}">
         <input type="hidden" id="myBoardEmail" name="email" th:value="${user.getEmail()}">
         <!-- 내 게시글 눌렀을 때 생김 -->
-        <input type="hidden" th:if="${paging}" id="page" name="page" th:value="${paging.number} + 1">
+        <input type="hidden" th:if="${paging}" id="myBoardPage" name="page" th:value="${paging.number} + 1">
+      </form>
+      <form id="getMyFavoriteForm" th:action="@{/profile/favorite}" method="post">
+        <input type="hidden" id="myFvUsername" name="username" th:value="${user.getUsername()}">
+        <input type="hidden" id="myFvEmail" name="email" th:value="${user.getEmail()}">
+        <!-- 즐겨찾기 눌렀을 때 생김 -->
+        <input type="hidden" th:if="${paging}" id="myFvPage" name="page" th:value="${paging.number} + 1">
+      </form>
+      <form id="getByCommentForm" th:action="@{#}" method="post">
+        <!-- 댓글 만들면 만들 예정 -->
+      </form>
+      <form id="getMyLike" th:action="@{#}" method="post">
+        <!-- 곧 만들 예정 -->
       </form>
     </div>
       <div th:if="${paging}" id="boardFragment">
@@ -103,6 +138,10 @@
       /* 처음 클릭하면 isBoardVisible이 true가 되서 localStorage에 저장됨 다시 클릭하면 반대 */
       isBoardVisible = !isBoardVisible;
       localStorage.setItem('isBoardVisible', isBoardVisible);
+      if (!isBoardVisible) {
+        window.location.href = "/profile";
+        return; // 이후의 코드를 실행하지 않음
+      }
       document.getElementById('getMyBoardForm').submit();
     });
   });
@@ -141,35 +180,56 @@
     }
   }
 
-  // 처음에는 편집 모드가 비활성화된 상태
-  let editingEnabled = false;
-  // 편집 모드를 전환하는 함수
-  function toggleEditing() {
-    console.log("Edit Mode");
-    let link = document.getElementById('editBtn');
-    let newEditingEnabled = link.href.indexOf("edit=true") === -1; // Check if "edit=true" is not already in the URL
-    console.log(newEditingEnabled);
-
-    // Update the href attribute with the new value
-    if (newEditingEnabled) {
-      link.href = "/profile?edit=true";
-      $("form").show();
-      $("h3").hide();
-    } else {
-      link.href = "/profile";
-      $("form").hide();
-      $("h3").show();
+  // 페이지 로드 시 토글 상태 확인 및 설정
+  document.addEventListener("DOMContentLoaded", function() {
+    if (localStorage.getItem('editingEnabled') === null) {
+      localStorage.setItem('editingEnabled', "false");
     }
+    // JSON.parse 안해주면 false, true를 String으로 인식해서 망함
+    let editingEnabled = JSON.parse(localStorage.getItem('editingEnabled'));
+    console.log(editingEnabled);
+    // 편집 모드가 비활성화되면 표시되는 div
+    let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
+    // 편집 모드가 활성화되면 표시되는 div
+    let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
 
-    editingEnabled = newEditingEnabled;
+    if (!editingEnabled) {
+      nonEditDiv.classList.add('d-none');
+      editDiv.classList.remove('d-none');
+      console.log("nonEditDiv : " + nonEditDiv);
+    } else {
+      nonEditDiv.classList.remove('d-none');
+      editDiv.classList.add('d-none');
+      console.log("editDiv : " + editDiv);
+    }
+  });
+
+  // 토글 함수
+  function toggleEditing(event) {
+    event.preventDefault();
+    // 편집 모드가 비활성화되면 표시되는 div
+    let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
+    // 편집 모드가 활성화되면 표시되는 div
+    let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
+
+    if (nonEditDiv.classList.contains('d-none')) {
+      nonEditDiv.classList.remove('d-none');
+      editDiv.classList.add('d-none');
+      localStorage.setItem('editingEnabled', true);
+      console.log("폼 보여야 함");
+    } else {
+      nonEditDiv.classList.add('d-none');
+      editDiv.classList.remove('d-none');
+      localStorage.setItem('editingEnabled', false);
+      console.log("폼 안보여야 함");
+    }
   }
 
   // 편집 취소 시 편집 모드를 비활성화하고 원래 화면으로 돌아감
   function cancelEditing() {
     let link = document.getElementById('editCancel');
     link.href = "/profile";
-    $("form").hide();
-    $("h3").show();
+    localStorage.setItem('editingEnabled', false);
   }
 
   // 페이지 로드 시 showHideElements 함수 호출하여 적절한 요소를 표시함

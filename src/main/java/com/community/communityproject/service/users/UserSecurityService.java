@@ -1,7 +1,7 @@
 package com.community.communityproject.service.users;
 
-import com.community.communityproject.entitiy.users.UserDetailsImpl;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.UserDetailsImpl;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

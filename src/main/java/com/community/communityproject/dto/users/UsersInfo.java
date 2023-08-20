@@ -1,8 +1,7 @@
 package com.community.communityproject.dto.users;
 
-import com.community.communityproject.entitiy.users.UserRole;
+import com.community.communityproject.entity.users.UserRole;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

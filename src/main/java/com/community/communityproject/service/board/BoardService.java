@@ -10,10 +10,8 @@ import com.community.communityproject.dto.board.BoardDTOInterface;
 import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
-import com.community.communityproject.entitiy.board.*;
-import com.community.communityproject.entitiy.users.ProfileImage;
-import com.community.communityproject.entitiy.users.UserRole;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.board.*;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.*;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
@@ -26,22 +24,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.Role;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.endpoint.InvalidEndpointRequestException;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -115,7 +108,7 @@ public class BoardService {
         }
     }
     /**
-     * TODO: 이거 해야함 BoardFavoriteRepository에서 method 끌고 와서 Board 객체 받아야함
+     * 즐겨찾기한 board 가져옴
      * @param page
      * @return boardDTO
      */
@@ -125,10 +118,11 @@ public class BoardService {
         if (tokenDTO != null) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
+            Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
             List<Sort.Order> sorts = new ArrayList<>();
             sorts.add(Sort.Order.desc(sort("LATEST")));
             Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
-            Page<Board> boards = boardRepository.findAllByUsersEmail(email, pageable);
+            Page<Board> boards = boardFavoriteRepository.findBoardFavoritesByUsers(users, pageable);
 
             // Convert each Board entity to BoardDTO
             List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()

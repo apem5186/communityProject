@@ -1,4 +1,4 @@
-package com.community.communityproject.entitiy;
+package com.community.communityproject.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

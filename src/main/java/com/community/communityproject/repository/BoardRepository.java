@@ -1,6 +1,6 @@
 package com.community.communityproject.repository;
 
-import com.community.communityproject.entitiy.board.Board;
+import com.community.communityproject.entity.board.Board;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

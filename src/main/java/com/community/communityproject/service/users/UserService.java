@@ -1,15 +1,14 @@
 package com.community.communityproject.service.users;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.S3Object;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
 import com.community.communityproject.dto.users.UsersInfo;
 import com.community.communityproject.dto.users.UsersSignupDTO;
-import com.community.communityproject.entitiy.users.ProfileImage;
-import com.community.communityproject.entitiy.users.UserRole;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.ProfileImage;
+import com.community.communityproject.entity.users.UserRole;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.ProfileImageRepository;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;

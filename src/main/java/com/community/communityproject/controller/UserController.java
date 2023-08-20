@@ -158,7 +158,7 @@ public class UserController {
         model.addAttribute("usersEditDTO", usersEditDTO);
 
 
-        return "profile";
+        return "profile/profile";
     }
 
     @PostMapping("/profile")
@@ -209,20 +209,37 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/profile/posts")
+    @GetMapping("/profile/posts")
     public String profileBoards(HttpServletRequest request, HttpServletResponse response,
                                 Model model,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
                                 @RequestParam(value = "username") String username,
                                 @RequestParam(value = "email") String email) {
+
         Page<BoardListResponseDTO.BoardDTO> board = boardService.getMyBoardListDTO(page, response, request);
         model.addAttribute("paging", board);
-        model.addAttribute("editingEnabled", false);
+
         UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
-        model.addAttribute("usersEditDTO", new UsersEditDTO());
         model.addAttribute("user", usersEditDTO);
 
-        return "profile";
+        return "profile/profileMyBoard";
+    }
+
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile/favorites")
+    public String profileFavorites(HttpServletRequest request, HttpServletResponse response,
+                                Model model,
+                                @RequestParam(value = "page", defaultValue = "1") int page,
+                                @RequestParam(value = "username") String username,
+                                @RequestParam(value = "email") String email) {
+        Page<BoardListResponseDTO.BoardDTO> board = boardService.getMyFavoriteListDTO(page, response, request);
+        model.addAttribute("paging", board);
+
+        UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
+        model.addAttribute("user", usersEditDTO);
+
+        return "profile/profileMyFavorite";
     }
 
     @PostMapping("/delete/users")

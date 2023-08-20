@@ -1,11 +1,10 @@
 package com.community.communityproject.config.handler;
 
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.redis.RedisService;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

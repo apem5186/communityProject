@@ -2,7 +2,7 @@ package com.community.communityproject.service.jwt;
 
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.users.UsersLoginDTO;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.redis.RedisService;
 import jakarta.servlet.http.Cookie;

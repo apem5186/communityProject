@@ -12,6 +12,15 @@
       color: dodgerblue;
       border-bottom: 3px solid dodgerblue;
     }
+    .btn-group .btn:first-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .btn-group .btn:last-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
 
   </style>
 </head>
@@ -26,7 +35,7 @@
       <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
       <div class="target-div d-none">
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
-        <form th:action="@{/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/templates/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
           <div class="container d-flex align-items-start justify-content-between">
             <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;" alt="Profile Image"/>
             <!-- 편집 모드를 전환하는 버튼 -->
@@ -76,102 +85,41 @@
         <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
       </div>
 
-
       <hr/>
-
-
-
+      <!-- TODO : url에 param이 다 나타나는데 안나타나게 수정하고 해당 앵커 클릭해서 페이지 이동 후 페이지네이션 작동 안하는거 수정 -->
       <div class="buttonMenu btn-group">
-        <button type="button" class="getMyBoard btn btn-outline-light custom-hover">내 게시물</button>
-        <button type="button" class="getMyComment btn btn-outline-light custom-hover">내 댓글</button>
-        <button type="button" class="getMyFavorite btn btn-outline-light custom-hover">즐겨찾기</button>
-        <button type="button" class="getMyLike btn btn-outline-light custom-hover">좋아요</button>
+        <!-- For getting My Board -->
+        <a th:href="@{'/profile/posts?username=' + ${user.getUsername()} + '&email=' + ${user.getEmail()} }"
+           class="btn btn-outline-light custom-hover">
+          내 게시물
+        </a>
+
+        <!-- Placeholder for comments; you can update these as necessary -->
+        <!-- Comments will be made -->
+        <a th:href="@{/profile}" class="btn btn-outline-light custom-hover">
+          내 댓글
+        </a>
+
+        <!-- For getting My Favorite -->
+        <a th:href="@{'/profile/favorites?username=' + ${user.getUsername()} + '&email=' + ${user.getEmail()} }"
+           class="btn btn-outline-light custom-hover">
+          즐겨찾기
+        </a>
+
+        <!-- coming soon -->
+        <a th:href="@{/profile}" class="btn btn-outline-light custom-hover">
+          좋아요
+        </a>
       </div>
 
 
-      <form id="deleteForm" action="#" th:action="@{/delete/users}" method="post" class="deleteForm d-inline-block">
-      </form>
-      <form id="getMyBoardForm" th:action="@{/profile/posts}" method="post">
-        <input type="hidden" id="myBoardUsername" name="username" th:value="${user.getUsername()}">
-        <input type="hidden" id="myBoardEmail" name="email" th:value="${user.getEmail()}">
-        <!-- 내 게시글 눌렀을 때 생김 -->
-        <input type="hidden" th:if="${paging}" id="myBoardPage" name="page" th:value="${paging.number} + 1">
-      </form>
-      <form id="getMyFavoriteForm" th:action="@{/profile/favorite}" method="post">
-        <input type="hidden" id="myFvUsername" name="username" th:value="${user.getUsername()}">
-        <input type="hidden" id="myFvEmail" name="email" th:value="${user.getEmail()}">
-        <!-- 즐겨찾기 눌렀을 때 생김 -->
-        <input type="hidden" th:if="${paging}" id="myFvPage" name="page" th:value="${paging.number} + 1">
-      </form>
-      <form id="getByCommentForm" th:action="@{#}" method="post">
-        <!-- 댓글 만들면 만들 예정 -->
-      </form>
-      <form id="getMyLike" th:action="@{#}" method="post">
-        <!-- 곧 만들 예정 -->
-      </form>
     </div>
-      <div th:if="${paging}" id="boardFragment">
-        <div th:insert="~{fragments :: profile_my_board}"></div>
-      </div>
   </div>
 </div>
 
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
-
-  const board_elements = document.getElementsByClassName("getMyBoard");
-
-  /* 게시글을 보여줄지 말지 결정하는 변수 localStorage에 저장하고 기본값 false */
-  if (localStorage.getItem('isBoardVisible') === null) {
-    localStorage.setItem('isBoardVisible', 'false');
-  }
-
-  let isBoardVisible = JSON.parse(localStorage.getItem('isBoardVisible'));
-
-  /* ${paging}은 'getMyBoardForm'이 제출되면 생김 */
-  /*<![CDATA[*/
-  let paging = /*[[${paging}]]*/ null;
-  /*]]>*/
-  Array.from(board_elements).forEach(function(element) {
-    element.addEventListener('click', function() {
-      /* 처음 클릭하면 isBoardVisible이 true가 되서 localStorage에 저장됨 다시 클릭하면 반대 */
-      isBoardVisible = !isBoardVisible;
-      localStorage.setItem('isBoardVisible', isBoardVisible);
-      if (!isBoardVisible) {
-        window.location.href = "/profile";
-        return; // 이후의 코드를 실행하지 않음
-      }
-      document.getElementById('getMyBoardForm').submit();
-    });
-  });
-
-  /* form 제출해서 paging Model 값 받아 왔으면 */
-  if (paging) {
-    const board_fragment = document.getElementById("boardFragment");
-    /* isBoardVisible이 false이면 'profile_my_board' fragment 숨기고 */
-    if (!isBoardVisible) {
-      board_fragment.setAttribute("hidden", "hidden");
-    } else {  /* 반대면 보여줌 */
-      board_fragment.removeAttribute("hidden");
-    }
-    /* 페이지 링크 눌렀을 때 실행되는 함수 */
-    addBoardScript();
-  }
-
-  function addBoardScript() {
-
-    const page_elements = document.getElementsByClassName("page-link");
-    Array.from(page_elements).forEach(function (element) {
-      element.addEventListener('click', function () {
-        console.log("page-link clicked");
-        document.getElementById('page').value = this.dataset.page;
-        console.log("page value : " + document.getElementById('page').value);
-        console.log("dataset.page value : " + this.dataset.page);
-        document.getElementById('getMyBoardForm').submit();
-      });
-    });
-  }
   function confirmDelete() {
     let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
     if (result) {
@@ -182,11 +130,11 @@
 
   // 페이지 로드 시 토글 상태 확인 및 설정
   document.addEventListener("DOMContentLoaded", function() {
-    if (localStorage.getItem('editingEnabled') === null) {
-      localStorage.setItem('editingEnabled', "false");
+    if (sessionStorage.getItem('editingEnabled') === null) {
+      sessionStorage.setItem('editingEnabled', "false");
     }
     // JSON.parse 안해주면 false, true를 String으로 인식해서 망함
-    let editingEnabled = JSON.parse(localStorage.getItem('editingEnabled'));
+    let editingEnabled = JSON.parse(sessionStorage.getItem('editingEnabled'));
     console.log(editingEnabled);
     // 편집 모드가 비활성화되면 표시되는 div
     let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
@@ -215,12 +163,12 @@
     if (nonEditDiv.classList.contains('d-none')) {
       nonEditDiv.classList.remove('d-none');
       editDiv.classList.add('d-none');
-      localStorage.setItem('editingEnabled', true);
+      sessionStorage.setItem('editingEnabled', true);
       console.log("폼 보여야 함");
     } else {
       nonEditDiv.classList.add('d-none');
       editDiv.classList.remove('d-none');
-      localStorage.setItem('editingEnabled', false);
+      sessionStorage.setItem('editingEnabled', false);
       console.log("폼 안보여야 함");
     }
   }
@@ -229,7 +177,7 @@
   function cancelEditing() {
     let link = document.getElementById('editCancel');
     link.href = "/profile";
-    localStorage.setItem('editingEnabled', false);
+    sessionStorage.setItem('editingEnabled', false);
   }
 
   // 페이지 로드 시 showHideElements 함수 호출하여 적절한 요소를 표시함

@@ -1,7 +1,6 @@
 package com.community.communityproject.repository;
 
-import com.community.communityproject.entitiy.board.Board;
-import com.community.communityproject.entitiy.board.BoardImage;
+import com.community.communityproject.entity.board.BoardImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;

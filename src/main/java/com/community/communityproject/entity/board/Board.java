@@ -1,7 +1,7 @@
-package com.community.communityproject.entitiy.board;
+package com.community.communityproject.entity.board;
 
-import com.community.communityproject.entitiy.BaseEntity;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.BaseEntity;
+import com.community.communityproject.entity.users.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

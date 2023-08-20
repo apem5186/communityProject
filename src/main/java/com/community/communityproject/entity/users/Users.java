@@ -1,7 +1,7 @@
-package com.community.communityproject.entitiy.users;
+package com.community.communityproject.entity.users;
 
-import com.community.communityproject.entitiy.BaseEntity;
-import com.community.communityproject.entitiy.board.BoardFavorite;
+import com.community.communityproject.entity.BaseEntity;
+import com.community.communityproject.entity.board.BoardFavorite;
 import jakarta.persistence.*;
 import lombok.*;
 

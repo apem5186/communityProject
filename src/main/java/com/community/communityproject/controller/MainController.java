@@ -1,7 +1,6 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.board.BoardListResponseDTO;
-import com.community.communityproject.entitiy.board.Board;
 import com.community.communityproject.service.board.BoardService;
 import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.jwt.TokenProvider;

@@ -1,6 +1,6 @@
-package com.community.communityproject.entitiy.board;
+package com.community.communityproject.entity.board;
 
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

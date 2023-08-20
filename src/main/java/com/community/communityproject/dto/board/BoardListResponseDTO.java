@@ -1,9 +1,9 @@
 package com.community.communityproject.dto.board;
 
-import com.community.communityproject.entitiy.board.Board;
-import com.community.communityproject.entitiy.board.BoardImage;
-import com.community.communityproject.entitiy.users.ProfileImage;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.board.Board;
+import com.community.communityproject.entity.board.BoardImage;
+import com.community.communityproject.entity.users.ProfileImage;
+import com.community.communityproject.entity.users.Users;
 import lombok.*;
 
 import java.util.ArrayList;

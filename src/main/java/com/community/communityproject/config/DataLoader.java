@@ -1,11 +1,11 @@
 package com.community.communityproject.config;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.community.communityproject.entitiy.board.Board;
-import com.community.communityproject.entitiy.board.Category;
-import com.community.communityproject.entitiy.users.ProfileImage;
-import com.community.communityproject.entitiy.users.UserRole;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.board.Board;
+import com.community.communityproject.entity.board.Category;
+import com.community.communityproject.entity.users.ProfileImage;
+import com.community.communityproject.entity.users.UserRole;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.BoardRepository;
 import com.community.communityproject.repository.ProfileImageRepository;
 import com.community.communityproject.repository.UserRepository;
@@ -16,7 +16,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;

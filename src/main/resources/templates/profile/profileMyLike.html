@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>프로필_좋아요</title>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h1>내 프로필</h1>
+            <hr/>
+
+            <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
+            <div class="target-div">
+                <div class="container d-flex align-items-start justify-content-between">
+                    <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+                    <!-- 편집 모드를 전환하는 버튼 -->
+                    <div>
+                        <a href="" class="editBtn btn btn-primary me-2" id="editBtnEnabled" onclick="toggleEditing(event)">Edit profile</a>
+                        <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
+                    </div>
+                </div>
+                <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
+                <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
+            </div>
+
+
+            <hr/>
+
+            <div class="buttonMenu btn-group">
+                <button type="button" class="getMyBoard btn btn-outline-light custom-hover">내 게시물</button>
+                <button type="button" class="getMyComment btn btn-outline-light custom-hover">내 댓글</button>
+                <button type="button" class="getMyFavorite btn btn-outline-light custom-hover">즐겨찾기</button>
+                <button type="button" class="getMyLike btn btn-outline-light custom-hover">좋아요</button>
+            </div>
+
+            <form id="getMyBoardForm" th:action="@{/profile/posts}" method="post">
+                <input type="hidden" id="myBoardUsername" name="username" th:value="${user.getUsername()}">
+                <input type="hidden" id="myBoardEmail" name="email" th:value="${user.getEmail()}">
+                <!-- 내 게시글 눌렀을 때 생김 -->
+                <input type="hidden" th:if="${paging}" id="myBoardPage" name="page" th:value="${paging.number} + 1">
+            </form>
+            <form id="getMyFavoriteForm" th:action="@{/profile/favorites}" method="post">
+                <input type="hidden" id="myFvUsername" name="username" th:value="${user.getUsername()}">
+                <input type="hidden" id="myFvEmail" name="email" th:value="${user.getEmail()}">
+                <!-- 즐겨찾기 눌렀을 때 생김 -->
+                <input type="hidden" th:if="${paging}" id="myFvPage" name="page" th:value="${paging.number} + 1">
+            </form>
+            <form id="getByCommentForm" th:action="@{#}" method="post">
+                <!-- 댓글 만들면 만들 예정 -->
+            </form>
+            <form id="getMyLike" th:action="@{#}" method="post">
+                <!-- 곧 만들 예정 -->
+            </form>
+        </div>
+        <div th:insert="~{fragments :: profile_get_data}"></div>
+
+    </div>
+</div>
+
+
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+</body>
+</html>

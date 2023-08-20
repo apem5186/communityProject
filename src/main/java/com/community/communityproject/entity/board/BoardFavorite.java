@@ -1,12 +1,15 @@
-package com.community.communityproject.entitiy.board;
+package com.community.communityproject.entity.board;
 
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -29,6 +32,10 @@ public class BoardFavorite {
 
     @Column(nullable = false)
     private boolean status;
+
+    @CreatedDate
+    @Column(name = "regDate", updatable = false)
+    private LocalDateTime regDate;
 
     public BoardFavorite(Board board, Users users) {
         this.board = board;

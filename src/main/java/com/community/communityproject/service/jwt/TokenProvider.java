@@ -1,7 +1,7 @@
 package com.community.communityproject.service.jwt;
 
 import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.entitiy.users.UserDetailsImpl;
+import com.community.communityproject.entity.users.UserDetailsImpl;
 import com.community.communityproject.service.users.UserSecurityService;
 import com.community.communityproject.service.redis.RedisService;
 import io.jsonwebtoken.*;

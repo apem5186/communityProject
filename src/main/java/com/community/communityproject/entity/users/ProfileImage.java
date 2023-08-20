@@ -1,4 +1,4 @@
-package com.community.communityproject.entitiy.users;
+package com.community.communityproject.entity.users;
 
 import jakarta.persistence.*;
 import lombok.Builder;

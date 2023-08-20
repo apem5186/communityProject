@@ -1,7 +1,7 @@
 package com.community.communityproject.config.handler;
 
 import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.entitiy.users.Users;
+import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -1,4 +1,4 @@
-package com.community.communityproject.entitiy.board;
+package com.community.communityproject.entity.board;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

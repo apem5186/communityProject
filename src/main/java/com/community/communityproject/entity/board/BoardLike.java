@@ -35,7 +35,8 @@ public class BoardLike {
     private boolean isLiked;
 
     @Column
-    private String isRecommend;
+    @Enumerated(EnumType.STRING)
+    private LikeStatus likeStatus;
 
     @CreatedDate
     @Column(name = "regDate", updatable = false)
@@ -46,11 +47,11 @@ public class BoardLike {
         this.regDate = LocalDateTime.now();
     }
 
-    public BoardLike(Board board, Users users, String isRecommend) {
+    public BoardLike(Board board, Users users, LikeStatus likeStatus) {
         this.board = board;
         this.users = users;
         this.isLiked = true;
-        this.isRecommend = isRecommend;
+        this.likeStatus = likeStatus;
     }
 
     public void likeBoard() {

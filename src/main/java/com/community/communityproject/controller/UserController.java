@@ -1,6 +1,7 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.dto.*;
+import com.community.communityproject.dto.board.BoardLikeDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
 import com.community.communityproject.dto.users.UsersLoginDTO;
@@ -13,6 +14,7 @@ import com.community.communityproject.service.jwt.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -142,7 +145,8 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication) {
+    public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication,
+                          HttpSession session) {
         //String profileUrl = userService.findImage(authentication.getName());
         model.addAttribute("user", userService.loadUser(authentication.getName()));
         //model.addAttribute("profileImage", profileUrl);
@@ -154,7 +158,8 @@ public class UserController {
 
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         UsersEditDTO usersEditDTO = userService.loadEditUserInfo(currentUserEmail);
-
+        session.setAttribute("username", usersEditDTO.getUsername());
+        session.setAttribute("email", usersEditDTO.getEmail());
         model.addAttribute("usersEditDTO", usersEditDTO);
 
 
@@ -164,7 +169,8 @@ public class UserController {
     @PostMapping("/profile")
     public String editProfile(@Valid UsersEditDTO usersEditDTO, BindingResult bindingResult,
                               HttpServletRequest request, HttpServletResponse response,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              HttpSession session) {
 
         String beforeUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         // redirect 할 때 param 추가
@@ -201,7 +207,7 @@ public class UserController {
             return "redirect:" + redirectUrl;
         }
 
-        userService.editUser(usersEditDTO, beforeUserEmail, request, response);
+        userService.editUser(usersEditDTO, beforeUserEmail, request, response, session);
 
 
 
@@ -213,13 +219,14 @@ public class UserController {
     public String profileBoards(HttpServletRequest request, HttpServletResponse response,
                                 Model model,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
-                                @RequestParam(value = "username") String username,
-                                @RequestParam(value = "email") String email) {
+                                HttpSession session) {
 
         Page<BoardListResponseDTO.BoardDTO> board = boardService.getMyBoardListDTO(page, response, request);
         model.addAttribute("paging", board);
 
-        UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setUsername((String) session.getAttribute("username"));
+        usersEditDTO.setEmail((String) session.getAttribute("email"));
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyBoard";
@@ -231,21 +238,39 @@ public class UserController {
     public String profileFavorites(HttpServletRequest request, HttpServletResponse response,
                                 Model model,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
-                                @RequestParam(value = "username") String username,
-                                @RequestParam(value = "email") String email) {
+                                   HttpSession session) {
         Page<BoardListResponseDTO.BoardDTO> board = boardService.getMyFavoriteListDTO(page, response, request);
         model.addAttribute("paging", board);
 
-        UsersEditDTO usersEditDTO = userService.getUsersInfo(email, username);
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setUsername((String) session.getAttribute("username"));
+        usersEditDTO.setEmail((String) session.getAttribute("email"));
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyFavorite";
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile/likes")
+    public String profileLikes(HttpServletRequest request, HttpServletResponse response,
+                               Model model,
+                               @RequestParam(value = "page", defaultValue = "1") int page,
+                               HttpSession session) {
+        Page<BoardLikeDTO> board = boardService.getMyLikeListDTO(page, response, request);
+        model.addAttribute("paging", board);
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setUsername((String) session.getAttribute("username"));
+        usersEditDTO.setEmail((String) session.getAttribute("email"));
+        model.addAttribute("user", usersEditDTO);
+
+        return "profile/profileMyLike";
+    }
+
     @PostMapping("/delete/users")
     public String deleteUsers(HttpServletRequest request, HttpServletResponse response,
-                              RedirectAttributes redirectAttributes) {
-        String result = userService.deleteUsers(request, response);
+                              RedirectAttributes redirectAttributes,
+                              HttpSession session) {
+        String result = userService.deleteUsers(request, response, session);
         if (result == null) {
             redirectAttributes.addAttribute("error", "deleteError");
             return "redirect:/login";
@@ -295,7 +320,7 @@ public class UserController {
     @PostMapping("/logout")
     public String logout(@CookieValue(name = "access-token", required = false) String requestAccessToken,
                          @CookieValue(name = "refresh-token", required = false) String requestRefreshToken,
-                         HttpServletResponse response) {
+                         HttpServletResponse response, HttpSession session) {
         log.info("hihiihihhi");
         if (requestAccessToken != null) {
             authService.logout(requestAccessToken, "logout");
@@ -316,6 +341,10 @@ public class UserController {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
+
+        session.removeAttribute("username");
+        session.removeAttribute("email");
+        session.removeAttribute("viewedBoards");
 
         return "redirect:/login";
     }

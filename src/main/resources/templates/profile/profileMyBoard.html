@@ -36,10 +36,6 @@
             <div class="target-div">
                 <div class="container d-flex align-items-start justify-content-between">
                     <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
-                    <div>
-                        <a href="" class="editBtn btn btn-primary me-2" id="editBtnEnabled" onclick="toggleEditing(event)">Edit profile</a>
-                        <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
-                    </div>
                 </div>
                 <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
                 <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
@@ -47,31 +43,30 @@
 
 
             <hr/>
-            <!-- 메뉴 부분 -->
             <div class="buttonMenu btn-group">
-                <button type="button" class="getMyBoard btn btn-outline-light custom-hover">내 게시물</button>
-                <button type="button" class="getMyComment btn btn-outline-light custom-hover">내 댓글</button>
-                <button type="button" class="getMyFavorite btn btn-outline-light custom-hover">즐겨찾기</button>
-                <button type="button" class="getMyLike btn btn-outline-light custom-hover">좋아요</button>
+                <!-- For getting My Board -->
+                <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
+                    내 게시글
+                </button>
+
+                <!-- Placeholder for comments; you can update these as necessary -->
+                <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+                    댓글
+                </button>
+
+                <!-- For getting My Favorite -->
+                <button data-action-url="/profile/favorites" class="btn btn-outline-light custom-hover profileButton">
+                    즐겨찾기
+                </button>
+
+                <!-- coming soon -->
+                <button data-action-url="/profile/likes" class="btn btn-outline-light custom-hover profileButton">
+                    좋아요
+                </button>
             </div>
 
-            <form id="getMyBoardForm" th:action="@{/profile/posts}" method="post">
-                <input type="hidden" id="myBoardUsername" name="username" th:value="${user.getUsername()}">
-                <input type="hidden" id="myBoardEmail" name="email" th:value="${user.getEmail()}">
-                <!-- 내 게시글 눌렀을 때 생김 -->
-                <input type="hidden" th:if="${paging}" id="myBoardPage" name="page" th:value="${paging.number} + 1">
-            </form>
-            <form id="getMyFavoriteForm" th:action="@{/profile/favorites}" method="post">
-                <input type="hidden" id="myFvUsername" name="username" th:value="${user.getUsername()}">
-                <input type="hidden" id="myFvEmail" name="email" th:value="${user.getEmail()}">
-                <!-- 즐겨찾기 눌렀을 때 생김 -->
-                <input type="hidden" th:if="${paging}" id="myFvPage" name="page" th:value="${paging.number} + 1">
-            </form>
-            <form id="getByCommentForm" th:action="@{#}" method="post">
-                <!-- 댓글 만들면 만들 예정 -->
-            </form>
-            <form id="getMyLike" th:action="@{#}" method="post">
-                <!-- 곧 만들 예정 -->
+            <form id="profileForm" method="get" style="display: none;">
+                <input type="hidden" id="actionUrl">
             </form>
             <hr/>
         </div>
@@ -80,14 +75,25 @@
 </div>
 <!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
 <form th:action="@{/profile/posts}" method="get" id="pageForm">
-    <input type="hidden" name="username" th:value="${user.getUsername()}">
-    <input type="hidden" name="email" th:value="${user.getEmail()}">
     <input type="hidden" id="page" name="page" th:value="${paging.number}">
 </form>
 
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
+
+    let profileButtons = document.getElementsByClassName("profileButton");
+    Array.from(profileButtons).forEach(function(button) {
+        button.addEventListener('click', function () {
+            let form = document.getElementById('profileForm');
+
+            // Change form action based on the button clicked
+            form.action = this.getAttribute('data-action-url');
+
+            form.submit();
+        });
+    });
+
     const page_elements = document.getElementsByClassName("page-link");
     Array.from(page_elements).forEach(function(element) {
         element.addEventListener('click', function() {
@@ -96,16 +102,7 @@
         });
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-        let profileButtons = document.getElementsByClassName("profileButton");
-        Array.from(profileButtons).forEach(function(button) {
-            button.addEventListener('click', function() {
-                let form = document.getElementById('profileForm');
-                form.action = this.getAttribute('data-action-url'); // Set form action based on clicked button
-                form.submit();
-            });
-        });
-    });
+
 
 </script>
 </body>

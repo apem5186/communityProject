@@ -51,6 +51,9 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
     private final List<BoardFavorite> boardFavorites = new ArrayList<>();
 
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    private final List<BoardLike> boardLikes = new ArrayList<>();
+
     public void edit(String title, String content, String category) {
         this.title = title;
         this.content = content;

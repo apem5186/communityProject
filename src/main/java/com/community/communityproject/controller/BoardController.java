@@ -57,15 +57,15 @@ public class BoardController {
             session.setAttribute("viewedBoards", viewedBoards);
         }
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
-        String isRecommend = this.boardService.isRecommend(boardId);
+        String likeStatus = this.boardService.checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
         // 권한이 있는 사용자만
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
             boolean isFavorite = this.boardService.hasFavoriteBoard(boardId);
             // 이 게시글에 추천이나 비추천을 눌렀던 사용자라면
-            if (isRecommend != null) {
+            if (likeStatus != null) {
                 // 뭘 눌렀는지 모델에 추가시킴
-                model.addAttribute("isRecommend", isRecommend);
+                model.addAttribute("likeStatus", likeStatus);
             }
             if (isFavorite) {
                 model.addAttribute("isFavorite", isFavorite);

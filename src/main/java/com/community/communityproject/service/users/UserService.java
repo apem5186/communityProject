@@ -17,6 +17,7 @@ import com.community.communityproject.service.redis.RedisService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -171,7 +172,7 @@ public class UserService {
 
     @Transactional
     public void editUser(UsersEditDTO usersEditDTO, String beforeEmail, HttpServletRequest request,
-                         HttpServletResponse response) {
+                         HttpServletResponse response, HttpSession session) {
 
 
         log.info("PROFILE NAME CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
@@ -184,7 +185,9 @@ public class UserService {
             users.setPassword(passwordEncoder.encode(usersEditDTO.getPassword()));
             users.setUserRole(UserRole.USER);
 
-            userRepository.save(users);
+            users = userRepository.save(users);
+            session.setAttribute("username", users.getUsername());
+            session.setAttribute("email", users.getEmail());
 
             MultipartFile multipartFile = usersEditDTO.getProfileImage();
             String filePath = editProfileImage(multipartFile, usersEditDTO.getEmail());
@@ -198,7 +201,8 @@ public class UserService {
     }
 
     @Transactional
-    public String deleteUsers(HttpServletRequest request, HttpServletResponse response) {
+    public String deleteUsers(HttpServletRequest request, HttpServletResponse response,
+                              HttpSession session) {
         Cookie[] cookies = request.getCookies();
         String rt = null;
         String at = null;
@@ -248,6 +252,10 @@ public class UserService {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
+
+        session.removeAttribute("username");
+        session.removeAttribute("email");
+        session.removeAttribute("viewedBoards");
 
         ProfileImage profileImage = profileImageRepository.findByUsers(users);
         String path = profileImage.getFilePath();

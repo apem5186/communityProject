@@ -6,10 +6,7 @@ import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.config.exception.FavoriteNotFoundException;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.dto.board.BoardDTOInterface;
-import com.community.communityproject.dto.board.BoardEditRequestDTO;
-import com.community.communityproject.dto.board.BoardListResponseDTO;
-import com.community.communityproject.dto.board.BoardRequestDTO;
+import com.community.communityproject.dto.board.*;
 import com.community.communityproject.entity.board.*;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.*;
@@ -96,6 +93,40 @@ public class BoardService {
 
             // Return a new PageImpl with the converted DTOs
             return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
+    public Page<BoardLikeDTO> getMyLikeListDTO(int page, HttpServletResponse response,
+                                                                HttpServletRequest request) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+            List<Sort.Order> sorts = new ArrayList<>();
+            sorts.add(Sort.Order.desc(sort("LATEST")));
+            Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+            Page<Board> boards = boardLikeRepository.findBoardLikesByUsers(users, pageable);
+
+            // Convert each Board entity to BoardLikeDTO
+            List<BoardLikeDTO> boardLikeDTOs = boards.getContent().stream()
+                    .map(board -> {
+                        BoardListResponseDTO.BoardDTO boardDTO = new BoardListResponseDTO().getBoardDTO(board);
+                        String status = checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
+                        return new BoardLikeDTO(boardDTO, status);
+                    })
+                    .collect(Collectors.toList());
+
+            // Return a new PageImpl with the converted DTOs
+            return new PageImpl<>(boardLikeDTOs, pageable, boards.getTotalElements());
         } else {
             String at = null;
             Cookie[] cookies = request.getCookies();
@@ -324,32 +355,44 @@ public class BoardService {
             // 일단 Board랑 Users 가져옴
             Board board = boardRepository.getReferenceById(bid);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
+            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow(UserNotFoundException::new);
             // 추천 버튼을 눌렀으면
+            log.info("===============================");
+            log.info("status : " + status);
+            log.info("===============================");
             if (status) {
                 // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
-                if (isRecommend(bid) != null && isRecommend(bid).equals("unrecommended")) {
+                if (checklikeStatus(bid) != null && checklikeStatus(bid).equals("DISLIKE")) {
                     throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
                 }
                 // 추천 버튼을 누른적이 없을 때
-                if (!hasFavoriteBoard(board, users)) {
+                if (!hasLikeBoard(board, users)) {
                     board.increaseLikeCnt();
-                    BoardLike boardLike = new BoardLike(board, users, "recommend");
+                    BoardLike boardLike = new BoardLike(board, users, LikeStatus.LIKE);
                     boardLikeRepository.save(boardLike);
                 } else {    // 있을 때
+                    log.info("=============================");
+                    log.info("어디서");
+                    log.info("=============================");
                     board.decreaseLikeCnt();
                     BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users).get();
+                    log.info("=============================");
+                    log.info("에러가");
+                    log.info("=============================");
                     boardLikeRepository.delete(boardLike);
+                    log.info("=============================");
+                    log.info("나는거야");
+                    log.info("=============================");
                 }
             } else {    // 비추천 버튼을 눌렀으면
                 // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
-                if (isRecommend(bid) != null && isRecommend(bid).equals("recommend")) {
+                if (checklikeStatus(bid) != null && checklikeStatus(bid).equals("LIKE")) {
                     throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
                 }
                 // 비추천 버튼을 누른적이 없을 때
-                if (!hasFavoriteBoard(board, users)) {
+                if (!hasLikeBoard(board, users)) {
                     board.decreaseLikeCnt();
-                    BoardLike boardLike = new BoardLike(board, users, "unrecommended");
+                    BoardLike boardLike = new BoardLike(board, users, LikeStatus.DISLIKE);
                     boardLikeRepository.save(boardLike);
                 } else {    // 있을 때
                     board.increaseLikeCnt();
@@ -404,19 +447,19 @@ public class BoardService {
     }
 
     /**
-     * recommend인지 unrecommended인지 판별
-     * isRecommend 필드의 자료형이 boolean이 아닌 이유는
+     * LIKE인지 DISLIKE인지 판별
+     * likeStatus 필드의 자료형이 boolean이 아닌 이유는
      * 회원이 아예 추천을 안한 게시글을 방문했을 때의 경우를 판단하기 힘들어서
-     * @return null 아니면 recommend or unrecommended
+     * @return null 아니면 enum 타입의 LIKE or DISLIKE
      */
-    public String isRecommend(Long bid) {
+    public String checklikeStatus(Long bid) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        Users users = userRepository.findByEmail(email).orElseThrow();
+        Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         Board board = boardRepository.findById(bid).orElseThrow(BoardNotFoundException::new);
         // 추천이나 비추를 누른 기록이 있다면
         if (hasLikeBoard(board, users)) {
-            return boardLikeRepository.findByBoardAndUsers(board, users).get().getIsRecommend();
+            return boardLikeRepository.findByBoardAndUsers(board, users).get().getLikeStatus().toString();
         }
         // 없으면 null
         return null;

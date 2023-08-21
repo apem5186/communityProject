@@ -30,7 +30,7 @@
         </div>
         <div class="d-flex align-items-center flex-row">
             <a href="#">
-                <img class="img-fluid rounded-full" th:src="@{'/' + ${board.getProfilePath().getPath()}}" alt="프로필 사진"
+                <img class="img-fluid rounded-full" th:src="@{${board.getProfilePath().getPath()}}" alt="프로필 사진"
                 style="height: 40px; width: 40px">
             </a>
             <div class="ms-1 d-flex align-items-start flex-column">
@@ -111,7 +111,7 @@
                 <!-- 나머지 요소들 (오른쪽으로 정렬) -->
                 <div class="col d-flex justify-content-end">
                     <div class="col-sm-auto pe-0">
-                        <a href="javascript:void(0);" class="unrecommended btn btn-outline-dark align-items-center"
+                        <a href="javascript:void(0);" class="dislike btn btn-outline-dark align-items-center"
                            th:data-uri="@{|/${board.getCategory().toLowerCase()}/dislike/${board.getBid()}|}">
                             <i class="bi bi-chevron-down"></i>
                         </a>
@@ -120,7 +120,7 @@
                         <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
                     </div>
                     <div class="col-sm-auto ps-0">
-                        <a href="javascript:void(0);" class="recommend btn btn-outline-dark align-items-center" type="button"
+                        <a href="javascript:void(0);" class="like btn btn-outline-dark align-items-center" type="button"
                            th:data-uri="@{|/${board.getCategory().toLowerCase()}/like/${board.getBid()}|}">
                             <i class="bi bi-chevron-up"></i>
                         </a>
@@ -153,40 +153,40 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type="text/javascript" th:inline="javascript">
-    let isRecommend = /*[[${isRecommend}]]*/ 'none';
-    const recommend_elements = document.getElementsByClassName("recommend");
-    const unrecommended_elements = document.getElementsByClassName("unrecommended");
+    let likeStatus = /*[[${likeStatus}]]*/ 'none';
+    const like_elements = document.getElementsByClassName("like");
+    const dislike_elements = document.getElementsByClassName("dislike");
     // 추천을 누른 상태면
-    if (isRecommend !== 'none' && isRecommend === 'recommend') {
-        for (let i = 0; i < recommend_elements.length; i++) {
+    if (likeStatus !== 'none' && likeStatus === 'LIKE') {
+        for (let i = 0; i < like_elements.length; i++) {
             // 추천 버튼 파랗게 만들고 활성화시킴
-            recommend_elements[i].classList.remove('btn-outline-dark');
-            recommend_elements[i].classList.remove('disabled');
-            recommend_elements[i].classList.add('btn-outline-primary');
+            like_elements[i].classList.remove('btn-outline-dark');
+            like_elements[i].classList.remove('disabled');
+            like_elements[i].classList.add('btn-outline-primary');
         }
-        for (let i = 0; i < unrecommended_elements.length; i++) {
+        for (let i = 0; i < dislike_elements.length; i++) {
             // 비추 버튼 비활시킴
-            unrecommended_elements[i].classList.add('disabled');
+            dislike_elements[i].classList.add('disabled');
         }
     // 비추 누른 상태면
-    } else if (isRecommend !== 'none' && isRecommend === 'unrecommended') {
-        for (let i = 0; i < unrecommended_elements.length; i++) {
+    } else if (likeStatus !== 'none' && likeStatus === 'DISLIKE') {
+        for (let i = 0; i < dislike_elements.length; i++) {
             // 비추 버튼 빨갛게 만들고 활성화 시킴
-            unrecommended_elements[i].classList.remove('disabled');
-            unrecommended_elements[i].classList.remove('btn-outline-dark');
-            unrecommended_elements[i].classList.add('btn-outline-danger');
+            dislike_elements[i].classList.remove('disabled');
+            dislike_elements[i].classList.remove('btn-outline-dark');
+            dislike_elements[i].classList.add('btn-outline-danger');
         }
-        for (let i = 0; i < recommend_elements.length; i++) {
+        for (let i = 0; i < like_elements.length; i++) {
             // 추천 버튼 비활시킴
-            recommend_elements[i].classList.add('disabled');
+            like_elements[i].classList.add('disabled');
         }
     }
-    Array.from(recommend_elements).forEach(function (element) {
+    Array.from(like_elements).forEach(function (element) {
         element.addEventListener('click', function () {
             location.href = this.dataset.uri;
         })
     })
-    Array.from(unrecommended_elements).forEach(function (element) {
+    Array.from(dislike_elements).forEach(function (element) {
         element.addEventListener('click', function () {
             location.href = this.dataset.uri;
         })

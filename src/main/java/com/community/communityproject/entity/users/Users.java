@@ -2,6 +2,7 @@ package com.community.communityproject.entity.users;
 
 import com.community.communityproject.entity.BaseEntity;
 import com.community.communityproject.entity.board.BoardFavorite;
+import com.community.communityproject.entity.board.BoardLike;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,6 +41,9 @@ public class Users extends BaseEntity {
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.REMOVE)
     private List<BoardFavorite> favoriteBoardsByUser = new ArrayList<>();
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.REMOVE)
+    private List<BoardLike> likeBoardsByUser = new ArrayList<>();
 
     public Users(Long id, String username, String password, String email,
                 UserRole userRole, boolean isLogin) {

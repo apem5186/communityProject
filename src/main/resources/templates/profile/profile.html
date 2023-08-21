@@ -86,31 +86,32 @@
       </div>
 
       <hr/>
-      <!-- TODO : url에 param이 다 나타나는데 안나타나게 수정하고 해당 앵커 클릭해서 페이지 이동 후 페이지네이션 작동 안하는거 수정 -->
+
       <div class="buttonMenu btn-group">
         <!-- For getting My Board -->
-        <a th:href="@{'/profile/posts?username=' + ${user.getUsername()} + '&email=' + ${user.getEmail()} }"
-           class="btn btn-outline-light custom-hover">
-          내 게시물
-        </a>
+        <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
+          내 게시글
+        </button>
 
         <!-- Placeholder for comments; you can update these as necessary -->
-        <!-- Comments will be made -->
-        <a th:href="@{/profile}" class="btn btn-outline-light custom-hover">
-          내 댓글
-        </a>
+        <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+          댓글
+        </button>
 
         <!-- For getting My Favorite -->
-        <a th:href="@{'/profile/favorites?username=' + ${user.getUsername()} + '&email=' + ${user.getEmail()} }"
-           class="btn btn-outline-light custom-hover">
+        <button data-action-url="/profile/favorites" class="btn btn-outline-light custom-hover profileButton">
           즐겨찾기
-        </a>
+        </button>
 
         <!-- coming soon -->
-        <a th:href="@{/profile}" class="btn btn-outline-light custom-hover">
+        <button data-action-url="/profile/likes" class="btn btn-outline-light custom-hover profileButton">
           좋아요
-        </a>
+        </button>
       </div>
+
+      <form id="profileForm" method="get" style="display: none;">
+        <input type="hidden" id="actionUrl">
+      </form>
 
 
     </div>
@@ -120,6 +121,19 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
+
+  let profileButtons = document.getElementsByClassName("profileButton");
+  Array.from(profileButtons).forEach(function(button) {
+    button.addEventListener('click', function () {
+      let form = document.getElementById('profileForm');
+
+      // Change form action based on the button clicked
+      form.action = this.getAttribute('data-action-url');
+
+      form.submit();
+    });
+  });
+
   function confirmDelete() {
     let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
     if (result) {
@@ -205,6 +219,7 @@
     document.getElementById("profile-image").value = "";
     document.getElementById("profile-image-preview").src = "/profileImage/default/profile_default.jpg";
   });
+
 </script>
 </body>
 </html>

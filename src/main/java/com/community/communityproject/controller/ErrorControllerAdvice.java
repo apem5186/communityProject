@@ -2,6 +2,7 @@ package com.community.communityproject.controller;
 
 import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.config.exception.FavoriteNotFoundException;
+import com.community.communityproject.config.exception.LikeNotFoundException;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
  * 5 : InvalidEndpointRequest
  * 6 : FavoriteNotFound
  * 7 : UserNotFound
+ * 8 : LikeNotFound
  */
 @Slf4j
 @ControllerAdvice
@@ -107,6 +109,7 @@ public class ErrorControllerAdvice {
         return mav;
     }
 
+
     @ExceptionHandler(UserNotFoundException.class)
     public ModelAndView handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
         log.error("=====================================");
@@ -116,6 +119,20 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "사용자를 찾을 수 없습니다.");
         mav.addObject("errorNumber", "7");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+
+    @ExceptionHandler(LikeNotFoundException.class)
+    public ModelAndView handleLikeNotFound(LikeNotFoundException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "좋아요를 누른 기록이 없습니다.");
+        mav.addObject("errorNumber", "8");
         mav.setViewName("errorPage");
         return mav;
     }

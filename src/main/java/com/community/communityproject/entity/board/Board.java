@@ -1,6 +1,7 @@
 package com.community.communityproject.entity.board;
 
 import com.community.communityproject.entity.BaseEntity;
+import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.users.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -43,10 +44,13 @@ public class Board extends BaseEntity {
     private Category category;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
-    private List<BoardImage> boardImages = new ArrayList<>();
+    private final List<BoardImage> boardImages = new ArrayList<>();
 
     @ManyToOne(targetEntity = Users.class)
     private Users users;
+
+    @OneToMany(mappedBy = "board")
+    private final List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
     private final List<BoardFavorite> boardFavorites = new ArrayList<>();
@@ -100,4 +104,8 @@ public class Board extends BaseEntity {
     public void increaseFavoriteCnt() {this.favoriteCnt += 1;}
 
     public void decreaseFavoriteCnt() {this.favoriteCnt -= 1;}
+
+    public void increaseReviewCnt() { this.reviewCnt += 1; }
+
+    public void decreaseReviewCnt() { this.reviewCnt -= 1; }
 }

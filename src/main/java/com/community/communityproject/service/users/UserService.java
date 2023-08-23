@@ -2,6 +2,7 @@ package com.community.communityproject.service.users;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
+import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
 import com.community.communityproject.dto.users.UsersInfo;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -462,4 +465,13 @@ public class UserService {
         return fullUrl; // "/image"가 없는 경우 원래 URL 반환
     }
 
+    /**
+     * SecurityContextHolder를 이용해 Users를 찾음
+     * @return Users
+     */
+    public Users getUsers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
 }

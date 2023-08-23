@@ -19,6 +19,4 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
     // 프로필에서 좋아요 누른 게시글 찾는 용도
     @Query("SELECT bl.board FROM BoardLike bl WHERE bl.users = :users AND bl.isLiked = true")
     Page<Board> findBoardLikesByUsers(@Param("users") Users users, Pageable pageable);
-
-    LikeStatus findLikeStatusByBoardAndUsers(Board board, Users users);
 }

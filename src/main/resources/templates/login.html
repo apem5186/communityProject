@@ -22,7 +22,7 @@
           <label for="password"><b>Password</b></label>
           <input type="password" th:field="*{password}" id="password" placeholder="Enter Password" required class="form-control">
         </div>
-
+        <div th:if="${#fields.hasErrors('global')}" th:errors="*{global}" class="error text-danger"></div>
         <button type="submit" class="btn btn-primary">Login</button>
         <p class="signup-text my-3">Don't have an account? <a href="/signup">Sign up</a></p>
       </form>

@@ -82,7 +82,7 @@ public class UserController {
 
         if (tokenDTO == null) {
             log.info("-- user 정보가 틀림 -- at login controller");
-            bindingResult.rejectValue("Not found User", "usersLoginDTO", "Email 혹은 Password가 일치하지 않습니다.");
+            bindingResult.reject("error.code", "Email 혹은 Password가 일치하지 않습니다.");
             return "login";
         }
         // 쿠키랑 헤더 설정

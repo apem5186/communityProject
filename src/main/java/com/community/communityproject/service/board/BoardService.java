@@ -7,9 +7,11 @@ import com.community.communityproject.config.exception.FavoriteNotFoundException
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.*;
+import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.entity.board.*;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.*;
+import com.community.communityproject.service.comment.CommentService;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.users.UserService;
@@ -18,6 +20,7 @@ import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +31,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,11 +56,42 @@ public class BoardService {
     private final AmazonS3Client amazonS3Client;
     private final BoardLikeRepository boardLikeRepository;
     private final BoardFavoriteRepository boardFavoriteRepository;
+    private final CommentService commentService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
     private final String BOARD_PATH = "boardImage/";
+
+    /**
+     * BoardController getBoard 메소드에 Model 추가시키는 서비스
+     * @param model
+     * @param bid
+     * @param session
+     * @param request
+     * @param page
+     * @return model
+     */
+    public Model populateBoardModel(Model model, String bid, HttpSession session, HttpServletRequest request, int page) {
+        Long boardId = Long.valueOf(bid);
+        BoardListResponseDTO.BoardDTO boardDTO = getBoard(Long.valueOf(bid));  // getBoard가 BoardService 내부 메서드라고 가정
+        Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid);  // commentService가 이 서비스 내에 주입되었다고 가정
+
+        String likeStatus = checklikeStatus(boardId);  // checklikeStatus가 BoardService 내부 메서드라고 가정
+        model.addAttribute("board", boardDTO);
+        model.addAttribute("comments", commentDTO);
+        // 권한이 있는 사용자만
+        if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
+            boolean isFavorite = hasFavoriteBoard(boardId);  // hasFavoriteBoard가 BoardService 내부 메서드라고 가정
+            if (likeStatus != null) {
+                model.addAttribute("likeStatus", likeStatus);
+            }
+            if (isFavorite) {
+                model.addAttribute("isFavorite", isFavorite);
+            }
+        }
+        return model;
+    }
 
     /**
      * 한 게시글의 데이터를 가져오기 위한 service
@@ -334,11 +371,20 @@ public class BoardService {
 
     /**
      * 게시글 방문할 때 조회수를 늘림 늘리는 방식은 HTTP Session을 이용
-     * @param id
+     * @param bid
+     * @param session
      */
     @Transactional
-    public void updateHits(Integer id) {
-        this.boardRepository.updateHits(id);
+    public void updateHits(Long bid, HttpSession session) {
+        Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
+        if (viewedBoards == null) {
+            viewedBoards = new HashSet<>();
+        }
+        if (!viewedBoards.contains(bid)) {
+            this.boardRepository.updateHits(Math.toIntExact(bid));
+            viewedBoards.add(bid);
+            session.setAttribute("viewedBoards", viewedBoards);
+        }
     }
 
     /**

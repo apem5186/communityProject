@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -48,36 +49,11 @@ public class BoardController {
     public String getBoard(Model model, @PathVariable String path,
                            @RequestParam(value = "rvPage", defaultValue = "1") int page,
                            @PathVariable String bid, HttpSession session, HttpServletRequest request) {
-        Long boardId = Long.valueOf(bid);
-        // 세션에 저장된 조회한 게시글 ID 목록을 가져옵니다.
-        Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
-        if (viewedBoards == null) {
-            viewedBoards = new HashSet<>();
-        }
-
-        // 해당 게시글을 이전에 조회하지 않았다면 조회수를 증가시킵니다.
-        if (!viewedBoards.contains(boardId)) {
-            boardService.updateHits(Math.toIntExact(boardId));
-            viewedBoards.add(boardId);
-            session.setAttribute("viewedBoards", viewedBoards);
-        }
-        BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
-        Page<CommentListResponseDTO.CommentDTO> commentDTO = this.commentService.getCommentsFromBoard(page, bid);
-
-        String likeStatus = this.boardService.checklikeStatus(boardId);
-        model.addAttribute("board", boardDTO);
-        model.addAttribute("comments", commentDTO);
-        // 권한이 있는 사용자만
-        if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
-            boolean isFavorite = this.boardService.hasFavoriteBoard(boardId);
-            // 이 게시글에 추천이나 비추천을 눌렀던 사용자라면
-            if (likeStatus != null) {
-                // 뭘 눌렀는지 모델에 추가시킴
-                model.addAttribute("likeStatus", likeStatus);
-            }
-            if (isFavorite) {
-                model.addAttribute("isFavorite", isFavorite);
-            }
+        boardService.updateHits(Long.valueOf(bid), session);
+        model = boardService.populateBoardModel(model, bid, session, request, page);
+        // 에러 메시지가 있다면 모델에 추가
+        if (model.containsAttribute("emptyContent")) {
+            model.addAttribute("emptyContent", model.getAttribute("emptyContent"));
         }
         return "board/boardDetail";
     }

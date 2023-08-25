@@ -33,7 +33,10 @@
             color: dodgerblue!important;
         }
 
-        .likeCnt {
+        .likeCnt,
+        .likeCnt:disabled {
+            font-weight: bold;
+            color: black!important;
             border-left: none;
             border-right: none;
         }
@@ -170,7 +173,7 @@
         <!-- 댓글 부분 -->
         <div>
             <span class="fs-5" th:text="${comments.getTotalElements() + '개의 댓글'}"></span>
-            <div sec:authorize="isAnonymous()" class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
+            <div sec:authorize="isAnonymous()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
                 <div class="d-flex-align-items-center">
                     <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
                         <!-- User profile image goes here -->
@@ -182,7 +185,7 @@
                     <button class="btn btn-primary">댓글 작성</button>
                 </div>
             </div>
-            <div sec:authorize="isAuthenticated()" class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
+            <div sec:authorize="isAuthenticated()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
                 <form action="/post/comment" method="post">
                     <div class="d-flex align-items-center">
                         <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
@@ -192,14 +195,12 @@
                     </div>
                     <input type="hidden" name="bid" th:value="${bid}" />
                     <input type="hidden" name="category" th:value="${board.getCategory().toLowerCase()}">
-                    <!-- 여기에 다른 필드들 (예: category)도 hidden input으로 추가할 수 있습니다. -->
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary">댓글 작성</button>
+                    <div class="d-flex justify-content-end align-items-center mt-2">
+                        <button type="submit" class="btn btn-primary me-2">댓글 작성</button>
+                        <i th:if="${emptyContent}" class="bi bi-exclamation-circle me-2" style="color: tomato;"></i>
+                        <p th:if="${emptyContent}" th:text="${emptyContent}" class="mb-0 text-danger">내용을 추가해 주세요.</p>
                     </div>
                 </form>
-                <div th:if="${emptyContent}" class="alert alert-warning" role="alert">
-                    <p th:text="${emptyContent}">내용을 추가해 주세요.</p>
-                </div>
 
             </div>
                 <div class="my-8">
@@ -224,7 +225,7 @@
                                                 <i class="bi bi-chevron-down"></i>
                                             </button>
                                             <!-- Current number of likes -->
-                                            <button class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;">10</button>
+                                            <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
                                             <!-- Like button -->
                                             <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
                                                 <!-- Add your Dislike icon here -->

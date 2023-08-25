@@ -7,12 +7,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
@@ -21,17 +22,18 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/post/comment")
     public String commentPost(@Valid CommentRequestDTO commentRequestDTO, BindingResult bindingResult,
-            Model model, HttpServletRequest request, HttpServletResponse response,
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = "bid") String bid) {
-
         if (bindingResult.hasErrors()) {
             FieldError fieldError = bindingResult.getFieldError("content");
             if (fieldError != null && fieldError.getDefaultMessage() != null) {
-                model.addAttribute("emptyContent", fieldError.getDefaultMessage());
+                redirectAttributes.addFlashAttribute("emptyContent", fieldError.getDefaultMessage()); // 세션에 임시로 에러 메시지 저장
             }
-            return "board/boardDetail";
+            return String.format("redirect:/%s/%s", commentRequestDTO.getCategory(), bid);
         }
 
         commentService.PostComment(request, response, commentRequestDTO, bid);

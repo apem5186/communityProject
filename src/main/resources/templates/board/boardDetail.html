@@ -32,12 +32,17 @@
             background-color: transparent!important;
             color: dodgerblue!important;
         }
+
+        .likeCnt {
+            border-left: none;
+            border-right: none;
+        }
     </style>
 </head>
 <body>
 <div th:insert="~{fragments :: header}"></div>
 <div class="d-flex justify-content-center">
-    <div class="w-75">
+    <div class="w-50">
         <div class="d-flex align-items-center mt-5">
             <div class="flex-grow-1 border-top"></div>
             <span class="px-3 bg-white" th:text="${board.getCategory()}"></span>
@@ -161,38 +166,57 @@
                 </div>
             </div>
         </div>
-        <div class="border-top mt-4"></div>
+        <div class="border-top my-3"></div>
         <!-- 댓글 부분 -->
         <div>
-            개의 댓글
-            <div class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle border me-3" style="width: 50px; height: 50px;">
+            <span class="fs-5" th:text="${comments.getTotalElements() + '개의 댓글'}"></span>
+            <div sec:authorize="isAnonymous()" class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
+                <div class="d-flex-align-items-center">
+                    <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
                         <!-- User profile image goes here -->
+                        <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
                     </div>
-                    <textarea id="commentTextarea" class="form-control" rows="3" placeholder="댓글을 작성하세요..." oninput="adjustHeight(this)"></textarea>
+                    <textarea class="form-control" rows="3"></textarea>
                 </div>
                 <div class="d-flex justify-content-end mt-2">
                     <button class="btn btn-primary">댓글 작성</button>
+                </div>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
+                <form action="/post/comment" method="post">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                            <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
+                        </div>
+                        <textarea id="commentTextarea" name="content" class="form-control" rows="3" placeholder="댓글을 작성하세요..." oninput="adjustHeight(this)"></textarea>
+                    </div>
+                    <input type="hidden" name="bid" th:value="${bid}" />
+                    <input type="hidden" name="category" th:value="${board.getCategory().toLowerCase()}">
+                    <!-- 여기에 다른 필드들 (예: category)도 hidden input으로 추가할 수 있습니다. -->
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary">댓글 작성</button>
+                    </div>
+                </form>
+                <div th:if="${emptyContent}" class="alert alert-warning" role="alert">
+                    <p th:text="${emptyContent}">내용을 추가해 주세요.</p>
                 </div>
 
             </div>
                 <div class="my-8">
                     <ul class="list-unstyled">
                         <li th:each="comment, commentStat : ${comments}" class="mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="rounded-circle border me-3" style="width: 50px; height: 50px;">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
                                     <!-- Comment author's profile image goes here -->
                                     <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">
                                 </div>
                                 <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex flex-column justify-content-center">
                                             <!-- Comment author's name and comment content -->
                                             <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>
-                                            <p class="fw-normal user-select-none" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
+                                            <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
                                         </div>
-                                        <!-- TODO: 작업 중 -->
                                         <div class="btn-group">
                                             <!-- Dislike button -->
                                             <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
@@ -200,7 +224,7 @@
                                                 <i class="bi bi-chevron-down"></i>
                                             </button>
                                             <!-- Current number of likes -->
-                                            <button class="btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;">10</button>
+                                            <button class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;">10</button>
                                             <!-- Like button -->
                                             <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
                                                 <!-- Add your Dislike icon here -->

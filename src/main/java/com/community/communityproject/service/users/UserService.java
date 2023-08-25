@@ -452,6 +452,14 @@ public class UserService {
     }
 
     /**
+     * s3에서 디폴트 이미지를 가져옴
+     * @return filePath
+     */
+    public String defaultImage() {
+        return String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
+    }
+
+    /**
      * filePath를 bucket url을 짤라서 반환함
      * @param fullUrl
      * @return path

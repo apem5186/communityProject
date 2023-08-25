@@ -26,6 +26,9 @@ public class GlobalControllerAdvice {
         if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
             String filePath = userService.findImage(auth.getName());
             model.addAttribute("profileImage", filePath);
+        } else {
+            String filePath = userService.defaultImage();
+            model.addAttribute("profileImage", filePath);
         }
     }
 }

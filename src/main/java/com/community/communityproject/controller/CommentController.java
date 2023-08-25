@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -24,6 +25,15 @@ public class CommentController {
     public String commentPost(@Valid CommentRequestDTO commentRequestDTO, BindingResult bindingResult,
             Model model, HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = "bid") String bid) {
+
+        if (bindingResult.hasErrors()) {
+            FieldError fieldError = bindingResult.getFieldError("content");
+            if (fieldError != null && fieldError.getDefaultMessage() != null) {
+                model.addAttribute("emptyContent", fieldError.getDefaultMessage());
+            }
+            return "board/boardDetail";
+        }
+
         commentService.PostComment(request, response, commentRequestDTO, bid);
         return String.format("redirect:/%s/%s", commentRequestDTO.getCategory(), bid);
     }

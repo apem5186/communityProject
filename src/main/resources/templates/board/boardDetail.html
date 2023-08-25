@@ -17,6 +17,21 @@
             min-height: 100px;
             overflow: auto;
         }
+
+        /* Remove the ability to resize the textarea */
+        textarea {
+            resize: none;
+            overflow-y: hidden; /* Hide vertical scrollbar */
+        }
+
+        .replyBtn {
+            border: none;
+        }
+        .replyBtn:hover,
+        .replyBtn:active {
+            background-color: transparent!important;
+            color: dodgerblue!important;
+        }
     </style>
 </head>
 <body>
@@ -147,6 +162,62 @@
             </div>
         </div>
         <div class="border-top mt-4"></div>
+        <!-- 댓글 부분 -->
+        <div>
+            개의 댓글
+            <div class="my-4 rounded-lg border p-3 my-sm-5 p-sm-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle border me-3" style="width: 50px; height: 50px;">
+                        <!-- User profile image goes here -->
+                    </div>
+                    <textarea id="commentTextarea" class="form-control" rows="3" placeholder="댓글을 작성하세요..." oninput="adjustHeight(this)"></textarea>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                    <button class="btn btn-primary">댓글 작성</button>
+                </div>
+
+            </div>
+                <div class="my-8">
+                    <ul class="list-unstyled">
+                        <li th:each="comment, commentStat : ${comments}" class="mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="rounded-circle border me-3" style="width: 50px; height: 50px;">
+                                    <!-- Comment author's profile image goes here -->
+                                    <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <!-- Comment author's name and comment content -->
+                                            <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>
+                                            <p class="fw-normal user-select-none" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
+                                        </div>
+                                        <!-- TODO: 작업 중 -->
+                                        <div class="btn-group">
+                                            <!-- Dislike button -->
+                                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
+                                                <!-- Add your Like icon here -->
+                                                <i class="bi bi-chevron-down"></i>
+                                            </button>
+                                            <!-- Current number of likes -->
+                                            <button class="btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;">10</button>
+                                            <!-- Like button -->
+                                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
+                                                <!-- Add your Dislike icon here -->
+                                                <i class="bi bi-chevron-up"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                        <p th:text="${comment.content}">Comment content goes here...</p>
+                            <button class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;">댓글 쓰기</button>
+                            <!-- Display the divider line for all comments except the last one -->
+                            <hr th:unless="${commentStat.index + 1 >= comments.getTotalElements()}" class="m-0"/>
+                        </li>
+                    </ul>
+                </div>
+        </div>
     </div>
 </div>
 
@@ -198,6 +269,11 @@
         if (isConfirmed) {
             window.location.href = "/login";
         }
+    }
+
+    function adjustHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
     }
 </script>
 </body>

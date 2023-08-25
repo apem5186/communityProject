@@ -3,7 +3,9 @@ package com.community.communityproject.controller;
 import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
+import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.service.board.BoardService;
+import com.community.communityproject.service.comment.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -27,6 +29,7 @@ import java.util.Set;
 public class BoardController {
 
     private final BoardService boardService;
+    private final CommentService commentService;
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,
@@ -42,6 +45,7 @@ public class BoardController {
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/{bid}")
     public String getBoard(Model model, @PathVariable String path,
+                           @RequestParam(value = "rvPage", defaultValue = "1") int page,
                            @PathVariable String bid, HttpSession session, HttpServletRequest request) {
         Long boardId = Long.valueOf(bid);
         // 세션에 저장된 조회한 게시글 ID 목록을 가져옵니다.
@@ -57,8 +61,11 @@ public class BoardController {
             session.setAttribute("viewedBoards", viewedBoards);
         }
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
+        Page<CommentListResponseDTO.CommentDTO> commentDTO = this.commentService.getCommentsFromBoard(page, bid);
+
         String likeStatus = this.boardService.checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
+        model.addAttribute("comments", commentDTO);
         // 권한이 있는 사용자만
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
             boolean isFavorite = this.boardService.hasFavoriteBoard(boardId);

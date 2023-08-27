@@ -40,6 +40,16 @@
             border-left: none;
             border-right: none;
         }
+
+        .commentLikeBtn:hover,
+        .commentLikeBtn:active {
+            background-color: lightblue!important;
+        }
+
+        .commentDisLikeBtn:hover,
+        .commentDisLikeBtn:active {
+            background-color: lightpink!important;
+        }
     </style>
 </head>
 <body>
@@ -219,18 +229,39 @@
                                             <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
                                         </div>
                                         <div class="btn-group">
+                                            <form th:action="@{/dislike/comment}" method="post" th:object="${commentLikeDTO}">
+                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
+                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
+                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
+                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
+                                                <!-- TODO : 게시글 추천도 이런방식으로 해도 될듯 -->
+                                                <button
+                                                        th:class="${comment.likeStatus == 'DISLIKE'} ? 'commentDisLikeBtn btn btn-sm btn-outline-danger' :
+                                                        'btn btn-sm btn-outline-secondary'"
+                                                        style="font-size: 0.75rem;"
+                                                        th:disabled="${comment.likeStatus == 'LIKE'}">
+                                                    <!-- Add your Like icon here -->
+                                                    <i class="bi bi-chevron-down" th:style="${comment.likeStatus == 'DISLIKE'} ? 'color: tomato;' : ''"></i>
+                                                </button>
+                                            </form>
                                             <!-- Dislike button -->
-                                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
-                                                <!-- Add your Like icon here -->
-                                                <i class="bi bi-chevron-down"></i>
-                                            </button>
                                             <!-- Current number of likes -->
                                             <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
                                             <!-- Like button -->
-                                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
-                                                <!-- Add your Dislike icon here -->
-                                                <i class="bi bi-chevron-up"></i>
-                                            </button>
+                                            <form th:action="@{/like/comment}" method="post" th:object="${commentLikeDTO}">
+                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
+                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
+                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
+                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
+                                                <button
+                                                        th:class="${comment.likeStatus == 'LIKE'} ? 'commentLikeBtn btn btn-sm btn-outline-primary' :
+                                                        'btn btn-sm btn-outline-secondary'"
+                                                        style="font-size: 0.75rem;"
+                                                        th:disabled="${comment.likeStatus == 'DISLIKE'}">
+                                                    <!-- Add your Dislike icon here -->
+                                                    <i class="bi bi-chevron-up" th:style="${comment.likeStatus == 'LIKE'} ? 'color: dodgerblue;' : ''"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

@@ -43,14 +43,12 @@ public class BoardController {
         model.addAttribute("kw", kw);
         return "board/" + path;
     }
-    
-    // TODO : model에 추가하는 값들 따로 메소드 만들어서 분리하기, CommentController에서 commentPost에서 써야함 service단에서 만들어야함
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/{bid}")
     public String getBoard(Model model, @PathVariable String path,
                            @RequestParam(value = "rvPage", defaultValue = "1") int page,
                            @PathVariable String bid, HttpSession session, HttpServletRequest request) {
         boardService.updateHits(Long.valueOf(bid), session);
-        model = boardService.populateBoardModel(model, bid, session, request, page);
+        model = boardService.populateBoardModel(model, bid, request, page);
         // 에러 메시지가 있다면 모델에 추가
         if (model.containsAttribute("emptyContent")) {
             model.addAttribute("emptyContent", model.getAttribute("emptyContent"));

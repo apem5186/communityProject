@@ -4,10 +4,7 @@ import com.community.communityproject.entity.board.Board;
 import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.users.ProfileImage;
 import com.community.communityproject.entity.users.Users;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -23,6 +20,7 @@ public class CommentListResponseDTO {
         private UsersDTOInComment usersDTOInComment;
         private BoardDTOInComment boardDTOInComment;
         private ProfileImgDTOInComment profileImgDTOInComment;
+        private String likeStatus;
 
         public CommentDTO(Comment comment) {
             this.cid = comment.getId();
@@ -31,6 +29,16 @@ public class CommentListResponseDTO {
             this.usersDTOInComment = new UsersDTOInComment(comment.getUsers());
             this.profileImgDTOInComment = new ProfileImgDTOInComment(comment.getUsers().getProfileImage());
             this.boardDTOInComment = new BoardDTOInComment(comment.getBoard());
+        }
+
+        public CommentDTO(Comment comment, String likeStatus) {
+            this.cid = comment.getId();
+            this.content = comment.getContent();
+            this.likeCnt = comment.getLikeCnt();
+            this.usersDTOInComment = new UsersDTOInComment(comment.getUsers());
+            this.profileImgDTOInComment = new ProfileImgDTOInComment(comment.getUsers().getProfileImage());
+            this.boardDTOInComment = new BoardDTOInComment(comment.getBoard());
+            this.likeStatus = likeStatus;
         }
 
     }
@@ -75,6 +83,10 @@ public class CommentListResponseDTO {
 
     public CommentDTO getCommentDTO(Comment comment) {
         return new CommentDTO(comment);
+    }
+
+    public CommentDTO getCommentDTOWithStatus(Comment comment, String likeStatus) {
+        return new CommentDTO(comment, likeStatus);
     }
 
 }

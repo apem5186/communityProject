@@ -1,9 +1,6 @@
 package com.community.communityproject.controller;
 
-import com.community.communityproject.config.exception.BoardNotFoundException;
-import com.community.communityproject.config.exception.FavoriteNotFoundException;
-import com.community.communityproject.config.exception.LikeNotFoundException;
-import com.community.communityproject.config.exception.UserNotFoundException;
+import com.community.communityproject.config.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
  * 6 : FavoriteNotFound
  * 7 : UserNotFound
  * 8 : LikeNotFound
+ * 9 : CommentNotFound
  */
 @Slf4j
 @ControllerAdvice
@@ -133,6 +131,19 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "좋아요를 누른 기록이 없습니다.");
         mav.addObject("errorNumber", "8");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ModelAndView handleCommentNotFound(CommentNotFoundException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "해당 댓글을 찾을 수 없습니다.");
+        mav.addObject("errorNumber", "9");
         mav.setViewName("errorPage");
         return mav;
     }

@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BoardLikeDTO {
     private BoardListResponseDTO.BoardDTO boardDTO;
-    private String  likeStatus;
+    private String likeStatus;
 
     public BoardLikeDTO(BoardListResponseDTO.BoardDTO boardDTO, String likeStatus) {
         this.boardDTO = boardDTO;

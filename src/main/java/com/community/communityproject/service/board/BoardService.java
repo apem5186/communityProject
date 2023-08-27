@@ -7,6 +7,7 @@ import com.community.communityproject.config.exception.FavoriteNotFoundException
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.*;
+import com.community.communityproject.dto.comment.CommentLikeDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.entity.board.*;
 import com.community.communityproject.entity.users.Users;
@@ -21,7 +22,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,23 +73,30 @@ public class BoardService {
      * @param page
      * @return model
      */
-    public Model populateBoardModel(Model model, String bid, HttpSession session, HttpServletRequest request, int page) {
+    public Model populateBoardModel(Model model, String bid, HttpServletRequest request, int page) {
         Long boardId = Long.valueOf(bid);
-        BoardListResponseDTO.BoardDTO boardDTO = getBoard(Long.valueOf(bid));  // getBoard가 BoardService 내부 메서드라고 가정
-        Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid);  // commentService가 이 서비스 내에 주입되었다고 가정
+        BoardListResponseDTO.BoardDTO boardDTO = getBoard(Long.valueOf(bid));
 
-        String likeStatus = checklikeStatus(boardId);  // checklikeStatus가 BoardService 내부 메서드라고 가정
+        String likeStatus = checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
-        model.addAttribute("comments", commentDTO);
         // 권한이 있는 사용자만
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
-            boolean isFavorite = hasFavoriteBoard(boardId);  // hasFavoriteBoard가 BoardService 내부 메서드라고 가정
+            // comment는 DTO 안에 추천 status 필드를 만들어서 함
+            Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, true);
+            model.addAttribute("comments", commentDTO);
+            model.addAttribute("commentLikeDTO", new CommentLikeDTO());
+            // board는 추천 status와 즐찾 status를 따로 모델에 추가했음 나중에 한가지 방법으로 통일하는 것도 고려해야함
+            boolean isFavorite = hasFavoriteBoard(boardId);
             if (likeStatus != null) {
                 model.addAttribute("likeStatus", likeStatus);
             }
             if (isFavorite) {
                 model.addAttribute("isFavorite", isFavorite);
             }
+        } else {
+            // 로그인 안했으면 CommentDTO의 likeStatus에 값을 안넣음
+            Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, false);
+            model.addAttribute("comments", commentDTO);
         }
         return model;
     }
@@ -98,7 +106,7 @@ public class BoardService {
      * @param bid
      * @return BoardListResponseDTO.BoardDTO
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public BoardListResponseDTO.BoardDTO getBoard(Long bid) {
         Board board = boardRepository.getReferenceById(bid);
         if (board.getContent().isEmpty()) {
@@ -417,18 +425,9 @@ public class BoardService {
                     BoardLike boardLike = new BoardLike(board, users, LikeStatus.LIKE);
                     boardLikeRepository.save(boardLike);
                 } else {    // 있을 때
-                    log.info("=============================");
-                    log.info("어디서");
-                    log.info("=============================");
                     board.decreaseLikeCnt();
                     BoardLike boardLike = boardLikeRepository.findByBoardAndUsers(board, users).get();
-                    log.info("=============================");
-                    log.info("에러가");
-                    log.info("=============================");
                     boardLikeRepository.delete(boardLike);
-                    log.info("=============================");
-                    log.info("나는거야");
-                    log.info("=============================");
                 }
             } else {    // 비추천 버튼을 눌렀으면
                 // url 조작으로 비추 누른 상탠데 추천 요청 했을 때

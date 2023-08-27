@@ -1,14 +1,21 @@
 package com.community.communityproject.service.comment;
 
+import com.community.communityproject.config.exception.BoardNotFoundException;
+import com.community.communityproject.config.exception.CommentNotFoundException;
+import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
 import com.community.communityproject.entity.board.Board;
+import com.community.communityproject.entity.board.BoardLike;
+import com.community.communityproject.entity.board.LikeStatus;
 import com.community.communityproject.entity.comment.Comment;
+import com.community.communityproject.entity.comment.CommentLike;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.BoardRepository;
 import com.community.communityproject.repository.CommentLikeRepository;
 import com.community.communityproject.repository.CommentRepository;
+import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.users.UserService;
@@ -16,13 +23,14 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.endpoint.InvalidEndpointRequestException;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +47,7 @@ public class CommentService {
     private final AuthService authService;
     private final UserService userService;
     private final TokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
     /**
      * 한 게시글의 댓글들 가져오기
@@ -46,18 +55,28 @@ public class CommentService {
      * @param bid
      * @return CommentDTO
      */
-    @Transactional
-    public Page<CommentListResponseDTO.CommentDTO> getCommentsFromBoard(int page, String bid) {
+    @Transactional(readOnly = true)
+    public Page<CommentListResponseDTO.CommentDTO> getCommentsFromBoard(int page, String bid, boolean loggedIn) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("regDate"));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Board board = boardRepository.getReferenceById(Long.valueOf(bid));
         Page<Comment> comments = commentRepository.findAllByBoard(board, pageable);
 
-        // CommentDTO로 각 Comment들을 변환
-        List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
-                .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
-                .collect(Collectors.toList());
+        List<CommentListResponseDTO.CommentDTO> commentDTOs;
+        if (!loggedIn) {
+            // CommentDTO로 각 Comment들을 변환
+            commentDTOs = comments.getContent().stream()
+                    .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
+                    .collect(Collectors.toList());
+        } else {
+            commentDTOs = comments.getContent().stream()
+                    .map(comment -> {
+                        String likeStatus = checkLikeStatus(comment.getId());
+                        return new CommentListResponseDTO().getCommentDTOWithStatus(comment, likeStatus);
+                    })
+                    .collect(Collectors.toList());
+        }
 
         // commentDTO와 함께 PageImpl를 리턴
         return new PageImpl<>(commentDTOs, pageable, comments.getTotalElements());
@@ -115,5 +134,86 @@ public class CommentService {
         Board board = boardRepository.getReferenceById(bid);
         board.decreaseReviewCnt();
         boardRepository.save(board);
+    }
+
+    /**
+     * 댓글 추천, 비추천 로직
+     * @param cid
+     * @param response
+     * @param request
+     * @param status
+     */
+    @Transactional
+    public void likeComment(Long cid, HttpServletResponse response, HttpServletRequest request, boolean status) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Comment comment = commentRepository.getReferenceById(cid);
+            // 일단 Board랑 Users 가져옴
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow(UserNotFoundException::new);
+            // 추천 버튼을 눌렀으면
+            log.info("===============================");
+            log.info("status : " + status);
+            log.info("===============================");
+            if (status) {
+                // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
+                if (checkLikeStatus(cid) != null && checkLikeStatus(cid).equals("DISLIKE")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
+                }
+                // 추천 버튼을 누른적이 없을 때
+                if (!hasLikeComment(comment, users)) {
+                    comment.increaseLikeCnt();
+                    CommentLike commentLike = new CommentLike(comment, users, LikeStatus.LIKE);
+                    commentLikeRepository.save(commentLike);
+                } else {    // 있을 때
+                    comment.decreaseLikeCnt();
+                    CommentLike commentLike = commentLikeRepository.findByCommentAndUsers(comment, users).get();
+                    commentLikeRepository.delete(commentLike);
+                }
+            } else {    // 비추천 버튼을 눌렀으면
+                // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
+                if (checkLikeStatus(cid) != null && checkLikeStatus(cid).equals("LIKE")) {
+                    throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
+                }
+                // 비추천 버튼을 누른적이 없을 때
+                if (!hasLikeComment(comment, users)) {
+                    comment.decreaseLikeCnt();
+                    CommentLike commentLike = new CommentLike(comment, users, LikeStatus.DISLIKE);
+                    commentLikeRepository.save(commentLike);
+                } else {    // 있을 때
+                    comment.increaseLikeCnt();
+                    CommentLike commentLike = commentLikeRepository.findByCommentAndUsers(comment, users).get();
+                    commentLikeRepository.delete(commentLike);
+                }
+            }
+        }
+    }
+
+    /**
+     * LIKE인지 DISLIKE인지 판별
+     * @return null 아니면 enum 타입의 LIKE or DISLIKE
+     */
+    public String checkLikeStatus(Long cid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        Comment comment = commentRepository.findById(cid).orElseThrow(CommentNotFoundException::new);
+        // 추천이나 비추를 누른 기록이 있다면
+        if (hasLikeComment(comment, users)) {
+            return commentLikeRepository.findByCommentAndUsers(comment, users).get().getLikeStatus().toString();
+        }
+        // 없으면 null
+        return null;
+    }
+
+    /**
+     * 일단 유저가 현재 있는 댓글 추천이든 비추든 눌렀는지 확인함 뭐든 일단 눌렀으면
+     * true 아니면 false
+     * @param comment
+     * @param users
+     * @return true or false
+     */
+    public boolean hasLikeComment(Comment comment, Users users) {
+        return commentLikeRepository.findByCommentAndUsers(comment, users).isPresent();
     }
 }

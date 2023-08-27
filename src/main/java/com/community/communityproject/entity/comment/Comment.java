@@ -49,4 +49,7 @@ public class Comment extends BaseEntity {
         this.board = board;
         this.users = users;
     }
+
+    public void increaseLikeCnt() { this.likeCnt += 1;}
+    public void decreaseLikeCnt() { this.likeCnt -= 1;}
 }

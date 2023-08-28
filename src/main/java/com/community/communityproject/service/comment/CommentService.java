@@ -2,8 +2,10 @@ package com.community.communityproject.service.comment;
 
 import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.config.exception.CommentNotFoundException;
+import com.community.communityproject.config.exception.CommentUserNotEqual;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
+import com.community.communityproject.dto.comment.CommentEditDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
 import com.community.communityproject.entity.board.Board;
@@ -65,11 +67,13 @@ public class CommentService {
 
         List<CommentListResponseDTO.CommentDTO> commentDTOs;
         if (!loggedIn) {
+            log.info("로그인 안함" + loggedIn);
             // CommentDTO로 각 Comment들을 변환
             commentDTOs = comments.getContent().stream()
                     .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
                     .collect(Collectors.toList());
         } else {
+            log.info("로그인 함 " + loggedIn);
             commentDTOs = comments.getContent().stream()
                     .map(comment -> {
                         String likeStatus = checkLikeStatus(comment.getId());
@@ -105,6 +109,51 @@ public class CommentService {
             commentRepository.save(comment);
             increaseCnt(Long.valueOf(bid));
         } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
+
+    @Transactional
+    public void editComment(HttpServletRequest request, HttpServletResponse response, CommentEditDTO commentEditDTO) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Comment comment = commentRepository.findById(Long.valueOf(commentEditDTO.getCid())).orElseThrow(CommentNotFoundException::new);
+            // 요청을 보낸 사용자와 댓글을 단 사용자가 같으면
+            if (isOwnerOfComment(request, comment.getUsers().getEmail())) {
+                comment.edit(commentEditDTO.getContent());
+                log.info("바뀐 댓글 : " + comment.getContent());
+                commentRepository.save(comment);
+            } else throw new CommentUserNotEqual(); // 요청을 보낸 사람과 댓글 올린 사람이 다르면 예외 발생
+        }
+    }
+
+    /**
+     * 댓글 삭제
+     * @param request
+     * @param response
+     * @param cid
+     * @param bid
+     */
+    @Transactional
+    public void deleteComment(HttpServletRequest request, HttpServletResponse response, String cid, String bid) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Comment comment = commentRepository.findById(Long.valueOf(cid)).orElseThrow(CommentNotFoundException::new);
+            // 요청을 보낸 사용자와 댓글을 단 사용자가 같으면
+            if (isOwnerOfComment(request, comment.getUsers().getEmail())) {
+                commentRepository.delete(comment);
+                // 삭제 한 후 board의 리뷰 카운트 하락
+                decreaseCnt(Long.valueOf(bid));
+            } else throw new CommentUserNotEqual(); // 요청을 보낸 사람과 댓글 올린 사람이 다르면 예외 발생
+
+        }else {
             String at = null;
             Cookie[] cookies = request.getCookies();
             for (Cookie cookie :
@@ -215,5 +264,17 @@ public class CommentService {
      */
     public boolean hasLikeComment(Comment comment, Users users) {
         return commentLikeRepository.findByCommentAndUsers(comment, users).isPresent();
+    }
+
+    /**
+     * 댓글 쓴 사람과 어떤 요청을 보낸 사람이 동일한지 비교함
+     * @param request
+     * @param commentOwnerEmail
+     * @return true or false
+     */
+    public boolean isOwnerOfComment(HttpServletRequest request, String commentOwnerEmail) {
+        String requestEmail = request.getRemoteUser();
+        log.info("REQUEST EMAIL : " + requestEmail);
+        return requestEmail.equals(commentOwnerEmail);
     }
 }

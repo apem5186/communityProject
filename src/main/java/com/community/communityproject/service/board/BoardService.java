@@ -36,10 +36,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serial;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -79,8 +76,10 @@ public class BoardService {
 
         String likeStatus = checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
+        log.info("REQUEST user : " + request.getRemoteUser() + " AND " + request.getAuthType());
         // 권한이 있는 사용자만
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
+            log.info("REQUEST USER : " + request.getRemoteUser() + " and " + request.getAuthType());
             // comment는 DTO 안에 추천 status 필드를 만들어서 함
             Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, true);
             model.addAttribute("comments", commentDTO);
@@ -94,6 +93,7 @@ public class BoardService {
                 model.addAttribute("isFavorite", isFavorite);
             }
         } else {
+            log.info("REQUEST user in not loggedIn : " + request.getRemoteUser() + " AND " + request.getAuthType());
             // 로그인 안했으면 CommentDTO의 likeStatus에 값을 안넣음
             Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, false);
             model.addAttribute("comments", commentDTO);
@@ -500,11 +500,18 @@ public class BoardService {
     public String checklikeStatus(Long bid) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        Optional<Users> users = userRepository.findByEmail(email);
+        Users user = new Users();
+        if (users.isEmpty()) {
+            // 로그인 안했으면 null 리턴
+            return null;
+        } else {
+            user = users.get();
+        }
         Board board = boardRepository.findById(bid).orElseThrow(BoardNotFoundException::new);
         // 추천이나 비추를 누른 기록이 있다면
-        if (hasLikeBoard(board, users)) {
-            return boardLikeRepository.findByBoardAndUsers(board, users).get().getLikeStatus().toString();
+        if (hasLikeBoard(board, user)) {
+            return boardLikeRepository.findByBoardAndUsers(board, user).get().getLikeStatus().toString();
         }
         // 없으면 null
         return null;

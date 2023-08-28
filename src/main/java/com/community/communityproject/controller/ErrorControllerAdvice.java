@@ -23,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
  * 7 : UserNotFound
  * 8 : LikeNotFound
  * 9 : CommentNotFound
+ * 10 : CommentUserNotEqual
  */
 @Slf4j
 @ControllerAdvice
@@ -144,6 +145,19 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "해당 댓글을 찾을 수 없습니다.");
         mav.addObject("errorNumber", "9");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(CommentUserNotEqual.class)
+    public ModelAndView handleCommentNotFound(CommentUserNotEqual ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "댓글을 올린 사용자만 댓글을 지을 수 있습니다.");
+        mav.addObject("errorNumber", "10");
         mav.setViewName("errorPage");
         return mav;
     }

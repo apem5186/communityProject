@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/profileImage/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/profileImage/userImg/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/get/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()

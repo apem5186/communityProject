@@ -1,0 +1,80 @@
+<template id="comment-template">
+    <li class="mb-3">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                <!-- 댓글 작성자 프로필 이미지 -->
+                <img src="" alt="Profile Image" class="img-fluid rounded-circle">
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column justify-content-center">
+                        <!-- 댓글 작성자 이름 -->
+                        <strong>Author Name</strong>
+                        <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
+                    </div>
+                    <!-- 로그인 안했을 때 -->
+                    <div sec:authorize="isAnonymous()" class="d-flex">
+                        <div class="btn-group">
+                            <!-- 비추 버튼 -->
+                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <!-- 현재 추천 카운트 -->
+                            <button class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
+                            <!-- 추천 버튼 -->
+                            <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 로그인 했을 때 -->
+                    <div sec:authorize="isAuthenticated()" class="d-flex">
+                        <div class="btn-group">
+                            <!-- Dislike Button Form -->
+                            <form action="/dislike/comment" method="post" id="dislikeForm">
+                                <input type="hidden" name="cid" id="dislikeCid">
+                                <input type="hidden" name="bid" id="dislikeBid">
+                                <input type="hidden" name="page" id="dislikePage">
+                                <input type="hidden" name="category" id="dislikeCategory">
+                                <button id="dislikeBtn" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </form>
+                            <!-- Like Count -->
+                            <button id="likeCount" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
+                            <!-- Like Button Form -->
+                            <form action="/like/comment" method="post" id="likeForm">
+                                <input type="hidden" name="cid" id="likeCid">
+                                <input type="hidden" name="bid" id="likeBid">
+                                <input type="hidden" name="page" id="likePage">
+                                <input type="hidden" name="category" id="likeCategory">
+                                <button id="likeBtn" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
+                                    <i class="bi bi-chevron-up"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="btn-group ms-2">
+                            <button data-cid="" class="commentEdit btn btn-outline-primary px-2" onclick="commentEditToggle(this.getAttribute('data-cid'))">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form data-cid="" class="commentDelete" action="/delete/comment" method="post" onclick="commentDeleteConfirm(this.getAttribute('data-cid'))">
+                                <button class="commentTrash btn btn-outline-danger px-2">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="commentContent">Comment content goes here...</p>
+        <!-- 댓글 편집 영역 (초기에는 숨겨져 있음) -->
+        <form data-cid="" id="editForm" class="commentEditForm my-2" action="/edit/comment" method="post" style="display:none;">
+            <textarea data-cid="" id="editArea" name="content" class="commentEditArea form-control my-2" oninput="adjustHeight(this)"></textarea>
+            <!-- Other hidden input elements will be populated by JavaScript -->
+            <button class="cancelBtn btn btn-outline-danger" onclick="cancelCommentEdit(event, this.closest('form').getAttribute('data-cid'))">취소</button>
+            <button type="submit" data-cid="" id="saveBtn" class="saveEdit btn btn-outline-success px-2">수정</button>
+        </form>
+        <button data-cid="" id="replyBtn" class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;">댓글 쓰기</button>
+    </li>
+</template>

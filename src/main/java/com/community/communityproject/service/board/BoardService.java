@@ -73,7 +73,7 @@ public class BoardService {
     public Model populateBoardModel(Model model, String bid, HttpServletRequest request, int page) {
         Long boardId = Long.valueOf(bid);
         BoardListResponseDTO.BoardDTO boardDTO = getBoard(Long.valueOf(bid));
-
+        model.addAttribute("userEmail", request.getRemoteUser());
         String likeStatus = checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
         log.info("REQUEST user : " + request.getRemoteUser() + " AND " + request.getAuthType());
@@ -81,9 +81,10 @@ public class BoardService {
         if (request.isUserInRole("ROLE_USER") || request.isUserInRole("ROLE_ADMIN")) {
             log.info("REQUEST USER : " + request.getRemoteUser() + " and " + request.getAuthType());
             // comment는 DTO 안에 추천 status 필드를 만들어서 함
-            Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, true);
-            model.addAttribute("comments", commentDTO);
-            model.addAttribute("commentLikeDTO", new CommentLikeDTO());
+            // comment 로직 분리 예정
+            //Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, true);
+            //model.addAttribute("comments", commentDTO);
+            //model.addAttribute("commentLikeDTO", new CommentLikeDTO());
             // board는 추천 status와 즐찾 status를 따로 모델에 추가했음 나중에 한가지 방법으로 통일하는 것도 고려해야함
             boolean isFavorite = hasFavoriteBoard(boardId);
             if (likeStatus != null) {
@@ -95,8 +96,9 @@ public class BoardService {
         } else {
             log.info("REQUEST user in not loggedIn : " + request.getRemoteUser() + " AND " + request.getAuthType());
             // 로그인 안했으면 CommentDTO의 likeStatus에 값을 안넣음
-            Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, false);
-            model.addAttribute("comments", commentDTO);
+            // comment 로직 분리 예정
+            //Page<CommentListResponseDTO.CommentDTO> commentDTO = commentService.getCommentsFromBoard(page, bid, false);
+            //model.addAttribute("comments", commentDTO);
         }
         return model;
     }

@@ -456,7 +456,7 @@ public class UserService {
      * @return filePath
      */
     public String defaultImage() {
-        return String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
+        return String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
     }
 
     /**

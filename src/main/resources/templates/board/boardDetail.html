@@ -46,21 +46,9 @@
             background-color: lightblue!important;
         }
 
-        .commentDislikeBtn:hover,
-        .commentDislikeBtn:active {
+        .commentDisLikeBtn:hover,
+        .commentDisLikeBtn:active {
             background-color: lightpink!important;
-        }
-
-        .commentTrash {
-            border: none;
-            padding: 0;
-        }
-
-        .commentEdit {
-            height: 26px;
-            border: none;
-            border-radius: 25%!important;
-            padding: 0;
         }
     </style>
 </head>
@@ -194,19 +182,17 @@
         <div class="border-top my-3"></div>
         <!-- 댓글 부분 -->
         <div>
-            <span class="fs-5" th:text="${board.getReviewCnt() + '개의 댓글'}"></span>
+            <span class="fs-5" th:text="${comments.getTotalElements() + '개의 댓글'}"></span>
             <div sec:authorize="isAnonymous()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
-                <div class="d-flex align-items-center">
+                <div class="d-flex-align-items-center">
                     <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                        <!-- User profile image goes here -->
                         <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
                     </div>
-                    <div class="form-control" contenteditable="false" style="height: 90px;">
-                        <a href="/login" style="text-decoration: none;">로그인</a>
-                         후 이용가능합니다.
-                    </div>
+                    <textarea class="form-control" rows="3"></textarea>
                 </div>
                 <div class="d-flex justify-content-end mt-2">
-                    <button class="btn btn-primary" disabled>댓글 작성</button>
+                    <button class="btn btn-primary">댓글 작성</button>
                 </div>
             </div>
             <div sec:authorize="isAuthenticated()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
@@ -229,183 +215,62 @@
             </div>
                 <div class="my-8">
                     <ul class="list-unstyled">
-                        <template id="comment-template">
-                            <li class="mb-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
-                                        <!-- 댓글 작성자 프로필 이미지 -->
-                                        <img src="" alt="Profile Image" class="img-fluid rounded-circle">
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <!-- 댓글 작성자 이름 -->
-                                                <strong>Author Name</strong>
-                                                <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
-                                            </div>
-                                            <!-- 로그인 안했을 때 -->
-                                            <div sec:authorize="isAnonymous()" class="d-flex">
-                                                <div class="btn-group">
-                                                    <!-- 비추 버튼 -->
-                                                    <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">
-                                                        <i class="bi bi-chevron-down"></i>
-                                                    </button>
-                                                    <!-- 현재 추천 카운트 -->
-                                                    <button class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
-                                                    <!-- 추천 버튼 -->
-                                                    <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">
-                                                        <i class="bi bi-chevron-up"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <!-- 로그인 했을 때 -->
-                                            <div sec:authorize="isAuthenticated()" class="d-flex">
-                                                <div class="btn-group">
-                                                    <!-- Dislike Button Form -->
-                                                    <form action="/dislike/comment" method="post" id="dislikeForm">
-<!--                                                        <input type="hidden" name="cid" id="dislikeCid">-->
-<!--                                                        <input type="hidden" name="bid" id="dislikeBid">-->
-<!--                                                        <input type="hidden" name="page" id="dislikePage">-->
-<!--                                                        <input type="hidden" name="category" id="dislikeCategory">-->
-                                                        <button id="dislikeBtn" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
-                                                            <i class="bi bi-chevron-down"></i>
-                                                        </button>
-                                                    </form>
-                                                    <!-- Like Count -->
-                                                    <button id="likeCount" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
-                                                    <!-- Like Button Form -->
-                                                    <form action="/like/comment" method="post" id="likeForm">
-<!--                                                        <input type="hidden" name="cid" id="likeCid">-->
-<!--                                                        <input type="hidden" name="bid" id="likeBid">-->
-<!--                                                        <input type="hidden" name="page" id="likePage">-->
-<!--                                                        <input type="hidden" name="category" id="likeCategory">-->
-                                                        <button id="likeBtn" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;">
-                                                            <i class="bi bi-chevron-up"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                                <div class="btn-group ms-2">
-                                                    <button data-cid="" class="commentEdit btn btn-outline-primary px-2" onclick="commentEditToggle(this.getAttribute('data-cid'))">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <form data-cid="" class="commentDelete" action="/delete/comment" method="post" onclick="commentDeleteConfirm(this.getAttribute('data-cid'))">
-                                                        <button class="commentTrash btn btn-outline-danger px-2">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
+                        <li th:each="comment, commentStat : ${comments}" class="mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                                    <!-- Comment author's profile image goes here -->
+                                    <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <!-- Comment author's name and comment content -->
+                                            <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>
+                                            <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
+                                        </div>
+                                        <div class="btn-group">
+                                            <form th:action="@{/dislike/comment}" method="post" th:object="${commentLikeDTO}">
+                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
+                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
+                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
+                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
+                                                <!-- TODO : 게시글 추천도 이런방식으로 해도 될듯 -->
+                                                <button
+                                                        th:class="${comment.likeStatus == 'DISLIKE'} ? 'commentDisLikeBtn btn btn-sm btn-outline-danger' :
+                                                        'btn btn-sm btn-outline-secondary'"
+                                                        style="font-size: 0.75rem;"
+                                                        th:disabled="${comment.likeStatus == 'LIKE'}">
+                                                    <!-- Add your Like icon here -->
+                                                    <i class="bi bi-chevron-down" th:style="${comment.likeStatus == 'DISLIKE'} ? 'color: tomato;' : ''"></i>
+                                                </button>
+                                            </form>
+                                            <!-- Dislike button -->
+                                            <!-- Current number of likes -->
+                                            <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
+                                            <!-- Like button -->
+                                            <form th:action="@{/like/comment}" method="post" th:object="${commentLikeDTO}">
+                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
+                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
+                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
+                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
+                                                <button
+                                                        th:class="${comment.likeStatus == 'LIKE'} ? 'commentLikeBtn btn btn-sm btn-outline-primary' :
+                                                        'btn btn-sm btn-outline-secondary'"
+                                                        style="font-size: 0.75rem;"
+                                                        th:disabled="${comment.likeStatus == 'DISLIKE'}">
+                                                    <!-- Add your Dislike icon here -->
+                                                    <i class="bi bi-chevron-up" th:style="${comment.likeStatus == 'LIKE'} ? 'color: dodgerblue;' : ''"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="commentContent">Comment content goes here...</p>
-                                <!-- 댓글 편집 영역 (초기에는 숨겨져 있음) -->
-                                <form data-cid="" id="editForm" class="commentEditForm my-2" action="/edit/comment" method="post" style="display:none;">
-                                    <textarea data-cid="" id="editArea" name="content" class="commentEditArea form-control my-2" oninput="adjustHeight(this)"></textarea>
-                                    <!-- Other hidden input elements will be populated by JavaScript -->
-                                    <button class="cancelBtn btn btn-outline-danger" onclick="cancelCommentEdit(event, this.closest('form').getAttribute('data-cid'))">취소</button>
-                                    <button type="submit" data-cid="" id="saveBtn" class="saveEdit btn btn-outline-success px-2">수정</button>
-                                </form>
-                                <button data-cid="" id="replyBtn" class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;">댓글 쓰기</button>
-                            </li>
-                        </template>
-<!--                        <li th:each="comment, commentStat : ${comments}" class="mb-3" th:id="'comment-' + ${comment.cid}">-->
-<!--                            <div class="d-flex align-items-center">-->
-<!--                                <div class="rounded-circle me-3" style="width: 65px; height: 65px;">-->
-<!--                                    &lt;!&ndash; 댓글 작성자 프로필 이미지 &ndash;&gt;-->
-<!--                                    <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">-->
-<!--                                </div>-->
-<!--                                <div class="flex-grow-1">-->
-<!--                                    <div class="d-flex justify-content-between align-items-center">-->
-<!--                                        <div class="d-flex flex-column justify-content-center">-->
-<!--                                            &lt;!&ndash; 댓글 작성자 이름 &ndash;&gt;-->
-<!--                                            <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>-->
-<!--                                            <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>-->
-<!--                                        </div>-->
-<!--                                        &lt;!&ndash; 로그인 안했을 때 &ndash;&gt;-->
-<!--                                        <div sec:authorize="isAnonymous()" class="d-flex">-->
-<!--                                            <div class="btn-group">-->
-<!--                                                &lt;!&ndash; 비추 버튼 &ndash;&gt;-->
-<!--                                                <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">-->
-<!--                                                    <i class="bi bi-chevron-down"></i>-->
-<!--                                                </button>-->
-<!--                                                &lt;!&ndash; 현재 추천 카운트 &ndash;&gt;-->
-<!--                                                <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>-->
-<!--                                                &lt;!&ndash; 추천 버튼 &ndash;&gt;-->
-<!--                                                <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem;" onclick="redirectLogin()">-->
-<!--                                                    <i class="bi bi-chevron-up"></i>-->
-<!--                                                </button>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                        &lt;!&ndash; 로그인 했을 때 &ndash;&gt;-->
-<!--                                        <div sec:authorize="isAuthenticated()" class="d-flex">-->
-<!--                                            <div class="btn-group">-->
-<!--                                                &lt;!&ndash; 비추 버튼 &ndash;&gt;-->
-<!--                                                <form th:action="@{/dislike/comment}" method="post" th:object="${commentLikeDTO}">-->
-<!--                                                    <input type="hidden" name="cid" th:value="${comment.getCid()}"/>-->
-<!--                                                    <input type="hidden" name="bid" th:value="${board.getBid()}"/>-->
-<!--                                                    <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>-->
-<!--                                                    <input type="hidden" name="category" th:value="${board.getCategory()}"/>-->
-<!--                                                    &lt;!&ndash; TODO : 게시글 추천도 이런방식으로 해도 될듯 &ndash;&gt;-->
-<!--                                                    <button-->
-<!--                                                            th:class="${comment.likeStatus == 'DISLIKE'} ? 'commentDisLikeBtn btn btn-sm btn-outline-danger' :-->
-<!--                                                        'btn btn-sm btn-outline-secondary'"-->
-<!--                                                            style="font-size: 0.75rem;"-->
-<!--                                                            th:disabled="${comment.likeStatus == 'LIKE'}">-->
-<!--                                                        <i class="bi bi-chevron-down" th:style="${comment.likeStatus == 'DISLIKE'} ? 'color: tomato;' : ''"></i>-->
-<!--                                                    </button>-->
-<!--                                                </form>-->
-<!--                                                &lt;!&ndash; 현재 추천 카운트 &ndash;&gt;-->
-<!--                                                <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>-->
-<!--                                                &lt;!&ndash; Like button &ndash;&gt;-->
-<!--                                                <form th:action="@{/like/comment}" method="post" th:object="${commentLikeDTO}">-->
-<!--                                                    <input type="hidden" name="cid" th:value="${comment.getCid()}"/>-->
-<!--                                                    <input type="hidden" name="bid" th:value="${board.getBid()}"/>-->
-<!--                                                    <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>-->
-<!--                                                    <input type="hidden" name="category" th:value="${board.getCategory()}"/>-->
-<!--                                                    <button-->
-<!--                                                            th:class="${comment.likeStatus == 'LIKE'} ? 'commentLikeBtn btn btn-sm btn-outline-primary' :-->
-<!--                                                        'btn btn-sm btn-outline-secondary'"-->
-<!--                                                            style="font-size: 0.75rem;"-->
-<!--                                                            th:disabled="${comment.likeStatus == 'DISLIKE'}">-->
-<!--                                                        <i class="bi bi-chevron-up" th:style="${comment.likeStatus == 'LIKE'} ? 'color: dodgerblue;' : ''"></i>-->
-<!--                                                    </button>-->
-<!--                                                </form>-->
-<!--                                            </div>-->
-<!--                                            <div class="btn-group ms-2" th:if="${comment.getUsersDTOInComment().getEmail()} == ${#authentication.name}">-->
-<!--                                                <button th:id="'editBtn-' + ${comment.cid}" class="commentEdit btn btn-outline-primary px-2" th:onclick="'commentEditToggle(\'' + ${comment.cid} + '\')'">-->
-<!--                                                    <i class="bi bi-pencil"></i>-->
-<!--                                                </button>-->
-<!--                                                <form id="commentDelete"-->
-<!--                                                      th:action="@{/delete/comment}" method="post" th:object="${commentLikeDTO}" onclick="commentDeleteConfirm()">-->
-<!--                                                    <input type="hidden" name="cid" th:value="${comment.getCid()}">-->
-<!--                                                    <input type="hidden" name="bid" th:value="${board.getBid()}">-->
-<!--                                                    <input type="hidden" name="page" th:value="${commentStat.index + 1}">-->
-<!--                                                    <input type="hidden" name="category" th:value="${board.getCategory()}"/>-->
-<!--                                                    <button class="commentTrash btn btn-outline-danger px-2">-->
-<!--                                                        <i class="bi bi-trash"></i>-->
-<!--                                                    </button>-->
-<!--                                                </form>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <p th:id="'commentContent-' + ${comment.cid}" class="commentContent" th:text="${comment.content}">Comment content goes here...</p>-->
-<!--                            &lt;!&ndash; 댓글 편집 영역 (초기에는 숨겨져 있음) &ndash;&gt;-->
-<!--                            <form th:id="'editForm-' + ${comment.cid}" class="commentEditForm my-2" action="/edit/comment" method="post" style="display:none;">-->
-<!--                                <textarea th:id="'editArea-' + ${comment.cid}" name="content" class="commentEditArea form-control my-2" oninput="adjustHeight(this)"></textarea>-->
-<!--                                <input type="hidden" name="cid" th:value="${comment.getCid()}">-->
-<!--                                <input type="hidden" name="bid" th:value="${board.getBid()}">-->
-<!--                                <input type="hidden" name="page" th:value="${commentStat.index + 1}">-->
-<!--                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>-->
-<!--                                <button class="cancelBtn btn btn-outline-danger" th:onclick="'cancelCommentEdit(event, \'' + ${comment.cid} + '\')'">취소</button>-->
-<!--                                <button type="submit" th:id="'saveBtn-' + ${comment.cid}" class="saveEdit btn btn-outline-success px-2" >수정</button>-->
-<!--                            </form>-->
-<!--                            <button th:id="'replyBtn-' + ${comment.cid}" class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;" th:onclick="'commentEditToggle(' + ${comment.cid} + ')'">댓글 쓰기</button>-->
-<!--                            &lt;!&ndash; Display the divider line for all comments except the last one &ndash;&gt;-->
-<!--                            <hr th:unless="${commentStat.index + 1 >= comments.getTotalElements()}" class="m-0"/>-->
-<!--                        </li>-->
+                            </div>
+                                        <p th:text="${comment.content}">Comment content goes here...</p>
+                            <button class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;">댓글 쓰기</button>
+                            <!-- Display the divider line for all comments except the last one -->
+                            <hr th:unless="${commentStat.index + 1 >= comments.getTotalElements()}" class="m-0"/>
+                        </li>
                     </ul>
                 </div>
         </div>
@@ -415,204 +280,6 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type="text/javascript" th:inline="javascript">
-
-
-    // TODO : 코드 정리하고 댓글 무한스크롤 기능 추가해야 함
-
-    let currentPage = 1;
-    let isLoading = false;
-    let isLastPage = false; // 마지막 페이지인지 여부
-
-
-    window.addEventListener('scroll', function() {
-        if (isLoading) return;
-
-        // 문서 전체의 높이와 스크롤된 양을 사용하여 스크롤 위치 확인
-        const scrollTop = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
-        const scrollHeight = (document.documentElement && document.documentElement.scrollHeight) || document.body.scrollHeight;
-
-        if (scrollTop + window.innerHeight >= scrollHeight - 50) { // 50px 전에 데이터 로드 시작
-            isLoading = true;
-            loadData();
-        }
-    });
-
-    function loadData() {
-        if (isLastPage) { // 마지막 페이지라면 요청하지 않는다.
-            return;
-        }
-        currentPage++; // 페이지 번호 증가
-        fetch(`/get/comment/${bid}?page=${currentPage}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                renderComments(data.content);
-                isLoading = false; // 로딩 상태 업데이트
-                if (userEmail !== null) {
-                    loadRecommendData(data.content);
-                    showEditDeleteBtn(data, userEmail);
-                }
-                isLastPage = data.last; // 마지막 페이지 여부 업데이트
-            })
-            .catch(error => {
-                console.error("Error loading data:", error);
-                isLoading = false; // 에러가 발생한 경우 로딩 상태 업데이트
-            });
-    }
-
-
-
-    let bid = /*[[${board.getBid()}]]*/ '';
-    let category = /*[[${board.getCategory()}]]*/ '';
-    let userEmail = /*[[${userEmail}]]*/ '';
-    fetch(`/get/comment/${bid}`)
-        .then(response => response.json())
-        .then(data => {
-            renderComments(data.content);
-            if (userEmail !== null) {
-                loadRecommendData(data.content);
-                showEditDeleteBtn(data, userEmail);
-            }
-        })
-
-    /**
-     * 댓글 데이터 설정해 주는 함수
-     * @param comments
-     */
-    function renderComments(comments) {
-        const commentsContainer = document.querySelector('.my-8 ul');
-        comments.forEach((comment, index) => {
-            const commentTemplate = document.getElementById('comment-template').content.cloneNode(true);
-
-            commentTemplate.id = 'comment-' + comment.cid;
-
-            const profileImage = commentTemplate.querySelector('img');
-            profileImage.src = comment.profileImgDTOInComment.path;
-
-            const authorName = commentTemplate.querySelector('strong');
-            authorName.textContent = comment.usersDTOInComment.username;
-
-            let commentLikeCnt = commentTemplate.querySelector('.likeCnt');
-            commentLikeCnt.textContent = comment.likeCnt;
-            if (userEmail !== null) {
-                const commentEditIcon = commentTemplate.querySelector('.commentEdit');
-                commentEditIcon.id = 'editBtn-' + comment.cid;
-                commentEditIcon.setAttribute("data-cid", comment.cid);
-
-                const commentDeleteIcon = commentTemplate.querySelector('.commentTrash');
-                commentDeleteIcon.id = 'deleteBtn-' + comment.cid;
-
-                const commentDeleteForm = commentTemplate.querySelector('.commentDelete');
-                commentDeleteForm.id = 'commentDelete-' + comment.cid;
-                commentDeleteForm.setAttribute("data-cid", comment.cid);
-
-                const commentLikeBtn = commentTemplate.querySelector('#likeBtn');
-                commentLikeBtn.id = 'likeBtn-' + comment.cid;
-
-                const commentDisLikeBtn = commentTemplate.querySelector('#dislikeBtn');
-                commentDisLikeBtn.id = 'dislikeBtn-' + comment.cid;
-
-                const commentLikeForm = commentTemplate.querySelector('#likeForm');
-                commentLikeForm.id = 'likeForm-' + comment.cid;
-
-                const commentDislikeForm = commentTemplate.querySelector('#dislikeForm');
-                commentDislikeForm.id = 'dislikeForm-' + comment.cid;
-
-                const commentSaveBtn = commentTemplate.querySelector('#saveBtn');
-                commentSaveBtn.id = 'saveBtn-' + comment.cid;
-                commentSaveBtn.setAttribute("data-cid", comment.cid);
-            }
-
-            const commentContent = commentTemplate.querySelector('.commentContent');
-            commentContent.id = 'commentContent-' + comment.cid;
-            commentContent.textContent = comment.content;
-
-            const commentEditForm = commentTemplate.querySelector('.commentEditForm');
-            commentEditForm.id = 'editForm-' + comment.cid;
-            commentEditForm.setAttribute("data-cid", comment.cid);
-
-            const commentEditArea = commentTemplate.querySelector('.commentEditArea');
-            commentEditArea.id = 'editArea-' + comment.cid;
-            commentEditArea.setAttribute("data-cid", comment.cid);
-
-            const commentReplyBtn = commentTemplate.querySelector('.replyBtn');
-            commentReplyBtn.id = 'replyBtn-' + comment.cid;
-
-            commentsContainer.appendChild(commentTemplate);
-
-            // 마지막 댓글이 아니면 <hr> 추가
-            if (index + 1 < comments.length) {
-                const hrElem = document.createElement('hr');
-                hrElem.classList.add('m-0');
-                commentsContainer.appendChild(hrElem);
-            }
-        });
-    }
-
-    /**
-     * 댓글 추천 부분 함수
-     * @param comments
-     */
-    function loadRecommendData(comments) {
-        comments.forEach(comment => {
-            console.log(comment.cid);
-            const dislikeForm = document.getElementById('dislikeForm-' + comment.cid);
-            console.log(dislikeForm);
-            const likeForm = document.getElementById('likeForm-' + comment.cid);
-            const inputElementsData = [
-                {name: 'cid', value: comment.cid},
-                {name: 'bid', value: bid},
-                {name: 'page', value: 1}, // 나중에 수정
-                {name: 'category', value: category}
-            ];
-
-            inputElementsData.forEach(inputData => {
-                const inputElem = document.createElement("input");
-                inputElem.type = "hidden";
-                inputElem.name = inputData.name;
-                inputElem.value = inputData.value;
-                likeForm.appendChild(inputElem);
-            });
-
-            inputElementsData.forEach(inputData => {
-                const inputElem = document.createElement("input");
-                inputElem.type = "hidden";
-                inputElem.name = inputData.name;
-                inputElem.value = inputData.value;
-                dislikeForm.appendChild(inputElem);
-            });
-
-            const likeBtn = document.querySelector(`#likeBtn-${comment.cid}`);
-            const dislikeBtn = document.querySelector(`#dislikeBtn-${comment.cid}`);
-
-            // like 버튼 설정
-            if (comment.likeStatus === 'LIKE') {
-                likeBtn.classList.add('commentLikeBtn', 'btn-outline-primary');
-                likeBtn.querySelector('i').style.color = 'dodgerblue';
-            } else {
-                dislikeBtn.classList.add('btn-outline-secondary');
-            }
-            if (comment.likeStatus === 'LIKE') {
-                dislikeBtn.disabled = true;
-            }
-
-            // disLike 버튼 설정
-            if (comment.likeStatus === "DISLIKE") {
-                dislikeBtn.classList.add('commentDislikeBtn', 'btn-outline-danger');
-                dislikeBtn.querySelector('i').style.color = 'tomato';
-            } else {
-                likeBtn.classList.add('btn-outline-secondary');
-            }
-            if (comment.likeStatus === 'DISLIKE') {
-                likeBtn.disabled = true;
-            }
-        });
-
-    }
-
-    /**
-     * 게시글 추천 부분 관련된 곳
-     */
     let likeStatus = /*[[${likeStatus}]]*/ 'none';
     const like_elements = document.getElementsByClassName("like");
     const dislike_elements = document.getElementsByClassName("dislike");
@@ -652,11 +319,6 @@
         })
     })
 
-
-
-    /**
-     * 로그인 안했을 때 뭐 건드리면 로그인창으로 보냄
-     */
     function redirectLogin() {
         const isConfirmed = confirm("로그인 하셔야 이용 가능합니다. 로그인 하시겠습니까?");
 
@@ -665,169 +327,6 @@
         }
     }
 
-
-    /**
-     * 댓글 수정 눌렀을 때 수정 form 나오게 하는 함수
-     * @param commentId
-     */
-    function commentEditToggle(commentId) {
-        // 댓글 막 시작하는 <li> 부분의 th:id
-        const commentElem = document.getElementById('comment-' + commentId);
-        // 댓글 편집 전의 <p> 태그, 댓글의 내용 부분
-        const contentElem = document.getElementById('commentContent-' + commentId);
-        // 편집 기능의 연필 누른 후의 form
-        const editFormElem = document.getElementById('editForm-' + commentId);
-        // 편집 기능의 연필 누른 후의 textarea, display를 바꿀 필욘 없으나 content 값 받아와야 함
-        const editAreaElem = document.getElementById('editArea-' + commentId);
-        // 편집 기능 토글 기능을 하는 연필 아이콘
-        const editBtn = document.getElementById('editBtn-' + commentId);
-        // 대댓 쓰기 버튼
-        const replyBtn = document.getElementById('replyBtn-' + commentId);
-        // 취소랑 수정 버튼은 editFormElem display = 'block' 하면 생겨남
-        editAreaElem.value = contentElem.textContent;
-
-        replyBtn.style.display = 'none';
-        contentElem.style.display = 'none';
-        editFormElem.style.display = 'block';
-        editBtn.style.display = 'none';
-    }
-
-
-    /**
-     * 댓글 작성자와 로그인한 사용자가 같을 때 수정이랑 삭제 아이콘 생기는 함수
-     * @param comments
-     * @param currentUserEmail
-     */
-    function showEditDeleteBtn(comments, currentUserEmail) {
-        comments.content.forEach(comment => {
-            if (comment.usersDTOInComment.email === currentUserEmail) {
-                const editBtn = document.getElementById('editBtn-' + comment.cid);
-                const deleteBtn = document.getElementById('deleteBtn-' + comment.cid);
-                const commentDeleteForm = document.getElementById('commentDelete-' + comment.cid);
-
-                // 기존 inputElements 제거
-                // commentDeleteForm.innerHTML = '';
-                // let inputHtml = `<input type="hidden" name = 'cid' value = ${comment.cid}>
-                //              <input type="hidden" name="bid" value="${bid}">
-                //              <input type="hidden" name="page" value=1>
-                //              <input type="hidden" name="category" value="${category}">
-                //              <button class="commentTrash btn btn-outline-danger px-2">
-                //                     <i class="bi bi-trash"></i>
-                //                 </button> `
-                const inputElementsData = [
-                    {name: 'cid', value: comment.cid},
-                    {name: 'bid', value: bid},
-                    {name: 'page', value: 1}, // 나중에 수정
-                    {name: 'category', value: category}
-                ];
-
-                //commentDeleteForm.innerHTML = inputHtml;
-
-                inputElementsData.forEach(inputData => {
-                    const inputElem = document.createElement("input");
-                    inputElem.type = "hidden";
-                    inputElem.name = inputData.name;
-                    inputElem.value = inputData.value;
-                    commentDeleteForm.appendChild(inputElem);
-                });
-
-                editBtn.style.display = 'inline-block';
-                deleteBtn.style.display = 'inline-block';
-                // Setting data-cid attributes for the edit form, textarea, and save button
-                const editForm = document.getElementById("editForm-" + comment.cid);
-                const editArea = document.getElementById("editArea-" + comment.cid);
-                const saveBtn = document.getElementById("saveBtn-" + comment.cid);
-
-                editForm.setAttribute("data-cid", comment.cid);
-                editArea.setAttribute("data-cid", comment.cid);
-
-                // Populate hidden input elements
-                const hiddenInputsData = [
-                    {name: 'cid', value: comment.cid},
-                    {name: 'bid', value: bid},
-                    {name: 'page', value: 1}, // 수정 필요
-                    {name: 'category', value: category}
-                ];
-
-                // Clear existing hidden inputs
-                // Array.from(editForm.querySelectorAll('input[type="hidden"]')).forEach(input => input.remove());
-
-                // Append new hidden inputs to the form
-                hiddenInputsData.forEach(data => {
-                    const inputElem = document.createElement("input");
-                    inputElem.type = "hidden";
-                    inputElem.name = data.name;
-                    inputElem.value = data.value;
-                    editForm.appendChild(inputElem);
-                });
-
-                console.log(editForm);
-            } else {
-                // 댓글 편집 전의 <p> 태그, 댓글의 내용 부분
-                const contentElem = document.getElementById('commentContent-' + comment.cid);
-                // 편집 기능의 연필 누른 후의 form
-                const editFormElem = document.getElementById('editForm-' + comment.cid);
-                // 편집 기능 토글 기능을 하는 연필 아이콘
-                const editBtn = document.getElementById('editBtn-' + comment.cid);
-                // 대댓 쓰기 버튼
-                const replyBtn = document.getElementById('replyBtn-' + comment.cid);
-                // 댓글 삭제 버튼
-                const deleteBtn = document.querySelector(`.commentDelete[data-cid="${comment.cid}"]`);
-                // 취소랑 수정 버튼은 editFormElem display = 'none' 하면 사라짐
-                deleteBtn.style.display = 'none';
-                replyBtn.style.display = 'block';
-                contentElem.style.display = 'block';
-                editFormElem.style.display = 'none';
-                editBtn.style.display = 'none';
-
-            }
-        });
-    }
-
-
-    /**
-     * 댓글 삭제하는 함수
-     */
-    function commentDeleteConfirm(cid) {
-        const isConfirmed = confirm("삭제하시면 되돌릴 수 없습니다. 정말 삭제하시겠습니까?");
-
-        if (isConfirmed) {
-            const commentDeleteForm = document.querySelector(`.commentDeleteForm[data-cid="${cid}"]`);
-            commentDeleteForm.submit();
-        }
-    }
-
-    /**
-     * 댓글 수정 form 다시 사라지게 하는 함수
-     * @param event
-     * @param commentId
-     */
-    function cancelCommentEdit(event, commentId) {
-        console.log("cancel : " + commentId);
-        event.preventDefault();
-        // 댓글 막 시작하는 <li> 부분의 th:id
-        const commentElem = document.getElementById('comment-' + commentId);
-        // 댓글 편집 전의 <p> 태그, 댓글의 내용 부분
-        const contentElem = document.getElementById('commentContent-' + commentId);
-        // 편집 기능의 연필 누른 후의 form
-        const editFormElem = document.getElementById('editForm-' + commentId);
-        // 편집 기능 토글 기능을 하는 연필 아이콘
-        const editBtn = document.getElementById('editBtn-' + commentId);
-        // 대댓 쓰기 버튼
-        const replyBtn = document.getElementById('replyBtn-' + commentId);
-        // 취소랑 수정 버튼은 editFormElem display = 'none' 하면 사라짐
-
-        replyBtn.style.display = 'block';
-        contentElem.style.display = 'block';
-        editFormElem.style.display = 'none';
-        editBtn.style.display = 'block';
-    }
-
-
-    /**
-     * textarea의 높이를 자동으로 바꿔주는 함수
-     * @param textarea
-     */
     function adjustHeight(textarea) {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';

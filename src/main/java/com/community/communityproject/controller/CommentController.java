@@ -1,6 +1,5 @@
 package com.community.communityproject.controller;
 
-import com.community.communityproject.dto.comment.CommentEditDTO;
 import com.community.communityproject.dto.comment.CommentLikeDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
@@ -67,26 +66,6 @@ public class CommentController {
 
         commentService.PostComment(request, response, commentRequestDTO, bid);
         return String.format("redirect:/%s/%s", commentRequestDTO.getCategory(), bid);
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/edit/comment")
-    public String editComment(CommentEditDTO commentEditDTO,
-                              HttpServletResponse response, HttpServletRequest request,
-                              Model model) {
-        commentService.editComment(request, response, commentEditDTO);
-        model = boardService.populateBoardModel(model, commentEditDTO.getBid(), request, commentEditDTO.getPage());
-        return String.format("redirect:/%s/%s", commentEditDTO.getCategory().toLowerCase(), commentEditDTO.getBid());
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/delete/comment")
-    public String deleteComment(CommentLikeDTO commentLikeDTO, // 받아야 하는 필드가 똑같아서 그냥 씀
-                                HttpServletResponse response, HttpServletRequest request,
-                                Model model) {
-        commentService.deleteComment(request, response, commentLikeDTO.getCid(), commentLikeDTO.getBid());
-        model = boardService.populateBoardModel(model, commentLikeDTO.getBid(), request, commentLikeDTO.getPage());
-        return String.format("redirect:/%s/%s", commentLikeDTO.getCategory().toLowerCase(), commentLikeDTO.getBid());
     }
 
     @PreAuthorize("isAuthenticated()")

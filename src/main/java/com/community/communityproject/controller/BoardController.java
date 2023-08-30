@@ -49,7 +49,6 @@ public class BoardController {
                            @PathVariable String bid, HttpSession session, HttpServletRequest request) {
         boardService.updateHits(Long.valueOf(bid), session);
         model = boardService.populateBoardModel(model, bid, request, page);
-
         // 에러 메시지가 있다면 모델에 추가
         if (model.containsAttribute("emptyContent")) {
             model.addAttribute("emptyContent", model.getAttribute("emptyContent"));

@@ -415,6 +415,53 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type="text/javascript" th:inline="javascript">
+
+
+    // TODO : 코드 정리하고 댓글 무한스크롤 기능 추가해야 함
+
+    let currentPage = 1;
+    let isLoading = false;
+    let isLastPage = false; // 마지막 페이지인지 여부
+
+
+    window.addEventListener('scroll', function() {
+        if (isLoading) return;
+
+        // 문서 전체의 높이와 스크롤된 양을 사용하여 스크롤 위치 확인
+        const scrollTop = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
+        const scrollHeight = (document.documentElement && document.documentElement.scrollHeight) || document.body.scrollHeight;
+
+        if (scrollTop + window.innerHeight >= scrollHeight - 50) { // 50px 전에 데이터 로드 시작
+            isLoading = true;
+            loadData();
+        }
+    });
+
+    function loadData() {
+        if (isLastPage) { // 마지막 페이지라면 요청하지 않는다.
+            return;
+        }
+        currentPage++; // 페이지 번호 증가
+        fetch(`/get/comment/${bid}?page=${currentPage}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                renderComments(data.content);
+                isLoading = false; // 로딩 상태 업데이트
+                if (userEmail !== null) {
+                    loadRecommendData(data.content);
+                    showEditDeleteBtn(data, userEmail);
+                }
+                isLastPage = data.last; // 마지막 페이지 여부 업데이트
+            })
+            .catch(error => {
+                console.error("Error loading data:", error);
+                isLoading = false; // 에러가 발생한 경우 로딩 상태 업데이트
+            });
+    }
+
+
+
     let bid = /*[[${board.getBid()}]]*/ '';
     let category = /*[[${board.getCategory()}]]*/ '';
     let userEmail = /*[[${userEmail}]]*/ '';

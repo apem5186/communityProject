@@ -50,6 +50,10 @@ public class Comment extends BaseEntity {
         this.users = users;
     }
 
+    // 댓글 수정
+    public void edit(String content) {
+        this.content = content;
+    }
     public void increaseLikeCnt() { this.likeCnt += 1;}
     public void decreaseLikeCnt() { this.likeCnt -= 1;}
 }

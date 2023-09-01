@@ -5,9 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CommentLikeDTO {
+public class CommentEditDTO {
+
     private String cid;
     private String bid;
-    private int page;
     private String category;
+    private int page;
+    private String content;
 }

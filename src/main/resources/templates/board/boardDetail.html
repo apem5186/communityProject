@@ -50,6 +50,22 @@
         .commentDisLikeBtn:active {
             background-color: lightpink!important;
         }
+
+        .commentTrash {
+            border: none;
+            padding: 0;
+        }
+
+        .commentEdit {
+            height: 26px;
+            border: none;
+            border-radius: 25%!important;
+            padding: 0;
+        }
+
+        .comment-item:last-child .comment-separator {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -64,7 +80,7 @@
         <div class="d-flex align-items-center flex-row">
             <a href="#">
                 <img class="img-fluid rounded-full" th:src="@{${board.getProfilePath().getPath()}}" alt="프로필 사진"
-                style="height: 40px; width: 40px">
+                     style="height: 40px; width: 40px">
             </a>
             <div class="ms-1 d-flex align-items-start flex-column">
                 <a class="ps-1 custom-hover text-decoration-none" href="#" th:text="${board.users.getUsername()}"></a>
@@ -116,16 +132,16 @@
                     </div>
                 </div>
             </div>
-<!--            <div th:if="${#lists.size(board.getImgPathList) > 1}">-->
-<!--                <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">-->
-<!--                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
-<!--                    <span class="visually-hidden">Previous</span>-->
-<!--                </button>-->
-<!--                <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">-->
-<!--                    <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
-<!--                    <span class="visually-hidden">Next</span>-->
-<!--                </button>-->
-<!--            </div>-->
+            <!--            <div th:if="${#lists.size(board.getImgPathList) > 1}">-->
+            <!--                <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">-->
+            <!--                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
+            <!--                    <span class="visually-hidden">Previous</span>-->
+            <!--                </button>-->
+            <!--                <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">-->
+            <!--                    <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
+            <!--                    <span class="visually-hidden">Next</span>-->
+            <!--                </button>-->
+            <!--            </div>-->
         </div>
 
         <div class="text-start fs-4 text-container" th:text="${board.getContent()}"></div>
@@ -182,17 +198,19 @@
         <div class="border-top my-3"></div>
         <!-- 댓글 부분 -->
         <div>
-            <span class="fs-5" th:text="${comments.getTotalElements() + '개의 댓글'}"></span>
+            <span class="fs-5" th:text="${board.getReviewCnt() + '개의 댓글'}"></span>
             <div sec:authorize="isAnonymous()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
-                <div class="d-flex-align-items-center">
+                <div class="d-flex align-items-center">
                     <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
-                        <!-- User profile image goes here -->
                         <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
                     </div>
-                    <textarea class="form-control" rows="3"></textarea>
+                    <div class="form-control" contenteditable="false" style="height: 90px;">
+                        <a href="/login" style="text-decoration: none;">로그인</a>
+                        후 이용가능합니다.
+                    </div>
                 </div>
                 <div class="d-flex justify-content-end mt-2">
-                    <button class="btn btn-primary">댓글 작성</button>
+                    <button class="btn btn-primary" disabled>댓글 작성</button>
                 </div>
             </div>
             <div sec:authorize="isAuthenticated()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
@@ -213,66 +231,11 @@
                 </form>
 
             </div>
-                <div class="my-8">
-                    <ul class="list-unstyled">
-                        <li th:each="comment, commentStat : ${comments}" class="mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
-                                    <!-- Comment author's profile image goes here -->
-                                    <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <!-- Comment author's name and comment content -->
-                                            <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>
-                                            <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
-                                        </div>
-                                        <div class="btn-group">
-                                            <form th:action="@{/dislike/comment}" method="post" th:object="${commentLikeDTO}">
-                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
-                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
-                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
-                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
-                                                <!-- TODO : 게시글 추천도 이런방식으로 해도 될듯 -->
-                                                <button
-                                                        th:class="${comment.likeStatus == 'DISLIKE'} ? 'commentDisLikeBtn btn btn-sm btn-outline-danger' :
-                                                        'btn btn-sm btn-outline-secondary'"
-                                                        style="font-size: 0.75rem;"
-                                                        th:disabled="${comment.likeStatus == 'LIKE'}">
-                                                    <!-- Add your Like icon here -->
-                                                    <i class="bi bi-chevron-down" th:style="${comment.likeStatus == 'DISLIKE'} ? 'color: tomato;' : ''"></i>
-                                                </button>
-                                            </form>
-                                            <!-- Dislike button -->
-                                            <!-- Current number of likes -->
-                                            <button th:text="${comment.likeCnt}" class="likeCnt btn btn-sm btn-outline-secondary disabled" style="font-size: 0.75rem;"></button>
-                                            <!-- Like button -->
-                                            <form th:action="@{/like/comment}" method="post" th:object="${commentLikeDTO}">
-                                                <input type="hidden" name="cid" th:value="${comment.getCid()}"/>
-                                                <input type="hidden" name="bid" th:value="${board.getBid()}"/>
-                                                <input type="hidden" name="page" th:value="${commentStat.index + 1}"/>
-                                                <input type="hidden" name="category" th:value="${board.getCategory()}"/>
-                                                <button
-                                                        th:class="${comment.likeStatus == 'LIKE'} ? 'commentLikeBtn btn btn-sm btn-outline-primary' :
-                                                        'btn btn-sm btn-outline-secondary'"
-                                                        style="font-size: 0.75rem;"
-                                                        th:disabled="${comment.likeStatus == 'DISLIKE'}">
-                                                    <!-- Add your Dislike icon here -->
-                                                    <i class="bi bi-chevron-up" th:style="${comment.likeStatus == 'LIKE'} ? 'color: dodgerblue;' : ''"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                                        <p th:text="${comment.content}">Comment content goes here...</p>
-                            <button class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;">댓글 쓰기</button>
-                            <!-- Display the divider line for all comments except the last one -->
-                            <hr th:unless="${commentStat.index + 1 >= comments.getTotalElements()}" class="m-0"/>
-                        </li>
-                    </ul>
-                </div>
+            <div class="my-8">
+                <ul class="list-unstyled" id="commentList">
+                    <template th:replace="~{board/commentFragment :: commentListItem(${comments}, ${board}, ${commentLikeDTO})}"></template>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -280,6 +243,60 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    let currentPage = 1; // Assuming you start from the first page
+    const bid = [[${board.getBid}]];
+    /*]]>*/
+
+    /**
+     * 스크롤 끝까지 내렸을 때 댓글 더 불러오는 함수 실행함
+     */
+    window.addEventListener('scroll', function() {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) { // 500 is a threshold, can be adjusted
+            loadMoreComments(event);
+        }
+    });
+
+    let isLoading = false;
+
+    /**
+     * 댓글 더 불러오는 함수
+     * @param event
+     */
+    function loadMoreComments(event) {
+        if (isLoading) {
+            return; // Early exit if already fetching
+        }
+
+        isLoading = true; // Set loading state to true
+        currentPage++;
+
+        fetch(`/get/comment/${bid}?page=${currentPage}`)
+            .then(response => {
+                if (response.status === 204) {
+                    console.log("no more comments to load.");
+                    --currentPage;
+                    console.log(currentPage);
+                    event.preventDefault();
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text(); // Convert the response to text
+            })
+            .then(html => {
+                const commentList = document.getElementById('commentList');
+                commentList.insertAdjacentHTML('beforeend', html);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                isLoading = false; // Reset loading state in the end
+            });
+    }
+
+
     let likeStatus = /*[[${likeStatus}]]*/ 'none';
     const like_elements = document.getElementsByClassName("like");
     const dislike_elements = document.getElementsByClassName("dislike");
@@ -295,7 +312,7 @@
             // 비추 버튼 비활시킴
             dislike_elements[i].classList.add('disabled');
         }
-    // 비추 누른 상태면
+        // 비추 누른 상태면
     } else if (likeStatus !== 'none' && likeStatus === 'DISLIKE') {
         for (let i = 0; i < dislike_elements.length; i++) {
             // 비추 버튼 빨갛게 만들고 활성화 시킴
@@ -311,14 +328,108 @@
     Array.from(like_elements).forEach(function (element) {
         element.addEventListener('click', function () {
             location.href = this.dataset.uri;
-        })
+        });
     })
     Array.from(dislike_elements).forEach(function (element) {
         element.addEventListener('click', function () {
             location.href = this.dataset.uri;
-        })
+        });
     })
 
+    /**
+     * 대댓글 요청
+     * @param event
+     * @param cid
+     */
+    function replySaveToggle(event, cid) {
+        event.preventDefault();
+        const replyBtn = document.getElementById('replyBtn-' + cid);
+        const replyForm = document.getElementById('replyForm-' + cid);
+        const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+
+        if (editDeleteBtn) {
+            editDeleteBtn.style.display = 'none';
+        }
+        replyBtn.style.display = 'none';
+        replyForm.style.display = 'block';
+    }
+
+    /**
+     * 답글 달기 눌렀을 때 나오는 form 닫기
+     * @param event
+     * @param cid
+     */
+    function cancelReplyBtn(event, cid) {
+        event.preventDefault();
+        const replyBtn = document.getElementById('replyBtn-' + cid);
+        const replyForm = document.getElementById('replyForm-' + cid);
+        const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+
+        if (editDeleteBtn) {
+            editDeleteBtn.style.display = '';
+        }
+        replyForm.style.display = 'none';
+        replyBtn.style.display = 'block';
+    }
+
+    /**
+     * 답글 달기 눌렀을 때 form 나오게 하기
+     * @param commentId
+     */
+    function commentEditToggle(commentId) {
+        console.log(commentId);
+        const commentElem = document.getElementById('comment-' + commentId);
+        const contentElem = document.getElementById('commentContent-' + commentId);
+        const editFormElem = document.getElementById('editForm-' + commentId);
+        const editAreaElem = document.getElementById('editArea-' + commentId);
+        const editBtn = document.getElementById('editBtn-' + commentId);
+        const replyBtn = document.getElementById('replyBtn-' + commentId);
+
+        editAreaElem.value = contentElem.textContent;
+
+        editBtn.classList.add('disabled');
+        replyBtn.style.display = 'none';
+        contentElem.style.display = 'none';
+        editFormElem.style.display = 'block';
+    }
+
+
+    /**
+     * 댓글 수정 form 닫기
+     * @param event
+     * @param commentId
+     */
+    function cancelCommentEdit(event, commentId) {
+        console.log("cancel : " + commentId);
+        event.preventDefault();
+        const commentElem = document.getElementById('comment-' + commentId);
+        const contentElem = document.getElementById('commentContent-' + commentId); // 여기를 수정했습니다.
+        const editFormElem = document.getElementById('editForm-' + commentId);
+        const editBtn = document.getElementById('editBtn-' + commentId);
+        const replyBtn = document.getElementById('replyBtn-' + commentId);
+
+        replyBtn.style.display = 'block';
+        contentElem.style.display = 'block';
+        editFormElem.style.display = 'none';
+        editBtn.classList.remove('disabled');
+    }
+
+    /**
+     * 댓글 삭제 요청 함수
+     * @param event
+     * @param formElement
+     */
+    function commentDeleteConfirm(event, formElement) {
+        event.preventDefault();
+        const isConfirmed = confirm("삭제하시면 복구하실 수 없습니다. 삭제하시겠습니까?");
+        if (isConfirmed) {
+            formElement.submit();
+        }
+    }
+
+    /**
+     * 인증이 필요한 기능 수행 시 로그인 안 했을 때 로그인 페이지로 이동
+     */
     function redirectLogin() {
         const isConfirmed = confirm("로그인 하셔야 이용 가능합니다. 로그인 하시겠습니까?");
 
@@ -327,6 +438,10 @@
         }
     }
 
+    /**
+     * textarea 텍스트에 맞춰서 높이 자동으로 조절
+     * @param textarea
+     */
     function adjustHeight(textarea) {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';

@@ -35,21 +35,30 @@ public class CommentController {
     private final CommentService commentService;
     private final BoardService boardService;
 
+    /**
+     * 댓글 더 불러오기, board/commentFragment를 리턴함
+     * @param bid
+     * @param page
+     * @param model
+     * @param request
+     * @return "board/commentFragment"
+     */
     @GetMapping("/get/comment/{bid}")
-    public ResponseEntity<?> getComments(@PathVariable String bid,
-                                         @RequestParam(value = "page", defaultValue = "1") int page) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> roles = authentication.getAuthorities();
-        Page<CommentListResponseDTO.CommentDTO> commentDTO = null;
-        for (GrantedAuthority role : roles) {
-            if (role.getAuthority().equals("ROLE_USER") || role.getAuthority().equals("ROLE_ADMIN")) {
-                commentDTO = commentService.getCommentsFromBoard(page, bid, true);
-                return ResponseEntity.ok(commentDTO);
-            }
+    public String getComments(@PathVariable String bid,
+                              @RequestParam(value = "page", defaultValue = "1") int page,
+                              Model model, HttpServletRequest request, HttpServletResponse response) {
+        model = boardService.populateBoardModel(model, bid, request, page);
+
+        Page<CommentListResponseDTO.CommentDTO> comments = (Page<CommentListResponseDTO.CommentDTO>) model.getAttribute("comments");
+
+        if (comments.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT); // 204
+            return null;
         }
-        commentDTO = commentService.getCommentsFromBoard(page, bid, false);
-        return ResponseEntity.ok(commentDTO);
+
+        return "board/commentFragment";
     }
+
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/post/comment")
@@ -94,10 +103,6 @@ public class CommentController {
     public String likeComment(CommentLikeDTO commentLikeDTO,
                               HttpServletRequest request, HttpServletResponse response,
                               Model model) {
-        log.error("error : " + commentLikeDTO.getCategory());
-        log.error("error : " + commentLikeDTO.getCid());
-        log.error("error : " + commentLikeDTO.getBid());
-        log.error("error : " + commentLikeDTO.getPage());
         commentService.likeComment(Long.valueOf(commentLikeDTO.getCid()), response, request, true);
         model = boardService.populateBoardModel(model, String.valueOf(commentLikeDTO.getBid()), request, commentLikeDTO.getPage());
         return String.format("redirect:/%s/%s", commentLikeDTO.getCategory().toLowerCase(), commentLikeDTO.getBid());

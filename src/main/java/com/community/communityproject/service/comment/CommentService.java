@@ -59,28 +59,22 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public Page<CommentListResponseDTO.CommentDTO> getCommentsFromBoard(int page, String bid, boolean loggedIn) {
-        List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("regDate"));
-        Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+        // 바로 Sort.by를 사용하여 정렬 조건을 설정
+        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(Sort.Order.desc("regDate")));
         Board board = boardRepository.getReferenceById(Long.valueOf(bid));
         Page<Comment> comments = commentRepository.findAllByBoard(board, pageable);
 
-        List<CommentListResponseDTO.CommentDTO> commentDTOs;
-        if (!loggedIn) {
-            log.info("로그인 안함" + loggedIn);
-            // CommentDTO로 각 Comment들을 변환
-            commentDTOs = comments.getContent().stream()
-                    .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
-                    .collect(Collectors.toList());
-        } else {
-            log.info("로그인 함 " + loggedIn);
-            commentDTOs = comments.getContent().stream()
-                    .map(comment -> {
+        // loggedIn 변수에 따라 처리 방식을 다르게 하되, 하나의 스트림 연산으로 처리
+        List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
+                .map(comment -> {
+                    if (loggedIn) {
                         String likeStatus = checkLikeStatus(comment.getId());
                         return new CommentListResponseDTO().getCommentDTOWithStatus(comment, likeStatus);
-                    })
-                    .collect(Collectors.toList());
-        }
+                    } else {
+                        return new CommentListResponseDTO().getCommentDTO(comment);
+                    }
+                })
+                .collect(Collectors.toList());
 
         // commentDTO와 함께 PageImpl를 리턴
         return new PageImpl<>(commentDTOs, pageable, comments.getTotalElements());

@@ -10,7 +10,7 @@
                     <div class="d-flex flex-column justify-content-center">
                         <!-- Comment author's name and comment content -->
                         <strong th:text="${comment.getUsersDTOInComment().getUsername()}">Author Name</strong>
-                        <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;">며칠 전인지 나타내는 부분</p>
+                        <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;" th:text="${dateFormatter.formatRegDate(comment.regDate)}">며칠 전인지 나타내는 부분</p>
                     </div>
                     <!-- 로그인 안했을 때 -->
                     <div sec:authorize="isAnonymous()" class="d-flex">

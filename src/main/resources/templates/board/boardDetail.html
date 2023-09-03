@@ -93,9 +93,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         <span th:text="${board.getHits()}"></span>
+                        <span>·</span>
                         <!-- 즐겨찾기 수 -->
                         <i class="bi bi-star"></i>
                         <span th:text="${board.getFavoriteCnt()}"></span>
+                        <span>·</span>
+                        <span th:text="${dateFormatter.formatRegDate(board.regDate)}"></span>
                     </span>
                 </div>
             </div>
@@ -246,8 +249,9 @@
     /*<![CDATA[*/
     let currentPage = 1; // Assuming you start from the first page
     const bid = [[${board.getBid}]];
+    const reply = [[${comments}]];
     /*]]>*/
-
+    console.log(reply.content);
     /**
      * 스크롤 끝까지 내렸을 때 댓글 더 불러오는 함수 실행함
      */

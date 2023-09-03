@@ -146,6 +146,9 @@ F          OOO      OOO        TT     EEEEEEEE  RR   RRR
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
                      th:href="@{'#'}" th:text="${boardC.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardC.regDate)}" style="font-size: 14px; color: grey;"></span>
                 </li>
               </ul>
             </div>
@@ -238,6 +241,9 @@ F          OOO      OOO        TT     EEEEEEEE  RR   RRR
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
                      th:href="@{'#'}" th:text="${boardQ.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardQ.regDate)}" style="font-size: 14px; color: grey;"></span>
                 </li>
               </ul>
             </div>
@@ -330,6 +336,9 @@ F          OOO      OOO        TT     EEEEEEEE  RR   RRR
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
                      th:href="@{'#'}" th:text="${boardN.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardN.regDate)}" style="font-size: 14px; color: grey;"></span>
                 </li>
               </ul>
             </div>
@@ -422,6 +431,9 @@ F          OOO      OOO        TT     EEEEEEEE  RR   RRR
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
                      th:href="@{'#'}" th:text="${boardKN.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardKN.regDate)}" style="font-size: 14px; color: grey;"></span>
                 </li>
               </ul>
             </div>

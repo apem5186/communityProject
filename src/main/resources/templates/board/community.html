@@ -24,8 +24,8 @@
         }
 
         a.custom-username {
-            font-weight: normal;
-            color: gray;
+            font-weight: lighter;
+            color: rgb(128, 128, 128);
         }
     </style>
 </head>
@@ -95,6 +95,9 @@
                 </a>
                 <a class="truncate ps-1 text-xs font-normal custom-username"
                    th:href="@{'#'}" th:text="${board.users.username}"></a>
+                <span>·</span>
+                    <span class="fw-medium"
+                      th:text="${dateFormatter.formatRegDate(board.regDate)}" style="font-size: 14px; color: grey;"></span>
             </div>
             <!-- 게시글 제목 -->
             <div class="my-2">

@@ -7,7 +7,10 @@ import com.community.communityproject.entity.users.Users;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -25,7 +28,8 @@ public class CommentListResponseDTO {
         private BoardDTOInComment boardDTOInComment;
         private ProfileImgDTOInComment profileImgDTOInComment;
         private String likeStatus;
-        private Set<CommentDTO> children;
+        private String childLikeStatus;
+        private List<CommentDTO> children;
         private Long parent;
         private LocalDateTime regDate;
         private LocalDateTime modDate;
@@ -47,15 +51,15 @@ public class CommentListResponseDTO {
             this.modDate = comment.getModDate();
         }
 
-        public CommentDTO(Comment comment, String likeStatus) {
+        public CommentDTO(Comment comment, Function<Long, String> likeStatusFetcher) {
             this.cid = comment.getId();
             this.content = comment.getContent();
             this.likeCnt = comment.getLikeCnt();
             this.usersDTOInComment = new UsersDTOInComment(comment.getUsers());
             this.profileImgDTOInComment = new ProfileImgDTOInComment(comment.getUsers().getProfileImage());
             this.boardDTOInComment = new BoardDTOInComment(comment.getBoard());
-            this.likeStatus = likeStatus;
-            setChildrenFromEntities(comment.getChildren());
+            setChildrenFromEntities(comment.getChildren(), likeStatusFetcher);
+            this.likeStatus = likeStatusFetcher.apply(comment.getId());
             if (comment.getParent() == null) {
                 this.parent = null;
             } else {
@@ -67,8 +71,16 @@ public class CommentListResponseDTO {
 
         public void setChildrenFromEntities(Set<Comment> children) {
             this.children = children.stream()
+                    .sorted(Comparator.comparing(Comment::getRegDate))
                     .map(CommentDTO::new)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
+        }
+
+        public void setChildrenFromEntities(Set<Comment> children, Function<Long, String> likeStatusFetcher) {
+            this.children = children.stream()
+                    .sorted(Comparator.comparing(Comment::getRegDate))
+                    .map(child -> new CommentDTO(child, likeStatusFetcher))
+                    .collect(Collectors.toList());
         }
     }
 
@@ -114,8 +126,9 @@ public class CommentListResponseDTO {
         return new CommentDTO(comment);
     }
 
-    public CommentDTO getCommentDTOWithStatus(Comment comment, String likeStatus) {
-        return new CommentDTO(comment, likeStatus);
+    // 나중에 다시 보면 Function<T, R> 에 대해 다시 숙지하기
+    public CommentDTO getCommentDTOWithStatus(Comment comment, Function<Long, String> likeStatusFetcher) {
+        return new CommentDTO(comment, likeStatusFetcher);
     }
 
 }

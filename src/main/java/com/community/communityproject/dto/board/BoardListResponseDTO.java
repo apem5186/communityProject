@@ -7,6 +7,7 @@ import com.community.communityproject.entity.users.ProfileImage;
 import com.community.communityproject.entity.users.Users;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class BoardListResponseDTO {
         private List<String> imgPathList;
         private UsersDTO users;
         private ProfileImgDTO profilePath;
+        private LocalDateTime regDate;
+        private LocalDateTime modDate;
 
         public BoardDTO(Board board) {
             this.bid = board.getId();
@@ -45,6 +48,8 @@ public class BoardListResponseDTO {
             }
             this.users = new UsersDTO(board.getUsers());
             this.profilePath = new ProfileImgDTO(board.getUsers().getProfileImage());
+            this.regDate = board.getRegDate();
+            this.modDate = board.getModDate();
         }
     }
 

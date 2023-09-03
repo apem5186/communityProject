@@ -68,8 +68,7 @@ public class CommentService {
         List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
                 .map(comment -> {
                     if (loggedIn) {
-                        String likeStatus = checkLikeStatus(comment.getId());
-                        return new CommentListResponseDTO().getCommentDTOWithStatus(comment, likeStatus);
+                        return new CommentListResponseDTO().getCommentDTOWithStatus(comment, this::checkLikeStatus);
                     } else {
                         return new CommentListResponseDTO().getCommentDTO(comment);
                     }

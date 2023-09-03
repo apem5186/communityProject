@@ -1,6 +1,7 @@
 package com.community.communityproject.controller;
 
 import com.community.communityproject.service.users.UserService;
+import com.community.communityproject.service.util.FormatDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalControllerAdvice {
 
     private final UserService userService;
+    private final FormatDate formatDate;
 
     @ModelAttribute
     public void addAttributes(Model model) {
@@ -30,5 +32,7 @@ public class GlobalControllerAdvice {
             String filePath = userService.defaultImage();
             model.addAttribute("profileImage", filePath);
         }
+
+        model.addAttribute("dateFormatter", formatDate);
     }
 }

@@ -93,12 +93,22 @@ public class CommentService {
 
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
-
-            Comment comment = Comment.builder()
-                    .content(commentRequestDTO.getContent())
-                    .users(userService.getUsers())
-                    .board(boardRepository.getReferenceById(Long.valueOf(bid)))
-                    .build();
+            Comment comment;
+            if (commentRequestDTO.getParentId() == null) {
+                comment = Comment.builder()
+                        .content(commentRequestDTO.getContent())
+                        .users(userService.getUsers())
+                        .board(boardRepository.getReferenceById(Long.valueOf(bid)))
+                        .build();
+            } else {
+                Comment parent = commentRepository.findById(commentRequestDTO.getParentId()).orElseThrow(CommentNotFoundException::new);
+                comment = Comment.builder()
+                        .content(commentRequestDTO.getContent())
+                        .users(userService.getUsers())
+                        .board(boardRepository.getReferenceById(Long.valueOf(bid)))
+                        .parent(parent)
+                        .build();
+            }
 
             commentRepository.save(comment);
             increaseCnt(Long.valueOf(bid));

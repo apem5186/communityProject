@@ -15,4 +15,5 @@ public class CommentRequestDTO {
     private String content;
     private String userEmail;
     private String category;
+    private Long parentId;
 }

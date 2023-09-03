@@ -388,7 +388,9 @@
         editAreaElem.value = contentElem.textContent;
 
         editBtn.classList.add('disabled');
-        replyBtn.style.display = 'none';
+        if (replyBtn) {
+            replyBtn.style.display = 'none';
+        }
         contentElem.style.display = 'none';
         editFormElem.style.display = 'block';
     }
@@ -408,7 +410,9 @@
         const editBtn = document.getElementById('editBtn-' + commentId);
         const replyBtn = document.getElementById('replyBtn-' + commentId);
 
-        replyBtn.style.display = 'block';
+        if (replyBtn) {
+            replyBtn.style.display = 'block';
+        }
         contentElem.style.display = 'block';
         editFormElem.style.display = 'none';
         editBtn.classList.remove('disabled');

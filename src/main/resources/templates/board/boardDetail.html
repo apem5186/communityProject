@@ -24,11 +24,14 @@
             overflow-y: hidden; /* Hide vertical scrollbar */
         }
 
-        .replyBtn {
+        .replyBtn,
+        .replyCollapse {
             border: none;
         }
         .replyBtn:hover,
-        .replyBtn:active {
+        .replyBtn:active,
+        .replyCollapse:hover,
+        .replyCollapse:active {
             background-color: transparent!important;
             color: dodgerblue!important;
         }
@@ -350,9 +353,13 @@
         const replyBtn = document.getElementById('replyBtn-' + cid);
         const replyForm = document.getElementById('replyForm-' + cid);
         const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+        const replyCollapse = document.getElementById('replyCollapse-' + cid);
 
         if (editDeleteBtn) {
             editDeleteBtn.style.display = 'none';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = 'none';
         }
         replyBtn.style.display = 'none';
         replyForm.style.display = 'block';
@@ -368,12 +375,26 @@
         const replyBtn = document.getElementById('replyBtn-' + cid);
         const replyForm = document.getElementById('replyForm-' + cid);
         const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+        const replyCollapse = document.getElementById('replyCollapse-' + cid);
+
 
         if (editDeleteBtn) {
             editDeleteBtn.style.display = '';
         }
+        if (replyCollapse) {
+            replyCollapse.style.display = '';
+        }
         replyForm.style.display = 'none';
-        replyBtn.style.display = 'block';
+        replyBtn.style.display = 'inline-block';
+    }
+
+    /**
+     * 대댓글 텍스트 전환하는 함수 대댓글이 접힌 상태에선 답글 보기, 펼쳐진 상태에선 답글 접기
+     * @param element
+     */
+    function toggleReplyText(element) {
+        let currentText = element.textContent || element.innerText;
+        element.textContent = currentText === '답글 보기' ? '답글 접기' : '답글 보기';
     }
 
     /**
@@ -388,12 +409,17 @@
         const editAreaElem = document.getElementById('editArea-' + commentId);
         const editBtn = document.getElementById('editBtn-' + commentId);
         const replyBtn = document.getElementById('replyBtn-' + commentId);
+        const replyCollapse = document.getElementById('replyCollapse-' + commentId);
+
 
         editAreaElem.value = contentElem.textContent;
 
         editBtn.classList.add('disabled');
         if (replyBtn) {
             replyBtn.style.display = 'none';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = 'none';
         }
         contentElem.style.display = 'none';
         editFormElem.style.display = 'block';
@@ -413,9 +439,14 @@
         const editFormElem = document.getElementById('editForm-' + commentId);
         const editBtn = document.getElementById('editBtn-' + commentId);
         const replyBtn = document.getElementById('replyBtn-' + commentId);
+        const replyCollapse = document.getElementById('replyCollapse-' + commentId);
+
 
         if (replyBtn) {
-            replyBtn.style.display = 'block';
+            replyBtn.style.display = 'inline-block';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = '';
         }
         contentElem.style.display = 'block';
         editFormElem.style.display = 'none';

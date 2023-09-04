@@ -96,6 +96,16 @@
             <button type="submit" th:id="'saveBtn-' + ${comment.cid}" class="saveEdit btn btn-outline-success px-2" >수정</button>
         </form>
         <button th:id="'replyBtn-' + ${comment.cid}" class="replyBtn btn btn-sm btn-outline-secondary fw-normal my-3" style="font-size: 0.75rem;" th:onclick="'replySaveToggle(event, ' + ${comment.cid} + ');'">댓글 쓰기</button>
+        <!-- TODO : collapse로 답글 보기 버튼 만들어야 함 -->
+        <a th:id="'replyCollapse-' + ${comment.cid}"
+           class="replyCollapse btn btn-sm btn-outline-secondary fw-normal my-3"
+           style="font-size: 0.75rem;"
+           data-bs-toggle="collapse"
+           th:href="'#replyTemplate-' + ${comment.cid}"
+           role="button" aria-expanded="false" aria-controls="replyCollapse"
+           th:if="${!#lists.isEmpty(comment.children)}"
+           onclick="toggleReplyText(this)">답글 보기</a>
+
         <form th:id="'replyForm-' + ${comment.cid}" class="replyForm my-2" action="/post/comment" method="post" style="display: none;">
             <div class="d-flex">
                 <i class="bi bi-arrow-return-right mx-3"></i>
@@ -111,11 +121,9 @@
             </div>
         </form>
     </div>
-    <ul class="list-unstyled border-start border-4 ms-3">
+    <ul class="list-unstyled border-start border-4 ms-3 collapse" th:id="'replyTemplate-' + ${comment.cid}">
         <template th:if="comment.cid == comment.parent" th:replace="~{board/replyFragment :: replyListItem}"></template>
     </ul>
     <!-- Display the divider line for all comments except the last one -->
-    <!-- TODO : 현재 ${comments} 객체가 Page 타입이라 ${commentStat.size} 나 ${commentStat.last}가 안됨 -->
-    <!-- TODO : 나중에 comments를 리스트로 받으면 수정예정 -->
     <hr th:if="${comment.parent == null}" class="comment-separator m-0"/>
 </li>

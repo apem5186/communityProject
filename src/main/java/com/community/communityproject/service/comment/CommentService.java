@@ -5,6 +5,7 @@ import com.community.communityproject.config.exception.CommentUserNotEqual;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.comment.CommentEditDTO;
+import com.community.communityproject.dto.comment.CommentLikeDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
 import com.community.communityproject.entity.board.Board;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,16 +62,22 @@ public class CommentService {
         // 바로 Sort.by를 사용하여 정렬 조건을 설정
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(Sort.Order.desc("regDate")));
         Board board = boardRepository.getReferenceById(Long.valueOf(bid));
-        Page<Comment> comments = commentRepository.findAllByBoard(board, pageable);
+        Page<Comment> comments = commentRepository.findAllByBoardAndParentIsNull(board, pageable);
 
         // loggedIn 변수에 따라 처리 방식을 다르게 하되, 하나의 스트림 연산으로 처리
         List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
                 .map(comment -> {
+                    CommentListResponseDTO.CommentDTO commentDTO;
                     if (loggedIn) {
-                        return new CommentListResponseDTO().getCommentDTOWithStatus(comment, this::checkLikeStatus);
+                        commentDTO = new CommentListResponseDTO().getCommentDTOWithStatus(comment, this::checkLikeStatus);
                     } else {
-                        return new CommentListResponseDTO().getCommentDTO(comment);
+                        commentDTO = new CommentListResponseDTO().getCommentDTO(comment);
                     }
+
+                    List<Comment> replyComments = commentRepository.findAllByParent(comment);
+                    commentDTO.setChildrenFromEntities(new HashSet<>(replyComments));
+
+                    return commentDTO;
                 })
                 .collect(Collectors.toList());
 

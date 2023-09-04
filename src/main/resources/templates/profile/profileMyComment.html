@@ -67,12 +67,12 @@
                 </button>
             </div>
         </div>
-        <div th:insert="~{fragments :: profile_get_data}"></div>
+        <div th:insert="~{fragments :: profile_get_data_comments}"></div>
 
     </div>
 </div>
 <!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
-<form th:action="@{/profile/posts}" method="get" id="pageForm">
+<form th:action="@{/profile/comments}" method="get" id="pageForm">
     <input type="hidden" id="page" name="page" th:value="${paging.number}">
 </form>
 <form id="profileForm" method="get" style="display: none;">

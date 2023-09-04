@@ -3,11 +3,13 @@ package com.community.communityproject.controller;
 import com.community.communityproject.dto.*;
 import com.community.communityproject.dto.board.BoardLikeDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
+import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.users.UsersEditDTO;
 import com.community.communityproject.dto.users.UsersLoginDTO;
 import com.community.communityproject.dto.users.UsersSignupDTO;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.board.BoardService;
+import com.community.communityproject.service.comment.CommentService;
 import com.community.communityproject.service.users.UserSecurityService;
 import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.jwt.AuthService;
@@ -48,6 +50,7 @@ public class UserController {
     private final AuthService authService;
     private final UserSecurityService userSecurityService;
     private final BoardService boardService;
+    private final CommentService commentService;
 
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
@@ -264,6 +267,23 @@ public class UserController {
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyLike";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile/comments")
+    public String profileComments(HttpServletRequest request, HttpServletResponse response,
+                                  Model model,
+                                  @RequestParam(value = "page", defaultValue = "1") int page,
+                                  HttpSession session) {
+        Page<CommentListResponseDTO.CommentDTO> commentDTOS = commentService.getMyCommentListDTO(page, response, request);
+        model.addAttribute("paging", commentDTOS);
+
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setUsername((String) session.getAttribute("username"));
+        usersEditDTO.setEmail((String) session.getAttribute("email"));
+        model.addAttribute("user", usersEditDTO);
+
+        return "profile/profileMyComment";
     }
 
     @PostMapping("/delete/users")

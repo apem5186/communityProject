@@ -3,9 +3,7 @@ package com.community.communityproject.controller;
 import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
-import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.service.board.BoardService;
-import com.community.communityproject.service.comment.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -18,11 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Slf4j
 @Controller
@@ -30,7 +24,6 @@ import java.util.Set;
 public class BoardController {
 
     private final BoardService boardService;
-    private final CommentService commentService;
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,

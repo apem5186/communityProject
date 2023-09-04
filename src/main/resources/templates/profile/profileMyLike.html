@@ -52,7 +52,7 @@
                 </button>
 
                 <!-- Placeholder for comments; you can update these as necessary -->
-                <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+                <button data-action-url="/profile/comments" class="btn btn-outline-light custom-hover profileButton">
                     댓글
                 </button>
 
@@ -72,7 +72,7 @@
     </div>
 </div>
 <!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
-<form th:action="@{/profile/posts}" method="get" id="pageForm">
+<form th:action="@{/profile/likes}" method="get" id="pageForm">
     <input type="hidden" id="page" name="page" th:value="${paging.number}">
 </form>
 <form id="profileForm" method="get" style="display: none;">

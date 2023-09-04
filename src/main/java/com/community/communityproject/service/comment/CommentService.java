@@ -1,6 +1,5 @@
 package com.community.communityproject.service.comment;
 
-import com.community.communityproject.config.exception.BoardNotFoundException;
 import com.community.communityproject.config.exception.CommentNotFoundException;
 import com.community.communityproject.config.exception.CommentUserNotEqual;
 import com.community.communityproject.config.exception.UserNotFoundException;
@@ -9,7 +8,6 @@ import com.community.communityproject.dto.comment.CommentEditDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
 import com.community.communityproject.entity.board.Board;
-import com.community.communityproject.entity.board.BoardLike;
 import com.community.communityproject.entity.board.LikeStatus;
 import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.comment.CommentLike;
@@ -77,6 +75,43 @@ public class CommentService {
 
         // commentDTO와 함께 PageImpl를 리턴
         return new PageImpl<>(commentDTOs, pageable, comments.getTotalElements());
+    }
+
+    /**
+     * profile에 자기 댓글 가져오기
+     * @param page
+     * @param response
+     * @param request
+     * @return CommentDTO
+     */
+    public Page<CommentListResponseDTO.CommentDTO> getMyCommentListDTO(int page, HttpServletResponse response,
+                                                                    HttpServletRequest request) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            List<Sort.Order> sorts = new ArrayList<>();
+            sorts.add(Sort.Order.desc("regDate"));
+            Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+            // Find all comments by user's Email
+            Page<Comment> comments = commentRepository.findAllByUsersEmail(email, pageable);
+            // Convert each Comment entity to CommentDTO
+            List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
+                    .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
+                    .toList();
+
+            // Return a new PageImpl with the converted DTOs
+            return new PageImpl<>(commentDTOs, pageable, comments.getTotalElements());
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
     }
 
     /**

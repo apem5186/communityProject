@@ -103,12 +103,14 @@ public class CommentListResponseDTO {
         private String title;
         private String usernameHasBoard;
         private String emailHasBoard;
+        private String category;
 
         public BoardDTOInComment(Board board) {
             this.bid = board.getId();
             this.title = board.getTitle();
             this.usernameHasBoard = board.getUsers().getUsername();
             this.emailHasBoard = board.getUsers().getEmail();
+            this.category = board.getCategory().toString();
         }
     }
 

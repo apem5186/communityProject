@@ -4,9 +4,7 @@ import com.community.communityproject.dto.*;
 import com.community.communityproject.dto.board.BoardLikeDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
-import com.community.communityproject.dto.users.UsersEditDTO;
-import com.community.communityproject.dto.users.UsersLoginDTO;
-import com.community.communityproject.dto.users.UsersSignupDTO;
+import com.community.communityproject.dto.users.*;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.board.BoardService;
 import com.community.communityproject.service.comment.CommentService;
@@ -38,6 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
@@ -284,6 +283,44 @@ public class UserController {
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyComment";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile/activity")
+    public String profileActivity(HttpServletRequest request, HttpServletResponse response,
+                                  Model model,
+                                  @RequestParam(value = "page", defaultValue = "1") int page,
+                                  HttpSession session) {
+
+        Page<UserActivity> activityHistories = userService.getUserActivityHistorySorted(page, response, request);
+        model.addAttribute("paging", activityHistories);
+        log.info("=============================================");
+        log.info("is Empty ? : " + activityHistories.isEmpty());
+        activityHistories.get().forEach(userActivity -> {
+            log.info("REGREGDATE : " + userActivity.getActivityType());
+            log.info("hi" + userActivity);
+            switch (userActivity.getActivityType()) {
+                case "Board" -> {
+                    log.info("REGDATE : " + userActivity.getRegDate() + "\n");
+                    log.info("STRING : " + userActivity.getBoardHistoryDTO().toString());
+                }
+                case "Comment" -> {
+                    log.info("REGDATE : " + userActivity.getRegDate() + "\n");
+                    log.info("STRING : " + userActivity.getCommentHistoryDTO().toString());
+                }
+                case "CommentLike" -> {
+                    log.info("REGDATE : " + userActivity.getRegDate() + "\n");
+                    log.info("STRING : " + userActivity.getCommentLikeHistoryDTO().toString());
+                }
+            }
+        });
+        log.info("=============================================");
+        UsersEditDTO usersEditDTO = new UsersEditDTO();
+        usersEditDTO.setUsername((String) session.getAttribute("username"));
+        usersEditDTO.setEmail((String) session.getAttribute("email"));
+        model.addAttribute("user", usersEditDTO);
+
+        return "profile/profileMyActivity";
     }
 
     @PostMapping("/delete/users")

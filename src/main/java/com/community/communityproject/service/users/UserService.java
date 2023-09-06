@@ -4,17 +4,19 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.community.communityproject.config.AmazonS3ResourceStorage;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.dto.users.UsersEditDTO;
-import com.community.communityproject.dto.users.UsersInfo;
-import com.community.communityproject.dto.users.UsersSignupDTO;
+import com.community.communityproject.dto.users.*;
+import com.community.communityproject.entity.board.Board;
+import com.community.communityproject.entity.board.BoardFavorite;
+import com.community.communityproject.entity.board.BoardLike;
+import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.users.ProfileImage;
 import com.community.communityproject.entity.users.UserRole;
 import com.community.communityproject.entity.users.Users;
-import com.community.communityproject.repository.ProfileImageRepository;
-import com.community.communityproject.repository.UserRepository;
+import com.community.communityproject.repository.*;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.redis.RedisService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +40,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,6 +52,11 @@ import java.nio.file.Paths;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
+    private final BoardLikeRepository boardLikeRepository;
+    private final BoardFavoriteRepository boardFavoriteRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     private final ProfileImageRepository profileImageRepository;
 
@@ -272,6 +288,125 @@ public class UserService {
         return "ok";
     }
 
+    /**
+     * 유저 활동 내역 DTO로 만들고 UserActivityHistoryDTO에 집어넣고 리턴
+     * @param users
+     * @return userActivityHistoryDTO
+     */
+    public UsersHistoryDTO.UserActivityHistoryDTO getUserActivityHistory(Users users) {
+        UsersHistoryDTO.UserActivityHistoryDTO userActivityHistoryDTO = new UsersHistoryDTO.UserActivityHistoryDTO();
+        List<UsersHistoryDTO.BoardHistoryDTO> boardHistories = boardRepository.findAllByUsers(users)
+                .stream()
+                .map(board -> UsersHistoryDTO.BoardHistoryDTO.builder()
+                        .bId(board.getId())
+                        .boardTitle(board.getTitle())
+                        .boardCategory(board.getCategory().toString().toLowerCase())
+                        .regDate(board.getRegDate())
+                        .modDate(board.getModDate())
+                        .build())
+                .toList();
+
+        List<BoardLike> boardLikes = boardLikeRepository.findAllByUsers(users);
+        List<UsersHistoryDTO.BoardLikeHistoryDTO> boardLikeHistories = boardLikes.stream()
+                .map(boardLike -> {
+                    Board board = boardLike.getBoard();
+                    return UsersHistoryDTO.BoardLikeHistoryDTO.builder()
+                            .bId(board.getId())
+                            .blId(boardLike.getId())
+                            .boardTitle(board.getTitle())
+                            .boardOwnerUsername(board.getUsers().getUsername())
+                            .boardCategory(board.getCategory().toString().toLowerCase())
+                            .likeStatus(boardLike.getLikeStatus().name())
+                            .regDate(boardLike.getRegDate())
+                            .build();
+                }).toList();
+
+        List<BoardFavorite> boardFavorites = boardFavoriteRepository.findAllByUsers(users);
+        List<UsersHistoryDTO.BoardFavoriteHistoryDTO> boardFavoriteHistories = boardFavorites.stream()
+                .map(boardFavorite -> {
+                    Board board = boardFavorite.getBoard();
+                    return UsersHistoryDTO.BoardFavoriteHistoryDTO.builder()
+                            .bId(board.getId())
+                            .bfId(boardFavorite.getId())
+                            .boardTitle(board.getTitle())
+                            .boardOwnerUsername(board.getUsers().getUsername())
+                            .boardCategory(board.getCategory().toString().toLowerCase())
+                            .regDate(boardFavorite.getRegDate())
+                            .build();
+                    }).toList();
+
+        List<UsersHistoryDTO.CommentHistoryDTO> commentHistories = commentRepository.findAllByUsers(users).stream()
+                .map(comment -> {
+                    Board board = comment.getBoard();
+                    return UsersHistoryDTO.CommentHistoryDTO.builder()
+                            .bId(board.getId())
+                            .cId(comment.getId())
+                            .commentParentId(Optional.ofNullable(comment.getParent()).map(Comment::getId).orElse(null))
+                            .boardOwnerUsername(board.getUsers().getUsername())
+                            .boardTitle(board.getTitle())
+                            .boardCategory(board.getCategory().toString().toLowerCase())
+                            .commentOwnerUsername(comment.getUsers().getUsername())
+                            .regDate(comment.getRegDate())
+                            .modDate(comment.getModDate())
+                            .build();
+                }).toList();
+
+        List<UsersHistoryDTO.CommentLikeHistoryDTO> commentLikeHistories = commentLikeRepository.findAllByUsers(users).stream()
+                .map(commentLike -> {
+                    Comment comment = commentLike.getComment();
+                    Board board = comment.getBoard();
+                    return UsersHistoryDTO.CommentLikeHistoryDTO.builder()
+                            .cid(comment.getId())
+                            .clId(commentLike.getId())
+                            .bid(board.getId())
+                            .commentParentId(Optional.ofNullable(comment.getParent()).map(Comment::getId).orElse(null))
+                            .boardTitle(board.getTitle())
+                            .boardOwnerUsername(board.getUsers().getUsername())
+                            .boardCategory(board.getCategory().toString().toLowerCase())
+                            .commentOwnerUsername(comment.getUsers().getUsername())
+                            .likeStatus(commentLike.getLikeStatus().name())
+                            .regDate(commentLike.getRegDate())
+                            .build();
+                }).toList();
+
+        userActivityHistoryDTO.setBoardHistories(boardHistories);
+        userActivityHistoryDTO.setBoardLikeHistories(boardLikeHistories);
+        userActivityHistoryDTO.setBoardFavoriteHistories(boardFavoriteHistories);
+        userActivityHistoryDTO.setCommentHistories(commentHistories);
+        userActivityHistoryDTO.setCommentLikeHistories(commentLikeHistories);
+
+        return userActivityHistoryDTO;
+    }
+
+    public Page<UserActivity> getUserActivityHistorySorted(int page, HttpServletResponse response,
+                                                                           HttpServletRequest request) {
+        TokenDTO tokenDTO = authService.validateToken(response, request);
+        if (tokenDTO != null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users users = userRepository.findByEmail(authentication.getName()).orElseThrow(UserNotFoundException::new);
+            UsersHistoryDTO.UserActivityHistoryDTO userActivityHistoryDTO = getUserActivityHistory(users);
+
+            List<UserActivity> allActivity = userActivityHistoryDTO.getAllActivities();
+            allActivity.sort(Comparator.comparing(UserActivity::getRegDate));
+
+            int pageSize = 10;
+            Pageable pageable = PageRequest.of(page, pageSize);
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allActivity.size());
+
+            return new PageImpl<>(allActivity.subList(start, end), pageable, allActivity.size());
+        } else {
+            String at = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie :
+                    cookies) {
+                if (cookie.getName().equals("access-token"))
+                    at = cookie.getValue();
+            }
+            throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
+        }
+    }
     /**
      * 프로필 이미지 수정 할 때 씀
      * @param email

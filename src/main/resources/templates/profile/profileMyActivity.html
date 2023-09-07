@@ -62,17 +62,17 @@
                 </button>
 
                 <!-- Go to profile -->
-                <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+                <button data-action-url="/profile/likes" class="btn btn-outline-light custom-hover profileButton">
                     좋아요
                 </button>
 
                 <!-- For getting My Activity History -->
-                <button data-action-url="/profile/activity" class="btn btn-outline-light custom-hover profileButton">
+                <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
                     최근 활동
                 </button>
             </div>
         </div>
-        <div th:insert="~{fragments :: profile_get_data_like}"></div>
+        <div th:insert="~{fragments :: profile_get_data_activities}"></div>
 
     </div>
 </div>
@@ -87,6 +87,10 @@
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
+    /*<![CDATA[*/
+    const paging = [[${paging}]];
+    /*]]>*/
+    console.log(paging);
     let profileButtons = document.getElementsByClassName("profileButton");
     Array.from(profileButtons).forEach(function(button) {
         button.addEventListener('click', function () {

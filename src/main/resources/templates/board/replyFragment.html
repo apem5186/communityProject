@@ -1,4 +1,3 @@
-<!-- TODO : 답글 순서 편집해야 함 답글 수정했을 때, 등록 했을 때 순서가 꼬인 듯 -->
 <li th:fragment="replyListItem" th:each="reply, replyStat : ${comment.children}" class="reply-item mb-3 ms-4">
     <div class="d-flex align-items-center">
         <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
@@ -10,7 +9,7 @@
                 <div class="d-flex flex-column justify-content-center">
                     <!-- Comment author's name and comment content -->
                     <strong th:text="${reply.getUsersDTOInComment().getUsername()}">Author Name</strong>
-                    <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;" th:text="${dateFormatter.formatRegDate(comment.regDate)}">며칠 전인지 나타내는 부분</p>
+                    <p class="fw-normal user-select-none mb-0" style="font-size : 0.75rem; font-weight: 200!important;" th:text="${dateFormatter.formatRegDate(reply.regDate)}">며칠 전인지 나타내는 부분</p>
                 </div>
                 <!-- 로그인 안했을 때 -->
                 <div sec:authorize="isAnonymous()" class="d-flex">

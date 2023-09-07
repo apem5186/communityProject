@@ -356,9 +356,9 @@ public class UserService {
                     Comment comment = commentLike.getComment();
                     Board board = comment.getBoard();
                     return UsersHistoryDTO.CommentLikeHistoryDTO.builder()
-                            .cid(comment.getId())
+                            .cId(comment.getId())
                             .clId(commentLike.getId())
-                            .bid(board.getId())
+                            .bId(board.getId())
                             .commentParentId(Optional.ofNullable(comment.getParent()).map(Comment::getId).orElse(null))
                             .boardTitle(board.getTitle())
                             .boardOwnerUsername(board.getUsers().getUsername())
@@ -387,10 +387,19 @@ public class UserService {
             UsersHistoryDTO.UserActivityHistoryDTO userActivityHistoryDTO = getUserActivityHistory(users);
 
             List<UserActivity> allActivity = userActivityHistoryDTO.getAllActivities();
-            allActivity.sort(Comparator.comparing(UserActivity::getRegDate));
-
+            allActivity.forEach(c ->
+            {
+                String str = String.format("REG : %s, TYPE : %s", c.getRegDate(), c.getActivityType());
+                log.info(str);
+            });
+            allActivity.sort(Comparator.comparing(UserActivity::getRegDate).reversed());
+            allActivity.forEach(c ->
+            {
+                String str = String.format("REG : %s, TYPE : %s", c.getRegDate(), c.getActivityType());
+                log.info(str);
+            });
             int pageSize = 10;
-            Pageable pageable = PageRequest.of(page, pageSize);
+            Pageable pageable = PageRequest.of(page - 1, pageSize);
 
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), allActivity.size());

@@ -67,17 +67,12 @@ public class CommentService {
         // loggedIn 변수에 따라 처리 방식을 다르게 하되, 하나의 스트림 연산으로 처리
         List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
                 .map(comment -> {
-                    CommentListResponseDTO.CommentDTO commentDTO;
                     if (loggedIn) {
-                        commentDTO = new CommentListResponseDTO().getCommentDTOWithStatus(comment, this::checkLikeStatus);
+                        return new CommentListResponseDTO().getCommentDTOWithStatus(comment, this::checkLikeStatus);
                     } else {
-                        commentDTO = new CommentListResponseDTO().getCommentDTO(comment);
+                        return new CommentListResponseDTO().getCommentDTO(comment);
                     }
 
-                    List<Comment> replyComments = commentRepository.findAllByParent(comment);
-                    commentDTO.setChildrenFromEntities(new HashSet<>(replyComments));
-
-                    return commentDTO;
                 })
                 .collect(Collectors.toList());
 

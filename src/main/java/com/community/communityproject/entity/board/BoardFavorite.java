@@ -37,6 +37,11 @@ public class BoardFavorite {
     @Column(name = "regDate", updatable = false)
     private LocalDateTime regDate;
 
+    @PrePersist
+    public void onPrePersist() {
+        this.regDate = LocalDateTime.now();
+    }
+
     public BoardFavorite(Board board, Users users) {
         this.board = board;
         this.users = users;

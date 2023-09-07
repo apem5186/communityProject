@@ -69,9 +69,9 @@ public class UsersHistoryDTO {
     @Setter
     @Builder
     public static class CommentLikeHistoryDTO{
-        private Long cid;
+        private Long cId;
         private Long clId;
-        private Long bid;
+        private Long bId;
         private Long commentParentId;
         private String boardTitle;
         private String boardOwnerUsername;

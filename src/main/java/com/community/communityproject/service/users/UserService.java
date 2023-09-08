@@ -143,14 +143,27 @@ public class UserService {
         profileImageRepository.save(profileImage);
     }
 
-    public UsersInfo loadUser(String email) {
-        Users users = userRepository.findByEmail(email).orElseThrow();
-        UsersInfo usersInfo = UsersInfo.builder()
-                .username(users.getUsername())
-                .email(users.getEmail())
-                .userRole(users.getUserRole())
-                .build();
-        return usersInfo;
+    /**
+     * 이메일로 받던지 uid로 받아서 usersInfo를 리턴함
+     * @param input
+     * @return UsersInfo
+     * @param <T>
+     */
+    public <T> UsersInfo loadUser(T input) {
+        Users users = null;
+        if (input instanceof String) {
+            users = userRepository.findByEmail((String) input).orElseThrow();
+        } else if (input instanceof Long) {
+            users = userRepository.findById((Long) input).orElseThrow();
+        }
+        if (users != null) {
+            return UsersInfo.builder()
+                    .uid(users.getId())
+                    .username(users.getUsername())
+                    .email(users.getEmail())
+                    .userRole(users.getUserRole())
+                    .build();
+        } else throw new UserNotFoundException();
     }
 
     public UsersEditDTO loadEditUserInfo(String email) {
@@ -207,6 +220,7 @@ public class UserService {
             users = userRepository.save(users);
             session.setAttribute("username", users.getUsername());
             session.setAttribute("email", users.getEmail());
+            session.setAttribute("editingEnabled", false);
 
             MultipartFile multipartFile = usersEditDTO.getProfileImage();
             String filePath = editProfileImage(multipartFile, usersEditDTO.getEmail());
@@ -378,6 +392,35 @@ public class UserService {
         return userActivityHistoryDTO;
     }
 
+    /**
+     * 다른 유저 프로필에서 활동 내역 가져오기
+     * @param page
+     * @param uid
+     * @return userActivity
+     */
+    public Page<UserActivity> getOtherUserActivityHistorySorted(int page, String uid) {
+        Users users = userRepository.findById(Long.valueOf(uid)).orElseThrow(UserNotFoundException::new);
+        UsersHistoryDTO.UserActivityHistoryDTO userActivityHistoryDTO = getUserActivityHistory(users);
+
+        List<UserActivity> allActivity = userActivityHistoryDTO.getAllActivities();
+        allActivity.sort(Comparator.comparing(UserActivity::getRegDate).reversed());
+
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allActivity.size());
+
+        return new PageImpl<>(allActivity.subList(start, end), pageable, allActivity.size());
+    }
+
+    /**
+     * 유저 활동 내역 받은 다음에 sort 해서 PageImpl로 리턴
+     * @param page
+     * @param response
+     * @param request
+     * @return userActivity
+     */
     public Page<UserActivity> getUserActivityHistorySorted(int page, HttpServletResponse response,
                                                                            HttpServletRequest request) {
         TokenDTO tokenDTO = authService.validateToken(response, request);

@@ -138,13 +138,15 @@ F          OOO      OOO        TT      EEEEEEEE    RR   RRR
               <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
                   <!-- 프로필 사진 및 사용자 이름 -->
-                  <a th:href="@{'#'}" class="nav-link active pb-0 pt-1" style="text-align: left">
+                  <a th:href="${uid == null || (boardC.users != null && !uid.equals(boardC.users.uid))} ? '/profile/' + ${boardC.users.uid} : '/profile'"
+                     class="nav-link active pb-0 pt-1" style="text-align: left">
                     <img th:src="${boardC.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
-                     th:href="@{'#'}" th:text="${boardC.users.username}"></a>
+                     th:href="${uid == null || (boardC.users != null && !uid.equals(boardC.users.uid))} ? '/profile/' + ${boardC.users.uid} : '/profile'"
+                     th:text="${boardC.users.username}"></a>
                   <span>·</span>
                   <span class="fw-medium"
                         th:text="${dateFormatter.formatRegDate(boardC.regDate)}" style="font-size: 14px; color: grey;"></span>
@@ -233,13 +235,13 @@ F          OOO      OOO        TT      EEEEEEEE    RR   RRR
               <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
                   <!-- 프로필 사진 및 사용자 이름 -->
-                  <a th:href="@{'#'}" class="nav-link active pb-0 pt-1" style="text-align: left">
+                  <a th:href="${uid == null || (boardQ.users != null && !uid.equals(boardQ.users.uid))} ? '/profile/' + ${boardQ.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
                     <img th:src="${boardQ.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
-                     th:href="@{'#'}" th:text="${boardQ.users.username}"></a>
+                     th:href="${uid == null || (boardQ.users != null && !uid.equals(boardQ.users.uid))} ? '/profile/' + ${boardQ.users.uid} : '/profile'" th:text="${boardQ.users.username}"></a>
                   <span>·</span>
                   <span class="fw-medium"
                         th:text="${dateFormatter.formatRegDate(boardQ.regDate)}" style="font-size: 14px; color: grey;"></span>
@@ -328,13 +330,13 @@ F          OOO      OOO        TT      EEEEEEEE    RR   RRR
               <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
                   <!-- 프로필 사진 및 사용자 이름 -->
-                  <a th:href="@{'#'}" class="nav-link active pb-0 pt-1" style="text-align: left">
+                  <a th:href="${uid == null || (boardN.users != null && !uid.equals(boardN.users.uid))} ? '/profile/' + ${boardN.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
                     <img th:src="${boardN.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
-                     th:href="@{'#'}" th:text="${boardN.users.username}"></a>
+                     th:href="${uid == null || (boardN.users != null && !uid.equals(boardN.users.uid))} ? '/profile/' + ${boardN.users.uid} : '/profile'" th:text="${boardN.users.username}"></a>
                   <span>·</span>
                   <span class="fw-medium"
                         th:text="${dateFormatter.formatRegDate(boardN.regDate)}" style="font-size: 14px; color: grey;"></span>
@@ -423,13 +425,13 @@ F          OOO      OOO        TT      EEEEEEEE    RR   RRR
               <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
                   <!-- 프로필 사진 및 사용자 이름 -->
-                  <a th:href="@{'#'}" class="nav-link active pb-0 pt-1" style="text-align: left">
+                  <a th:href="${uid == null || (boardKN.users != null && !uid.equals(boardKN.users.uid))} ? '/profile/' + ${boardKN.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
                     <img th:src="${boardKN.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
-                     th:href="@{'#'}" th:text="${boardKN.users.username}"></a>
+                     th:href="${uid == null || (boardKN.users != null && !uid.equals(boardKN.users.uid))} ? '/profile/' + ${boardKN.users.uid} : '/profile'" th:text="${boardKN.users.username}"></a>
                   <span>·</span>
                   <span class="fw-medium"
                         th:text="${dateFormatter.formatRegDate(boardKN.regDate)}" style="font-size: 14px; color: grey;"></span>

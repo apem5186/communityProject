@@ -30,46 +30,80 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <h1>내 프로필</h1>
+            <h1 th:text="${profileOwnerUid == null} ? '내 프로필' : '다른 유저 프로필'"></h1>
             <hr/>
 
-            <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
-            <div class="target-div">
+            <div class="target-div" th:if="${profileOwnerUid == null}">
                 <div class="container d-flex align-items-start justify-content-between">
                     <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
                 </div>
                 <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
                 <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
             </div>
+            <div class="target-div" th:if="${profileOwnerUid != null}">
+                <div class="container d-flex align-items-start">
+                    <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+                    <h3 class="align-self-center"><span th:text="${user != null ? user.username : ''}"></span></h3>
+                </div>
+            </div>
 
 
             <hr/>
 
             <div class="buttonMenu btn-group">
-                <!-- For getting My Board -->
-                <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
-                    내 게시글
-                </button>
+                <div th:if="${profileOwnerUid == null}">
+                    <!-- For getting My Board -->
+                    <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
+                        내 게시글
+                    </button>
 
-                <!-- For getting My Comments -->
-                <button data-action-url="/profile/comments" class="btn btn-outline-light custom-hover profileButton">
-                    댓글
-                </button>
+                    <!-- For getting My Comments -->
+                    <button data-action-url="/profile/comments" class="btn btn-outline-light custom-hover profileButton">
+                        댓글
+                    </button>
 
-                <!-- For getting My Favorite -->
-                <button data-action-url="/profile/favorites" class="btn btn-outline-light custom-hover profileButton">
-                    즐겨찾기
-                </button>
+                    <!-- For getting My Favorite -->
+                    <button data-action-url="/profile/favorites" class="btn btn-outline-light custom-hover profileButton">
+                        즐겨찾기
+                    </button>
 
-                <!-- Go to profile -->
-                <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
-                    좋아요
-                </button>
+                    <!-- Go to profile -->
+                    <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+                        좋아요
+                    </button>
 
-                <!-- For getting My Activity History -->
-                <button data-action-url="/profile/activity" class="btn btn-outline-light custom-hover profileButton">
-                    최근 활동
-                </button>
+                    <!-- For getting My Activity History -->
+                    <button data-action-url="/profile/activity" class="btn btn-outline-light custom-hover profileButton">
+                        최근 활동
+                    </button>
+                </div>
+
+                <div th:if="${profileOwnerUid != null}">
+                    <!-- For getting My Board -->
+                    <button th:attr="data-action-url='/profile/posts/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        게시글
+                    </button>
+
+                    <!-- For getting My Comments -->
+                    <button th:attr="data-action-url='/profile/comments/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        댓글
+                    </button>
+
+                    <!-- For getting My Favorite -->
+                    <button th:attr="data-action-url='/profile/favorites/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        즐겨찾기
+                    </button>
+
+                    <!-- For getting My Likes -->
+                    <button th:attr="data-action-url='/profile/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        좋아요
+                    </button>
+
+                    <!-- For getting My Activity History -->
+                    <button th:attr="data-action-url='/profile/activity/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        최근 활동
+                    </button>
+                </div>
             </div>
         </div>
         <div th:insert="~{fragments :: profile_get_data_like}"></div>
@@ -77,9 +111,10 @@
     </div>
 </div>
 <!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
-<form th:action="@{/profile/likes}" method="get" id="pageForm">
+<form th:action="@{'/profile/likes' + ${profileOwnerUid != null ? '/' + profileOwnerUid : ''}}" method="get" id="pageForm">
     <input type="hidden" id="page" name="page" th:value="${paging.number}">
 </form>
+<!-- buttonMenu 누르면 button의 data-action-url로 이동함 -->
 <form id="profileForm" method="get" style="display: none;">
     <input type="hidden" id="actionUrl">
 </form>

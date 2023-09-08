@@ -146,9 +146,17 @@ public class UserController {
         return response;
     }
 
-    @GetMapping("/profile")
-    public String profile(@RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication,
+    @GetMapping({"/profile", "/profile/{uid}"})
+    public String profile(@PathVariable(required = false) String uid,
+            @RequestParam(value = "edit", required = false) String editMode, Model model, Authentication authentication,
                           HttpSession session) {
+        // 다른 사람 프로필 이미지나 이름 눌렀을 때
+        if (uid != null && !uid.isEmpty()) {
+            model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
+            model.addAttribute("profileOwnerUid", uid);
+            return "profile/otherUserProfile";
+        }
+        // 자신의 프로필 이미지나 이름 눌렀을 때
         //String profileUrl = userService.findImage(authentication.getName());
         model.addAttribute("user", userService.loadUser(authentication.getName()));
         //model.addAttribute("profileImage", profileUrl);
@@ -163,7 +171,6 @@ public class UserController {
         session.setAttribute("username", usersEditDTO.getUsername());
         session.setAttribute("email", usersEditDTO.getEmail());
         model.addAttribute("usersEditDTO", usersEditDTO);
-
 
         return "profile/profile";
     }
@@ -216,6 +223,18 @@ public class UserController {
         return "redirect:/profile";
     }
 
+    @GetMapping("/profile/posts/{uid}")
+    public String otherUserProfileBoards(Model model,
+                                         @PathVariable String uid,
+                                         @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<BoardListResponseDTO.BoardDTO> board = boardService.getOtherUserBoardListDTO(page, uid);
+        model.addAttribute("paging", board);
+        model.addAttribute("profileOwnerUid", uid);
+        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
+
+        return "profile/profileMyBoard";
+    }
+
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/posts")
     public String profileBoards(HttpServletRequest request, HttpServletResponse response,
@@ -234,7 +253,18 @@ public class UserController {
         return "profile/profileMyBoard";
     }
 
+    @GetMapping("/profile/favorites/{uid}")
+    public String otherUserProfileFavorites(Model model,
+                                            @PathVariable String uid,
+                                            @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<BoardListResponseDTO.BoardDTO> board = boardService.getOtherUserFavoriteListDTO(page, uid);
+        model.addAttribute("paging", board);
+        model.addAttribute("profileOwnerUid", uid);
+        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
 
+
+        return "profile/profileMyFavorite";
+    }
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/favorites")
     public String profileFavorites(HttpServletRequest request, HttpServletResponse response,
@@ -250,6 +280,19 @@ public class UserController {
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyFavorite";
+    }
+
+    @GetMapping("/profile/likes/{uid}")
+    public String otherUserProfileLikes(Model model,
+                                        @PathVariable String uid,
+                                        @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<BoardLikeDTO> board = boardService.getOtherUserLikeListDTO(page, String.valueOf(uid));
+        model.addAttribute("paging", board);
+        model.addAttribute("profileOwnerUid", uid);
+        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
+
+
+        return "profile/profileMyLike";
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -268,6 +311,19 @@ public class UserController {
         return "profile/profileMyLike";
     }
 
+    @GetMapping("/profile/comments/{uid}")
+    public String otherUserProfileComments(Model model,
+                                           @PathVariable String uid,
+                                           @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<CommentListResponseDTO.CommentDTO> commentDTOS = commentService.getOtherUserCommentListDTO(page, Long.valueOf(uid));
+        model.addAttribute("paging", commentDTOS);
+        model.addAttribute("profileOwnerUid", uid);
+        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
+
+
+        return "profile/profileMyComment";
+    }
+
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/comments")
     public String profileComments(HttpServletRequest request, HttpServletResponse response,
@@ -283,6 +339,18 @@ public class UserController {
         model.addAttribute("user", usersEditDTO);
 
         return "profile/profileMyComment";
+    }
+
+    @GetMapping("/profile/activity/{uid}")
+    public String otherUserProfileActivity(Model model,
+                                           @PathVariable String uid,
+                                           @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<UserActivity> activityHistories = userService.getOtherUserActivityHistorySorted(page, uid);
+        model.addAttribute("paging", activityHistories);
+        model.addAttribute("profileOwnerUid", uid);
+        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
+
+        return "profile/profileMyActivity";
     }
 
     @PreAuthorize("isAuthenticated()")

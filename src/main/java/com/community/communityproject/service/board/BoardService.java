@@ -118,6 +118,26 @@ public class BoardService {
     }
 
     /**
+     * 다른 사람 프로필에서 게시글 불러올 때
+     * @param page
+     * @param uid
+     * @return boardDTO
+     */
+    public Page<BoardListResponseDTO.BoardDTO> getOtherUserBoardListDTO(int page, String uid) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc(sort("LATEST")));
+        Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+        Page<Board> boards = boardRepository.findAllByUsersId(Long.valueOf(uid), pageable);
+
+        // Convert each Board entity to BoardDTO
+        List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()
+                .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                .collect(Collectors.toList());
+
+        // Return a new PageImpl with the converted DTOs
+        return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+    }
+    /**
      * 프로필에서 내 게시글 불러올 때 씀 정렬 기준은 없으므로 Specification 안 씀 기준은 최신순으로
      * @param page
      * @return boardDTO
@@ -151,6 +171,39 @@ public class BoardService {
             throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
         }
     }
+
+    /**
+     * 남의 프로필에서 좋아요 누른 게시글 찾는 거
+     * @param page
+     * @param uid
+     * @return boardLikeDTO
+     */
+    public Page<BoardLikeDTO> getOtherUserLikeListDTO(int page, String uid) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc(sort("LATEST")));
+        Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+        Page<Board> boards = boardLikeRepository.findBoardLikesByUsersId(Long.valueOf(uid), pageable);
+
+        // Convert each Board entity to BoardLikeDTO
+        List<BoardLikeDTO> boardLikeDTOs = boards.getContent().stream()
+                .map(board -> {
+                    BoardListResponseDTO.BoardDTO boardDTO = new BoardListResponseDTO().getBoardDTO(board);
+                    String status = checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
+                    return new BoardLikeDTO(boardDTO, status);
+                })
+                .collect(Collectors.toList());
+
+        // Return a new PageImpl with the converted DTOs
+        return new PageImpl<>(boardLikeDTOs, pageable, boards.getTotalElements());
+    }
+
+    /**
+     * 좋아요 한 게시글 리스트 불러오기
+     * @param page
+     * @param response
+     * @param request
+     * @return boardLikeDTO
+     */
     public Page<BoardLikeDTO> getMyLikeListDTO(int page, HttpServletResponse response,
                                                                 HttpServletRequest request) {
         TokenDTO tokenDTO = authService.validateToken(response, request);
@@ -185,6 +238,28 @@ public class BoardService {
             throw new ExpiredJwtException(tokenProvider.getHeader(at), tokenProvider.getClaims(at), "Expired Token");
         }
     }
+
+    /**
+     * 남의 게시글에서 즐겨찾기한 게시글 찾는 용도
+     * @param page
+     * @param uid
+     * @return boardDTO
+     */
+    public Page<BoardListResponseDTO.BoardDTO> getOtherUserFavoriteListDTO(int page, String uid) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc(sort("LATEST")));
+        Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+        Page<Board> boards = boardFavoriteRepository.findBoardFavoritesByUsersId(Long.valueOf(uid), pageable);
+
+        // Convert each Board entity to BoardDTO
+        List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()
+                .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                .collect(Collectors.toList());
+
+        // Return a new PageImpl with the converted DTOs
+        return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+    }
+
     /**
      * 즐겨찾기한 board 가져옴
      * @param page

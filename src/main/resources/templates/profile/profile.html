@@ -35,7 +35,7 @@
       <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
       <div class="target-div d-none">
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
-        <form th:action="@{/templates/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
           <div class="container d-flex align-items-start justify-content-between">
             <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;" alt="Profile Image"/>
             <!-- 편집 모드를 전환하는 버튼 -->
@@ -87,7 +87,7 @@
 
       <hr/>
 
-      <div class="buttonMenu btn-group">
+      <div class="buttonMenu btn-group" id="buttonMenu">
         <!-- For getting My Board -->
         <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
           내 게시글
@@ -114,15 +114,16 @@
         </button>
       </div>
 
-      <form id="profileForm" method="get" style="display: none;">
-        <input type="hidden" id="actionUrl">
-      </form>
 
 
     </div>
   </div>
 </div>
 
+<!-- buttomMenu들 누르면 그 버튼의 data-action-url로 이동함 -->
+<form id="profileForm" method="get" style="display: none;">
+  <input type="hidden" id="actionUrl">
+</form>
 <div th:insert="~{fragments :: footer}"></div>
 <div th:insert="~{fragments :: linkJS}"></div>
 <script layout:fragment="script" type='text/javascript' th:inline="javascript">
@@ -159,14 +160,18 @@
     let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
     // 편집 모드가 활성화되면 표시되는 div
     let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
+    // 버튼 메뉴
+    let buttonMenu = document.getElementById("buttonMenu");
 
     if (!editingEnabled) {
       nonEditDiv.classList.add('d-none');
       editDiv.classList.remove('d-none');
+      buttonMenu.classList.remove('d-none');
       console.log("nonEditDiv : " + nonEditDiv);
     } else {
       nonEditDiv.classList.remove('d-none');
       editDiv.classList.add('d-none');
+      buttonMenu.classList.add('d-none');
       console.log("editDiv : " + editDiv);
     }
   });
@@ -178,15 +183,19 @@
     let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
     // 편집 모드가 활성화되면 표시되는 div
     let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
+    // 버튼 메뉴
+    let buttonMenu = document.getElementById("buttonMenu");
 
     if (nonEditDiv.classList.contains('d-none')) {
       nonEditDiv.classList.remove('d-none');
       editDiv.classList.add('d-none');
+      buttonMenu.classList.add('d-none');
       sessionStorage.setItem('editingEnabled', true);
       console.log("폼 보여야 함");
     } else {
       nonEditDiv.classList.add('d-none');
       editDiv.classList.remove('d-none');
+      buttonMenu.classList.remove('d-none');
       sessionStorage.setItem('editingEnabled', false);
       console.log("폼 안보여야 함");
     }

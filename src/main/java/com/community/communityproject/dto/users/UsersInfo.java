@@ -10,6 +10,7 @@ import lombok.Setter;
 @Builder
 public class UsersInfo {
 
+    private Long uid;
     private String username;
     private String email;
     private UserRole userRole;

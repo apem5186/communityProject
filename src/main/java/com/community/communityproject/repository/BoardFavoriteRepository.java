@@ -22,4 +22,7 @@ public interface BoardFavoriteRepository extends JpaRepository<BoardFavorite, Lo
     // 프로필에서 즐겨찾기한 게시글 찾는 용도
     @Query("SELECT fb.board FROM BoardFavorite fb WHERE fb.users = :users AND fb.status = true")
     Page<Board> findBoardFavoritesByUsers(@Param("users") Users users, Pageable pageable);
+
+    @Query("SELECT fb.board FROM BoardFavorite fb WHERE fb.users.id = :uid AND fb.status = true")
+    Page<Board> findBoardFavoritesByUsersId(@Param("usersId") Long uid, Pageable pageable);
 }

@@ -87,11 +87,11 @@
         <li class="flex flex-col border-top">
             <!-- 프로필 사진 및 사용자 이름 -->
             <div class="flex shrink-0 items-center gap-x-1">
-                <a th:href="@{'#'}" class="link-dark">
+                <a th:href="${uid == null || (board.users != null && !uid.equals(board.users.uid))} ? '/profile/' + ${board.users.uid} : '/profile'" class="link-dark">
                     <img th:src="${board.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
                 </a>
                 <a class="truncate ps-1 text-xs font-normal custom-username"
-                   th:href="@{'/questions/' + ${board.users.username}}" th:text="${board.users.username}"></a>
+                   th:href="${uid == null || (board.users != null && !uid.equals(board.users.uid))} ? '/profile/' + ${board.users.uid} : '/profile'" th:text="${board.users.username}"></a>
                 <span>·</span>
                 <span class="fw-medium"
                       th:text="${dateFormatter.formatRegDate(board.regDate)}" style="font-size: 14px; color: grey;"></span>

@@ -18,6 +18,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     Page<Board> findAllByUsersEmail(String email, Pageable pageable);
 
+    Page<Board> findAllByUsersId(Long uid, Pageable pageable);
+
     List<Board> findAllByUsers(Users users);
 
     @Modifying

@@ -26,8 +26,10 @@ public class GlobalControllerAdvice {
     public void addAttributes(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            Long uid = userService.getUsers().getId();
             String filePath = userService.findImage(auth.getName());
             model.addAttribute("profileImage", filePath);
+            model.addAttribute("uid", uid);
         } else {
             String filePath = userService.defaultImage();
             model.addAttribute("profileImage", filePath);

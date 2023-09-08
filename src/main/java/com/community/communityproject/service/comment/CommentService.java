@@ -81,6 +81,27 @@ public class CommentService {
     }
 
     /**
+     * 다른 유저 프로필에서 댓글 가져오기
+     * @param page
+     * @param uid
+     * @return commentDTO
+     */
+    public Page<CommentListResponseDTO.CommentDTO> getOtherUserCommentListDTO(int page, Long uid) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc("regDate"));
+        Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
+        // Find all comments by user's Email
+        Page<Comment> comments = commentRepository.findAllByUsersId(uid, pageable);
+        // Convert each Comment entity to CommentDTO
+        List<CommentListResponseDTO.CommentDTO> commentDTOs = comments.getContent().stream()
+                .map(comment -> new CommentListResponseDTO().getCommentDTO(comment))
+                .toList();
+
+        // Return a new PageImpl with the converted DTOs
+        return new PageImpl<>(commentDTOs, pageable, comments.getTotalElements());
+    }
+
+    /**
      * profile에 자기 댓글 가져오기
      * @param page
      * @param response

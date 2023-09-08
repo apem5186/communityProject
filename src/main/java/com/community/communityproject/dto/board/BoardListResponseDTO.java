@@ -56,10 +56,12 @@ public class BoardListResponseDTO {
     @Getter
     @Setter
     public class UsersDTO{
+        private Long uid;
         private String username;
         private String email;
 
         public UsersDTO(Users users) {
+            this.uid = users.getId();
             this.username = users.getUsername();
             this.email = users.getEmail();
         }

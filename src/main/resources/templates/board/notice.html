@@ -42,10 +42,10 @@
     <div class="row">
         <div class="col-md-12 d-flex justify-content-between">
             <!-- 왼쪽 항목: 작성하기 버튼 -->
-            <a sec:authorize="isAuthenticated()" th:href="@{/notice/new}" class="btn btn-primary" style="font-weight: bold;">작성하기</a>
+            <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/notice/new}" class="btn btn-primary" style="font-weight: bold;">작성하기</a>
 
             <!-- 공간만 차지하는 div -->
-            <div sec:authorize="isAnonymous()" style="flex: 0"></div>
+            <div sec:authorize="!hasRole('ROLE_ADMIN')" style="flex: 0"></div>
 
             <!-- 중앙 항목: 검색 폼. -->
             <div class="row justify-content-center">

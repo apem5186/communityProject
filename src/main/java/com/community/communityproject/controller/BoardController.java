@@ -50,7 +50,7 @@ public class BoardController {
         return "board/boardDetail";
     }
 
-    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/new")
+    @GetMapping("/{path:(?:community|questions|knowledge)}/new")
     public String post(Model model,
                        @PathVariable String path) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -62,7 +62,7 @@ public class BoardController {
         return "board/post";
     }
 
-    @PostMapping("/{path:(?:community|notice|questions|knowledge)}/new")
+    @PostMapping("/{path:(?:community|questions|knowledge)}/new")
     public String post(@Valid BoardRequestDTO boardRequestDTO, BindingResult bindingResult,
                        HttpServletResponse response, HttpServletRequest request,
                        @PathVariable String path) {
@@ -73,6 +73,31 @@ public class BoardController {
         boardService.postBoard(response, request, boardRequestDTO);
         return "redirect:/" + path;
 
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/notice/new")
+    public String adminPost(Model model) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BoardRequestDTO boardRequestDTO = new BoardRequestDTO();
+        boardRequestDTO.setCategory("notice");
+        boardRequestDTO.setEmail(email);
+        model.addAttribute("boardRequestDTO", boardRequestDTO);
+        model.addAttribute("category", "notice");
+        return "board/noticePost";
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/notice/new")
+    public String adminPost(@Valid BoardRequestDTO boardRequestDTO, BindingResult bindingResult,
+                       HttpServletResponse response, HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error -> {
+                System.out.println(error.getDefaultMessage());
+            });
+        }
+        log.info("BOARDREQUESTDTO : " + boardRequestDTO.getNotices());
+        boardService.postBoard(response, request, boardRequestDTO);
+        return "redirect:/notice";
     }
 
     @PreAuthorize("isAuthenticated()")

@@ -8,7 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -38,6 +40,12 @@ public class Board extends BaseEntity {
 
     @Column(columnDefinition = "integer default 0")
     private int favoriteCnt;
+
+    @ElementCollection(targetClass = Category.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "board_notice_mapping", joinColumns = @JoinColumn(name = "board_id"))
+    @Column(name = "notices")
+    @Enumerated(EnumType.STRING)
+    private Set<Category> notices = new HashSet<>();
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -70,6 +78,15 @@ public class Board extends BaseEntity {
         this.content = content;
         this.category = category;
         this.users = users;
+    }
+
+    @Builder(builderMethodName = "NoticeBuilder")
+    public Board (String title, String content, Category category, Users users, Set<Category> notices) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.users = users;
+        this.notices = notices;
     }
     
     // 테스트 게시글 생성용

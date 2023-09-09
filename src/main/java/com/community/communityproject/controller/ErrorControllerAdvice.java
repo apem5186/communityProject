@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.nio.file.AccessDeniedException;
+
 /**
  * errorNumber
  * 1 : BoardNotFound
@@ -24,6 +26,7 @@ import org.springframework.web.servlet.ModelAndView;
  * 8 : LikeNotFound
  * 9 : CommentNotFound
  * 10 : CommentUserNotEqual
+ * 11 : AccessDenied
  */
 @Slf4j
 @ControllerAdvice
@@ -158,6 +161,19 @@ public class ErrorControllerAdvice {
         ModelAndView mav = new ModelAndView();
         mav.addObject("errorMessage", "댓글을 올린 사용자만 댓글을 지을 수 있습니다.");
         mav.addObject("errorNumber", "10");
+        mav.setViewName("errorPage");
+        return mav;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ModelAndView handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        log.error("=====================================");
+        log.error("!!!! Error occurred at URL : " + request.getRequestURL() + " !!!!");
+        log.error("!!!!" + ex.getMessage() + "!!!!");
+        log.error("=====================================");
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("errorMessage", "권한이 없습니다!");
+        mav.addObject("errorNumber", "11");
         mav.setViewName("errorPage");
         return mav;
     }

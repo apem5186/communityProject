@@ -22,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -353,21 +354,37 @@ public class BoardService {
         log.info("BoardRequestDTO : " + boardRequestDTO.getTitle());
         log.info("content : " + boardRequestDTO.getContent());
         log.info("category : " + boardRequestDTO.getCategory());
+        Set<Category> noticeCategories = boardRequestDTO.getNotices();
+        log.info("Notice Categories: " + noticeCategories);
         log.info("=============================================");
         log.info("=============================================");
         log.info("=============================================");
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
             Users users = userRepository.findByEmail(boardRequestDTO.getEmail()).orElseThrow();
-            Board board = Board.builder()
-                    .title(boardRequestDTO.getTitle())
-                    .content(boardRequestDTO.getContent())
-                    .category(Category.valueOf(boardRequestDTO.getCategory().toUpperCase()))
-                    .users(users)
-                    .build();
-            // db에 이미지 넣을라면 게시글 정보 먼저 넣어야 함
-            boardRepository.save(board);
-            postS3(boardRequestDTO, board);
+            if (Objects.equals(boardRequestDTO.getCategory(), "notice")) {
+                Board board = Board.NoticeBuilder()
+                        .title(boardRequestDTO.getTitle())
+                        .content(boardRequestDTO.getContent())
+                        .category(Category.NOTICE)
+                        .users(users)
+                        .build();
+                board.getNotices().addAll(boardRequestDTO.getNotices());
+                log.info("BOARD NOTICES : " + board.getNotices());
+                Board savedBoard = boardRepository.save(board);
+                postS3(boardRequestDTO, board);
+                log.info("BOARD : " + savedBoard.getNotices());
+            } else {
+                Board board = Board.builder()
+                        .title(boardRequestDTO.getTitle())
+                        .content(boardRequestDTO.getContent())
+                        .category(Category.valueOf(boardRequestDTO.getCategory().toUpperCase()))
+                        .users(users)
+                        .build();
+                // db에 이미지 넣을라면 게시글 정보 먼저 넣어야 함
+                boardRepository.save(board);
+                postS3(boardRequestDTO, board);
+            }
         }
     }
 

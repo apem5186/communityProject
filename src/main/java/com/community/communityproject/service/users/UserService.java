@@ -388,7 +388,6 @@ public class UserService {
         userActivityHistoryDTO.setBoardFavoriteHistories(boardFavoriteHistories);
         userActivityHistoryDTO.setCommentHistories(commentHistories);
         userActivityHistoryDTO.setCommentLikeHistories(commentLikeHistories);
-
         return userActivityHistoryDTO;
     }
 

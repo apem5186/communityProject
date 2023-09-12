@@ -28,10 +28,17 @@
             <div id="preview"></div>
         </div>
         <div class="form-group">
-            <label for="notices">Categories:</label>
+            <label for="notices">카테고리:</label>
             <div th:each="noticeCategories : ${T(com.community.communityproject.entity.board.Category).values()}">
-                <input id="notices" type="checkbox" th:field="*{notices}" th:value="${noticeCategories}" th:id="'category'+${noticeCategoriesStat.index}" />
-                <label th:for="'category'+${noticeCategoriesStat.index}" th:text="${noticeCategories}"></label>
+                <input id="notices" type="checkbox" th:field="*{notices}" th:value="${noticeCategories}" th:id="'category'+${noticeCategoriesStat.index}"
+                       th:disabled="${noticeCategories.toString() == 'NOTICE'}"/>
+                <label th:for="'category'+${noticeCategoriesStat.index}"
+                       th:text="${noticeCategories.toString() == 'NOTICE'} ? ${noticeCategories} + '-필수' : ${noticeCategories}"></label>
+
+                <input type="hidden"
+                       th:if="${noticeCategories.toString() == 'NOTICE'}"
+                       name="notices"
+                       th:value="${noticeCategories}" />
             </div>
         </div>
         <div class="form-group" hidden="hidden">

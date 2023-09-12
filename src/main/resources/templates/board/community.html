@@ -84,7 +84,7 @@
         </div>
     </div>
 
-
+    <div th:insert="~{fragments :: notices_post}" th:if="${notices != null}" class="border rounded-3" style="background-color: lightcyan;"></div>
     <ul th:each="board : ${paging}" class="py-1 list-unstyled">
         <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
         <li class="flex flex-col border-top">

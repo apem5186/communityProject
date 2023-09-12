@@ -338,6 +338,33 @@ public class BoardService {
     }
 
     /**
+     * 공지 게시글 반환
+     * @param page
+     * @param category
+     * @return boardDTOs
+     */
+    public Page<BoardListResponseDTO.BoardDTO> getNoticeBoardListDTO(int page, String category) {
+        // 입력 카테고리 문자열을 기반으로 카테고리 세트 생성
+        Set<Category> categories = new HashSet<>();
+        categories.add(Category.valueOf(category.toUpperCase()));
+
+        // 'regDate' 기준으로 정렬 최신으로 6개만 가져옴 나머진 공지 게시판 가서 봐야함
+        Pageable pageable = PageRequest.of(page-1, 6, Sort.by(Sort.Order.desc("regDate")));
+
+        // 공지 세트에 주어진 카테고리가 있는 보드를 찾습니다.
+        Page<Board> boards = boardRepository.findByNoticesIn(categories, pageable);
+
+        // 각 Board 엔터티를 BoardDTO로 변환
+        List<BoardListResponseDTO.BoardDTO> boardDTOs = boards.getContent().stream()
+                .map(board -> new BoardListResponseDTO().getBoardDTO(board))
+                .collect(Collectors.toList());
+
+        // 변환된 DTO를 가진 새 PageImpl 반환
+        return new PageImpl<>(boardDTOs, pageable, boards.getTotalElements());
+    }
+
+
+    /**
      * 게시글 등록 부분
      * 토큰 검사 진행 후 이미지 없으면 게시글만 등록
      * 있으면 게시글 등록 후 이미지 등록

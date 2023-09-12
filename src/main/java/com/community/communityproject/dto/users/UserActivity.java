@@ -11,6 +11,7 @@ public class UserActivity {
 
     private String activityType;
     private LocalDateTime regDate;
+    private String category;
     private UsersHistoryDTO.BoardHistoryDTO boardHistoryDTO;
     private UsersHistoryDTO.CommentHistoryDTO commentHistoryDTO;
     private UsersHistoryDTO.BoardLikeHistoryDTO boardLikeHistoryDTO;

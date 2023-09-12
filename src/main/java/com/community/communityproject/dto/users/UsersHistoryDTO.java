@@ -99,6 +99,7 @@ public class UsersHistoryDTO {
                 UserActivity activity = new UserActivity();
                 activity.setActivityType("Board");
                 activity.setRegDate(dto.getRegDate());
+                activity.setCategory(dto.boardCategory.toLowerCase());
                 activity.setBoardHistoryDTO(dto);
                 allActivities.add(activity);
             }
@@ -107,6 +108,7 @@ public class UsersHistoryDTO {
                 UserActivity activity = new UserActivity();
                 activity.setActivityType("Comment");
                 activity.setRegDate(dto.getRegDate());
+                activity.setCategory(dto.boardCategory.toLowerCase());
                 activity.setCommentHistoryDTO(dto);
                 allActivities.add(activity);
             }
@@ -115,6 +117,7 @@ public class UsersHistoryDTO {
                 UserActivity activity = new UserActivity();
                 activity.setActivityType("BoardLike");
                 activity.setRegDate(dto.getRegDate());
+                activity.setCategory(dto.boardCategory.toLowerCase());
                 activity.setBoardLikeHistoryDTO(dto);
                 allActivities.add(activity);
             }
@@ -123,6 +126,7 @@ public class UsersHistoryDTO {
                 UserActivity activity = new UserActivity();
                 activity.setActivityType("BoardFavorite");
                 activity.setRegDate(dto.getRegDate());
+                activity.setCategory(dto.boardCategory.toLowerCase());
                 activity.setBoardFavoriteHistoryDTO(dto);
                 allActivities.add(activity);
             }
@@ -131,6 +135,7 @@ public class UsersHistoryDTO {
                 UserActivity activity = new UserActivity();
                 activity.setActivityType("CommentLike");
                 activity.setRegDate(dto.getRegDate());
+                activity.setCategory(dto.boardCategory.toLowerCase());
                 activity.setCommentLikeHistoryDTO(dto);
                 allActivities.add(activity);
             }

@@ -31,6 +31,8 @@ public class BoardController {
                        @RequestParam(value = "kw", defaultValue = "") String kw,
                        @RequestParam(value = "sort", defaultValue = "LATEST") String sort) {
         Page<BoardListResponseDTO.BoardDTO> paging = this.boardService.getBoardListDTO(page, kw, sort, path);
+        Page<BoardListResponseDTO.BoardDTO> notices = this.boardService.getNoticeBoardListDTO(page, path);
+        model.addAttribute("notices", notices);
         model.addAttribute("category", path);
         model.addAttribute("paging", paging);
         model.addAttribute("kw", kw);

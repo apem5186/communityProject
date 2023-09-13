@@ -102,8 +102,35 @@ public class BoardController {
         return "redirect:/notice";
     }
 
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/notice/edit/{bid}")
+    public String noticeEdit(Model model,
+                             @PathVariable String bid) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BoardEditRequestDTO boardEditRequestDTO = new BoardEditRequestDTO();
+        boardEditRequestDTO.setEmail(email);
+        boardEditRequestDTO.setCategory("notice");
+        model.addAttribute("noCategory", boardService.getNoticeCategories(Long.valueOf(bid)));
+        model.addAttribute("boardEditRequestDTO", boardEditRequestDTO);
+        model.addAttribute("category", "notice");
+        return "board/noticeEdit";
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/notice/edit/{bid}")
+    public String noticeEdit(Model model,
+                             @PathVariable String bid, BoardEditRequestDTO boardEditRequestDTO,
+                             HttpServletRequest request, HttpServletResponse response) {
+        boardEditRequestDTO.setCategory("notice");
+        boardService.editBoard(request, response, boardEditRequestDTO);
+        BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
+        model.addAttribute("board", boardDTO);
+        return String.format("redirect:/notice/%s", bid);
+    }
+
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{path:(?:community|notice|questions|knowledge)}/edit/{bid}")
+    @GetMapping("/{path:(?:community|questions|knowledge)}/edit/{bid}")
     public String edit(Model model,
                        @PathVariable String path,
                        @PathVariable String bid) {
@@ -117,7 +144,7 @@ public class BoardController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{path:(?:community|notice|questions|knowledge)}/edit/{bid}")
+    @PostMapping("/{path:(?:community|questions|knowledge)}/edit/{bid}")
     public String edit(@PathVariable String path, @PathVariable String bid, Model model,
                        BoardEditRequestDTO boardEditRequestDTO, HttpServletRequest request,
                        HttpServletResponse response) {

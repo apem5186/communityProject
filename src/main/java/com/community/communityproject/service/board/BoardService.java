@@ -351,7 +351,7 @@ public class BoardService {
         // 'regDate' 기준으로 정렬 최신으로 6개만 가져옴 나머진 공지 게시판 가서 봐야함
         Pageable pageable = PageRequest.of(page-1, 6, Sort.by(Sort.Order.desc("regDate")));
 
-        // 공지 세트에 주어진 카테고리가 있는 보드를 찾습니다.
+        // 공지 Set에 주어진 카테고리가 있는 보드를 찾음
         Page<Board> boards = boardRepository.findByNoticesIn(categories, pageable);
 
         // 각 Board 엔터티를 BoardDTO로 변환
@@ -447,8 +447,14 @@ public class BoardService {
             }
             // 저장할 이미지가 없다면 board만 수정
             Board board = boardRepository.getReferenceById(boardEditRequestDTO.getBid());
-            board.edit(boardEditRequestDTO.getTitle(), boardEditRequestDTO.getContent(),
-                    boardEditRequestDTO.getCategory().toUpperCase());
+            // 수정할 게시글이 공지 게시글이면 Board의 noticeEdit
+            if (boardEditRequestDTO.getCategory().equals("notice")) {
+                board.noticeEdit(boardEditRequestDTO.getTitle(), boardEditRequestDTO.getContent(),
+                        boardEditRequestDTO.getNotices());
+            } else {    // 아니면 그냥 Board의 edit
+                board.edit(boardEditRequestDTO.getTitle(), boardEditRequestDTO.getContent(),
+                        boardEditRequestDTO.getCategory().toUpperCase());
+            }
             boardRepository.save(board);
             // 저장할 이미지가 있다면 s3에 올림
             if (!boardEditRequestDTO.getBoardImage().isEmpty()) {
@@ -610,6 +616,16 @@ public class BoardService {
             case "HITS_COUNT" -> "hits";
             default -> "regDate";
         };
+    }
+
+    /**
+     * 공지 게시글이 어떤 카테고리를 가지고 있는지
+     * @param bid
+     * @return notices
+     */
+    public Set<Category> getNoticeCategories(Long bid) {
+        Board board = boardRepository.getReferenceById(bid);
+        return board.getNotices();
     }
 
     /**

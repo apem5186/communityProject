@@ -72,6 +72,13 @@ public class Board extends BaseEntity {
         this.category = Category.valueOf(category);
     }
 
+    public void noticeEdit(String title, String content, Set<Category> notices) {
+        this.title = title;
+        this.content = content;
+        this.category = Category.NOTICE;
+        this.notices = notices;
+    }
+
     @Builder
     public Board (String title, String content, Category category, Users users) {
         this.title = title;

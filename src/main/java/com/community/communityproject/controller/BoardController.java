@@ -4,6 +4,7 @@ import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.service.board.BoardService;
+import com.community.communityproject.service.util.BoardUtilService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class BoardController {
 
     private final BoardService boardService;
+    private final BoardUtilService boardUtilService;
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,
@@ -111,7 +113,7 @@ public class BoardController {
         BoardEditRequestDTO boardEditRequestDTO = new BoardEditRequestDTO();
         boardEditRequestDTO.setEmail(email);
         boardEditRequestDTO.setCategory("notice");
-        model.addAttribute("noCategory", boardService.getNoticeCategories(Long.valueOf(bid)));
+        model.addAttribute("noCategory", boardUtilService.getNoticeCategories(Long.valueOf(bid)));
         model.addAttribute("boardEditRequestDTO", boardEditRequestDTO);
         model.addAttribute("category", "notice");
         return "board/noticeEdit";

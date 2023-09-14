@@ -20,6 +20,7 @@
           <!-- if this <ul> tag removed, search-bar will be moved to left -->
         </ul>
 
+        <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/adminMenu}" class="btn btn-primary me-3">관리자 메뉴</a>
         <!-- Add search form here -->
         <form class="my-2 my-lg-0" method="get" action="http://www.google.co.kr/search" target="_blank">
           <div class="row">
@@ -127,7 +128,6 @@ F          OOO      OOO        TT      EEEEEEEE    RR   RRR
 공지 게시글 부분
 
 ---------------------------------------------------->
-<!-- TODO : 메인 페이지 양식 쓰지말고 각 게시판 양식 써야 함 -->
 <ul th:fragment="notices_post" th:each="notice : ${notices}" class="py-1 list-unstyled mb-0 pb-0 pt-0">
   <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
   <li class="flex flex-col border-top">

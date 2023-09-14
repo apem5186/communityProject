@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Menu</title>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<h1>This page is Admin Page</h1>
+<div class="container my-5 px-4">
+    <div class="container" style="height: 100px;">
+        <div class="row">
+            <div class="col">
+                <div class="col-md-5 border w-auto rounded bg-body-secondary">
+                    <a href="#" class="link-dark p-3 me-2 fw-bold fs-5 text-decoration-none">
+                        게시글 관리
+                    </a>
+                </div>
+            </div>
+            <div class="col-sm-1 mx-2"></div>
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <a href="#" class="link-dark p-3 me-2 fw-bold fs-5 text-decoration-none">
+                        댓글 관리
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="height: 100px;">
+        <div class="row">
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <a href="#" class="link-dark p-3 me-2 fw-bold fs-5 text-decoration-none">
+                        유저 관리
+                    </a>
+                </div>
+            </div>
+            <div class="col-sm-1 mx-2"></div>
+            <div class="col">
+                <div class="col-sm-5 border w-auto rounded bg-body-secondary">
+                    <a href="#" class="link-dark p-3 me-2 fw-bold fs-5 text-decoration-none">
+                        무슨 관리
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<div th:insert="~{fragments :: linkCSS}"></div>
+<script th:inline="javascript">
+    let accessToken = /*[[${accessToken}]]*/ '';
+
+    console.log('Access Token : ', accessToken);
+</script>
+</body>
+</html>

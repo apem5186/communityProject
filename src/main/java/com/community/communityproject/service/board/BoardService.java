@@ -16,6 +16,7 @@ import com.community.communityproject.service.comment.CommentService;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.users.UserService;
+import com.community.communityproject.service.util.BoardUtilService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.Cookie;
@@ -56,6 +57,7 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final BoardFavoriteRepository boardFavoriteRepository;
     private final CommentService commentService;
+    private final BoardUtilService boardUtilService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -66,7 +68,6 @@ public class BoardService {
      * BoardController getBoard 메소드에 Model 추가시키는 서비스
      * @param model
      * @param bid
-     * @param session
      * @param request
      * @param page
      * @return model
@@ -75,7 +76,7 @@ public class BoardService {
         Long boardId = Long.valueOf(bid);
         BoardListResponseDTO.BoardDTO boardDTO = getBoard(Long.valueOf(bid));
         model.addAttribute("userEmail", request.getRemoteUser());
-        String likeStatus = checklikeStatus(boardId);
+        String likeStatus = boardUtilService.checklikeStatus(boardId);
         model.addAttribute("board", boardDTO);
         log.info("REQUEST user : " + request.getRemoteUser() + " AND " + request.getAuthType());
         // 권한이 있는 사용자만
@@ -87,7 +88,7 @@ public class BoardService {
             model.addAttribute("comments", commentDTO);
             model.addAttribute("commentLikeDTO", new CommentLikeDTO());
             // board는 추천 status와 즐찾 status를 따로 모델에 추가했음 나중에 한가지 방법으로 통일하는 것도 고려해야함
-            boolean isFavorite = hasFavoriteBoard(boardId);
+            boolean isFavorite = boardUtilService.hasFavoriteBoard(boardId);
             if (likeStatus != null) {
                 model.addAttribute("likeStatus", likeStatus);
             }
@@ -126,7 +127,7 @@ public class BoardService {
      */
     public Page<BoardListResponseDTO.BoardDTO> getOtherUserBoardListDTO(int page, String uid) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc(sort("LATEST")));
+        sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Page<Board> boards = boardRepository.findAllByUsersId(Long.valueOf(uid), pageable);
 
@@ -150,7 +151,7 @@ public class BoardService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             List<Sort.Order> sorts = new ArrayList<>();
-            sorts.add(Sort.Order.desc(sort("LATEST")));
+            sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
             Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
             Page<Board> boards = boardRepository.findAllByUsersEmail(email, pageable);
 
@@ -181,7 +182,7 @@ public class BoardService {
      */
     public Page<BoardLikeDTO> getOtherUserLikeListDTO(int page, String uid) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc(sort("LATEST")));
+        sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Page<Board> boards = boardLikeRepository.findBoardLikesByUsersId(Long.valueOf(uid), pageable);
 
@@ -189,7 +190,7 @@ public class BoardService {
         List<BoardLikeDTO> boardLikeDTOs = boards.getContent().stream()
                 .map(board -> {
                     BoardListResponseDTO.BoardDTO boardDTO = new BoardListResponseDTO().getBoardDTO(board);
-                    String status = checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
+                    String status = boardUtilService.checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
                     return new BoardLikeDTO(boardDTO, status);
                 })
                 .collect(Collectors.toList());
@@ -213,7 +214,7 @@ public class BoardService {
             String email = authentication.getName();
             Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
             List<Sort.Order> sorts = new ArrayList<>();
-            sorts.add(Sort.Order.desc(sort("LATEST")));
+            sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
             Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
             Page<Board> boards = boardLikeRepository.findBoardLikesByUsers(users, pageable);
 
@@ -221,7 +222,7 @@ public class BoardService {
             List<BoardLikeDTO> boardLikeDTOs = boards.getContent().stream()
                     .map(board -> {
                         BoardListResponseDTO.BoardDTO boardDTO = new BoardListResponseDTO().getBoardDTO(board);
-                        String status = checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
+                        String status = boardUtilService.checklikeStatus(board.getId()); // This is a hypothetical method; you'll need to provide its implementation.
                         return new BoardLikeDTO(boardDTO, status);
                     })
                     .collect(Collectors.toList());
@@ -248,7 +249,7 @@ public class BoardService {
      */
     public Page<BoardListResponseDTO.BoardDTO> getOtherUserFavoriteListDTO(int page, String uid) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc(sort("LATEST")));
+        sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
         Page<Board> boards = boardFavoriteRepository.findBoardFavoritesByUsersId(Long.valueOf(uid), pageable);
 
@@ -274,7 +275,7 @@ public class BoardService {
             String email = authentication.getName();
             Users users = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
             List<Sort.Order> sorts = new ArrayList<>();
-            sorts.add(Sort.Order.desc(sort("LATEST")));
+            sorts.add(Sort.Order.desc(boardUtilService.sort("LATEST")));
             Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
             Page<Board> boards = boardFavoriteRepository.findBoardFavoritesByUsers(users, pageable);
 
@@ -308,11 +309,11 @@ public class BoardService {
         List<Sort.Order> sorts = new ArrayList<>();
         // 정렬 기준 LATEST, VOTE_COUNT, COMMENT_COUNT, HITS_COUNT
         // default = LATEST
-        sort = sort(sort);
+        sort = boardUtilService.sort(sort);
         sorts.add(Sort.Order.desc(sort));
         Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
-        Specification<Board> spec = search(kw);
-        spec = spec.and(category(category));
+        Specification<Board> spec = boardUtilService.search(kw);
+        spec = spec.and(boardUtilService.category(category));
         Page<Board> boards =  boardRepository.findAll(spec, pageable);
 
         // Convert each Board entity to BoardDTO
@@ -328,7 +329,7 @@ public class BoardService {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("regDate"));
         Pageable pageable = PageRequest.of(0, 5, Sort.by(sorts));
-        Specification<Board> spec = category(category);
+        Specification<Board> spec = boardUtilService.category(category);
         Page<Board> boards =  boardRepository.findAll(spec, pageable);
 
         // Convert each Board entity to BoardDTO
@@ -399,7 +400,7 @@ public class BoardService {
                 board.getNotices().addAll(boardRequestDTO.getNotices());
                 log.info("BOARD NOTICES : " + board.getNotices());
                 Board savedBoard = boardRepository.save(board);
-                postS3(boardRequestDTO, board);
+                boardUtilService.postS3(boardRequestDTO, board);
                 log.info("BOARD : " + savedBoard.getNotices());
             } else {
                 Board board = Board.builder()
@@ -410,7 +411,7 @@ public class BoardService {
                         .build();
                 // db에 이미지 넣을라면 게시글 정보 먼저 넣어야 함
                 boardRepository.save(board);
-                postS3(boardRequestDTO, board);
+                boardUtilService.postS3(boardRequestDTO, board);
             }
         }
     }
@@ -439,7 +440,7 @@ public class BoardService {
             ArrayList<BoardImage> boardImages = boardImageRepository.findBoardImageByBoardId(boardEditRequestDTO.getBid());
             for (BoardImage boardImage :
                     boardImages) {
-                String path = trimUrlToPath(boardImage.getFilePath());
+                String path = boardUtilService.trimUrlToPath(boardImage.getFilePath());
                 if (amazonS3Client.doesObjectExist(bucket, path)) {
                     amazonS3Client.deleteObject(bucket, path);
                 }
@@ -458,7 +459,7 @@ public class BoardService {
             boardRepository.save(board);
             // 저장할 이미지가 있다면 s3에 올림
             if (!boardEditRequestDTO.getBoardImage().isEmpty()) {
-                postS3(boardEditRequestDTO, board);
+                boardUtilService.postS3(boardEditRequestDTO, board);
             }
         } else {
             String at = null;
@@ -487,7 +488,7 @@ public class BoardService {
             ArrayList<BoardImage> boardImages = boardImageRepository.findBoardImageByBoardId(bid);
             for (BoardImage boardImage :
                     boardImages) {
-                String path = trimUrlToPath(boardImage.getFilePath());
+                String path = boardUtilService.trimUrlToPath(boardImage.getFilePath());
                 if (amazonS3Client.doesObjectExist(bucket, path))
                     amazonS3Client.deleteObject(bucket, path);
             }
@@ -543,11 +544,11 @@ public class BoardService {
             log.info("===============================");
             if (status) {
                 // url 조작으로 추천 누른 상태인데 비추 요청 했을 때
-                if (checklikeStatus(bid) != null && checklikeStatus(bid).equals("DISLIKE")) {
+                if (boardUtilService.checklikeStatus(bid) != null && boardUtilService.checklikeStatus(bid).equals("DISLIKE")) {
                     throw new InvalidEndpointRequestException("Invalid Endpoint", "추천 버튼을 누른 상태에서 비추 요청을 했습니다.");
                 }
                 // 추천 버튼을 누른적이 없을 때
-                if (!hasLikeBoard(board, users)) {
+                if (!boardUtilService.hasLikeBoard(board, users)) {
                     board.increaseLikeCnt();
                     BoardLike boardLike = new BoardLike(board, users, LikeStatus.LIKE);
                     boardLikeRepository.save(boardLike);
@@ -558,11 +559,11 @@ public class BoardService {
                 }
             } else {    // 비추천 버튼을 눌렀으면
                 // url 조작으로 비추 누른 상탠데 추천 요청 했을 때
-                if (checklikeStatus(bid) != null && checklikeStatus(bid).equals("LIKE")) {
+                if (boardUtilService.checklikeStatus(bid) != null && boardUtilService.checklikeStatus(bid).equals("LIKE")) {
                     throw new InvalidEndpointRequestException("Invalid Endpoint", "비추 버튼을 누른 상태에서 추천 요청을 했습니다.");
                 }
                 // 비추천 버튼을 누른적이 없을 때
-                if (!hasLikeBoard(board, users)) {
+                if (!boardUtilService.hasLikeBoard(board, users)) {
                     board.decreaseLikeCnt();
                     BoardLike boardLike = new BoardLike(board, users, LikeStatus.DISLIKE);
                     boardLikeRepository.save(boardLike);
@@ -590,7 +591,7 @@ public class BoardService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Users users = userRepository.findByEmail(authentication.getName()).orElseThrow();
             // 즐찾 누른적 없다면
-            if (!hasFavoriteBoard(board, users)) {
+            if (!boardUtilService.hasFavoriteBoard(board, users)) {
                 board.increaseFavoriteCnt();
                 BoardFavorite boardFavorite = new BoardFavorite(board, users);
                 boardFavoriteRepository.save(boardFavorite);
@@ -604,153 +605,4 @@ public class BoardService {
         }
     }
 
-    /**
-     * 정렬 기준 "LATEST"는 default로 "regDate"가 됨
-     * @param sort
-     * @return result
-     */
-    public String sort(String sort) {
-        return switch (sort) {
-            case "VOTE_COUNT" -> "likeCnt";
-            case "COMMENT_COUNT" -> "reviewCnt";
-            case "HITS_COUNT" -> "hits";
-            default -> "regDate";
-        };
-    }
-
-    /**
-     * 공지 게시글이 어떤 카테고리를 가지고 있는지
-     * @param bid
-     * @return notices
-     */
-    public Set<Category> getNoticeCategories(Long bid) {
-        Board board = boardRepository.getReferenceById(bid);
-        return board.getNotices();
-    }
-
-    /**
-     * LIKE인지 DISLIKE인지 판별
-     * likeStatus 필드의 자료형이 boolean이 아닌 이유는
-     * 회원이 아예 추천을 안한 게시글을 방문했을 때의 경우를 판단하기 힘들어서
-     * @return null 아니면 enum 타입의 LIKE or DISLIKE
-     */
-    public String checklikeStatus(Long bid) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        Optional<Users> users = userRepository.findByEmail(email);
-        Users user = new Users();
-        if (users.isEmpty()) {
-            // 로그인 안했으면 null 리턴
-            return null;
-        } else {
-            user = users.get();
-        }
-        Board board = boardRepository.findById(bid).orElseThrow(BoardNotFoundException::new);
-        // 추천이나 비추를 누른 기록이 있다면
-        if (hasLikeBoard(board, user)) {
-            return boardLikeRepository.findByBoardAndUsers(board, user).get().getLikeStatus().toString();
-        }
-        // 없으면 null
-        return null;
-    }
-
-    /**
-     * 일단 유저가 현재 있는 게시글을 추천이든 비추든 눌렀는지 확인함 뭐든 일단 눌렀으면
-     * true 아니면 false
-     * @param board
-     * @param users
-     * @return true or false
-     */
-    public boolean hasLikeBoard(Board board, Users users) {
-        return boardLikeRepository.findByBoardAndUsers(board, users).isPresent();
-    }
-
-    /**
-     * 유저가 즐찾을 눌렀는지 안눌렀는지
-     * @param board
-     * @param users
-     * @return true or false
-     */
-    public boolean hasFavoriteBoard(Board board, Users users) {
-        return boardFavoriteRepository.findByBoardAndUsers(board, users).isPresent();
-    }
-
-    /**
-     * controller용, [ROLE_USER] 혹은 [ROLE_ADMIN} 권한 확인 후 해야함
-     * @param bid
-     * @return true or false
-     */
-    public boolean hasFavoriteBoard(Long bid) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Users users = userRepository.findByEmail(authentication.getName()).orElseThrow(UserNotFoundException::new);
-        return boardFavoriteRepository.findByBoard_idAndUsers_id(bid, users.getId()).isPresent();
-    }
-    /**
-     * filePath를 bucket url을 짤라서 반환함
-     * @param fullUrl
-     * @return path
-     */
-    public String trimUrlToPath(String fullUrl) {
-        int imageIndex = fullUrl.indexOf("/image");
-
-        if(imageIndex != -1) {
-            return fullUrl.substring(imageIndex + 1);
-        }
-        return fullUrl; // "/image"가 없는 경우 원래 URL 반환
-    }
-
-    /**
-     * s3에 board 이미지를 업로드 editBoard와 postBoard에 쓰임
-     * @param dto
-     * @param board
-     */
-    public void postS3(BoardDTOInterface dto, Board board) {
-        List<MultipartFile> images = dto.getBoardImage();
-        if (images != null && !images.isEmpty() && !images.get(0).isEmpty()) {
-            List<MultipartFile> multipartFiles = dto.getBoardImage();
-            // ex) "boardImage/community"
-            String fullPath = BOARD_PATH + dto.getCategory();
-            for (MultipartFile multipartFile:
-                    multipartFiles) {
-                String filePath = amazonS3ResourceStorage.store(fullPath, multipartFile);
-                BoardImage boardImage = BoardImage.builder()
-                        .originFilename(multipartFile.getOriginalFilename())
-                        .filePath(filePath)
-                        .fileSize(multipartFile.getSize())
-                        .board(board)
-                        .build();
-
-                boardImageRepository.save(boardImage);
-            }
-        }
-    }
-    private Specification<Board> category(String category) {
-        return new Specification<Board>() {
-            @Override
-            public Predicate toPredicate(Root<Board> q, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                return cb.equal(q.get("category"), Category.valueOf(category.toUpperCase()));
-            }
-        };
-    }
-
-    private Specification<Board> search(String kw) {
-        return new Specification<Board>() {
-            @Serial
-            private static final long serialVersionUID = 1L;
-            @Override
-            public Predicate toPredicate(Root<Board> q, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                query.distinct(true);   // 중복제거
-                Join<Board, Users> u1 = q.join("users", JoinType.LEFT);
-                // 추가 예정
-                //Join<Board, Comment> c = q.join("commentList", JoinType.LEFT);
-
-                return cb.or(cb.like(q.get("title"), "%" + kw + "%"), // 제목
-                        cb.like(q.get("content"), "%" + kw + "%"));   // 내용
-                        // 추가 예정
-                        //cb.like(c.get("content"), "%" + kw + "%"),   // 댓글 내용
-                        // 작성자는 필요하면 추가
-                        // cb.like(u1.get("username"), "%" + kw + "%")); // 게시글 작성자
-            }
-        };
-    }
 }

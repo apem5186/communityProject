@@ -32,7 +32,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-
+    implementation 'com.h2database:h2'
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
     // jwt

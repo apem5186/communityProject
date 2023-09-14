@@ -16,6 +16,7 @@ import com.community.communityproject.repository.*;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.redis.RedisService;
+import com.community.communityproject.service.util.BoardUtilService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -69,6 +70,8 @@ public class UserService {
     private final TokenProvider tokenProvider;
 
     private final RedisService redisService;
+
+    private final BoardUtilService boardUtilService;
 
     private final AmazonS3ResourceStorage amazonS3ResourceStorage;
 
@@ -629,7 +632,7 @@ public class UserService {
         }
         String path = profileImage.getFilePath();
 
-        path = trimUrlToPath(path);
+        path = boardUtilService.trimUrlToPath(path);
 
         // 맨 첫번째 "/" 이후의 문자열
         // String filename = path.substring(path.indexOf("/") + 1);
@@ -643,20 +646,6 @@ public class UserService {
      */
     public String defaultImage() {
         return String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
-    }
-
-    /**
-     * filePath를 bucket url을 짤라서 반환함
-     * @param fullUrl
-     * @return path
-     */
-    public String trimUrlToPath(String fullUrl) {
-        int imageIndex = fullUrl.indexOf("/image");
-
-        if(imageIndex != -1) {
-            return fullUrl.substring(imageIndex + 1);
-        }
-        return fullUrl; // "/image"가 없는 경우 원래 URL 반환
     }
 
     /**

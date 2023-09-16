@@ -22,10 +22,10 @@
     <form th:action="@{'/' + ${category} + '/' + edit + '/' + ${bid}}" th:object="${boardEditRequestDTO}" method="post" enctype="multipart/form-data">
         <div class="input-group my-3">
             <label class="input-group-text" for="category">Category</label>
-            <select class="form-select" id="category" th:field="*{category}">
-                <option value="community" selected>Community</option>
-                <option value="questions">Questions</option>
-                <option value="knowledge">Knowledge</option>
+            <select class="form-select" id="category" name="category">
+                <option value="community" th:selected="${category == 'community'}">Community</option>
+                <option value="questions" th:selected="${category == 'questions'}">Questions</option>
+                <option value="knowledge" th:selected="${category == 'knowledge'}">Knowledge</option>
             </select>
         </div>
 

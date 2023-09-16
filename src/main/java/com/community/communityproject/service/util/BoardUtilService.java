@@ -10,6 +10,8 @@ import com.community.communityproject.entity.board.Category;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.*;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -188,5 +190,51 @@ public class BoardUtilService {
                 // cb.like(u1.get("username"), "%" + kw + "%")); // 게시글 작성자
             }
         };
+    }
+
+    public String selectReturnUrl_edit(String role, HttpServletRequest request, String path, String bid, HttpSession session) {
+        String adminMenu = (String) session.getAttribute("admin_menu");
+
+        log.info("#################################");
+        log.info("adminMenu : " + adminMenu);
+        log.info("ROLE : " + role);
+        log.info("#################################");
+        // 게시글 수정 요청일 때
+        if (role.equals("ROLE_ADMIN")) {
+            // 삭제 요청 보낸 url 가져오기
+            String refererUrl = request.getHeader("Referer");
+            // Referer 헤더가 없다면
+            if (refererUrl.isEmpty()) {
+                return String.format("redirect:/%s/%s", path, bid);
+            }
+            if (adminMenu != null) {
+                session.removeAttribute("admin_menu");
+                return "redirect:" + adminMenu;
+            } else {
+                return String.format("redirect:/%s/%s", path, bid);
+            }
+        } else {
+            return String.format("redirect:/%s/%s", path, bid);
+        }
+    }
+
+    public String selectReturnUrl_delete(String role, HttpServletRequest request, String path) {
+        if (role.equals("ROLE_ADMIN")) {
+            // 삭제 요청 보낸 url 가져오기
+            String refererUrl = request.getHeader("Referer");
+            // Referer 헤더가 없다면
+            if (refererUrl.isEmpty()) {
+                return String.format("redirect:/%s", path);
+            }
+            if (refererUrl.contains("admin_manage")) {
+                String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                refererUrl = refererUrl.replaceFirst(baseUrl, "");
+                return "redirect:" + refererUrl;
+            } else {
+                return String.format("redirect:/%s", path);
+            }
+        } else {
+            return String.format("redirect:/%s", path);
+        }
     }
 }

@@ -21,6 +21,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -112,11 +114,18 @@ public class BoardController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/notice/edit/{bid}")
     public String noticeEdit(Model model,
-                             @PathVariable String bid) {
+                             @PathVariable String bid,
+                             HttpServletRequest request, HttpSession session) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         BoardEditRequestDTO boardEditRequestDTO = new BoardEditRequestDTO();
         boardEditRequestDTO.setEmail(email);
         boardEditRequestDTO.setCategory("notice");
+        String refererUrl = request.getHeader("Referer");
+        if (refererUrl.contains("admin_manage")) {
+            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            refererUrl = refererUrl.replaceFirst(baseUrl, "");
+            session.setAttribute("admin_menu", refererUrl);
+        }
         model.addAttribute("noCategory", boardUtilService.getNoticeCategories(Long.valueOf(bid)));
         model.addAttribute("boardEditRequestDTO", boardEditRequestDTO);
         model.addAttribute("category", "notice");
@@ -127,22 +136,31 @@ public class BoardController {
     @PostMapping("/notice/edit/{bid}")
     public String noticeEdit(Model model,
                              @PathVariable String bid, BoardEditRequestDTO boardEditRequestDTO,
-                             HttpServletRequest request, HttpServletResponse response) {
+                             HttpServletRequest request, HttpServletResponse response,
+                             HttpSession session) {
         boardEditRequestDTO.setCategory("notice");
         boardService.editBoard(request, response, boardEditRequestDTO);
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
         model.addAttribute("board", boardDTO);
-        return String.format("redirect:/notice/%s", bid);
+        String role = authService.getAuthorities(SecurityContextHolder.getContext().getAuthentication());
+        return boardUtilService.selectReturnUrl_edit(role, request, boardDTO.getCategory().toLowerCase(), bid, session);
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{path:(?:community|questions|knowledge)}/edit/{bid}")
     public String edit(Model model,
                        @PathVariable String path,
-                       @PathVariable String bid) {
+                       @PathVariable String bid,
+                       HttpServletRequest request, HttpSession session) {
         BoardEditRequestDTO boardEditRequestDTO = boardService.setEditBoard(Long.valueOf(bid));
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         boardEditRequestDTO.setEmail(email);
+        String refererUrl = request.getHeader("Referer");
+        if (refererUrl.contains("admin_manage")) {
+            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            refererUrl = refererUrl.replaceFirst(baseUrl, "");
+            session.setAttribute("admin_menu", refererUrl);
+        }
         model.addAttribute("boardEditRequestDTO", boardEditRequestDTO);
         model.addAttribute("category", path);
         model.addAttribute("bid", bid);
@@ -153,11 +171,12 @@ public class BoardController {
     @PostMapping("/{path:(?:community|questions|knowledge)}/edit/{bid}")
     public String edit(@PathVariable String path, @PathVariable String bid, Model model,
                        BoardEditRequestDTO boardEditRequestDTO, HttpServletRequest request,
-                       HttpServletResponse response) {
+                       HttpServletResponse response, HttpSession session) {
         boardService.editBoard(request, response, boardEditRequestDTO);
         BoardListResponseDTO.BoardDTO boardDTO = this.boardService.getBoard(Long.valueOf(bid));
         model.addAttribute("board", boardDTO);
-        return String.format("redirect:/%s/%s", boardDTO.getCategory().toLowerCase(), bid);
+        String role = authService.getAuthorities(SecurityContextHolder.getContext().getAuthentication());
+        return boardUtilService.selectReturnUrl_edit(role, request, boardDTO.getCategory().toLowerCase(), bid, session);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -167,25 +186,7 @@ public class BoardController {
                          @RequestParam String id) {
         boardService.deleteBoard(request, response, Long.valueOf(id));
         String role = authService.getAuthorities(SecurityContextHolder.getContext().getAuthentication());
-        if (role.equals("ROLE_ADMIN")) {
-            // 삭제 요청 보낸 url 가져오기
-            String refererUrl = request.getHeader("Referer");
-
-            log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
-            log.info(refererUrl);
-            log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
-
-            if (refererUrl != null && !refererUrl.isEmpty()) {
-                String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-                refererUrl = refererUrl.replaceFirst(baseUrl, "");
-                return "redirect:" + refererUrl;
-            } else {
-                // 만약 "Referer" 헤더가 없는 경우
-                return "redirect:/admin_manage_boards";
-            }
-        } else {
-            return String.format("redirect:/%s", path);
-        }
+        return boardUtilService.selectReturnUrl_delete(role, request, path);
     }
 
 

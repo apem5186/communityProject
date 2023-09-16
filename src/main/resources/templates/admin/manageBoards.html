@@ -106,7 +106,16 @@
             <td th:text="${board.notices}"></td>
             <td><a th:href="@{|/profile/${board.uid}}" th:text="${board.username}" class="text-decoration-none"></a></td>
             <td th:text="${board.userRole}"></td>
-            <td><a><i class="bi bi-pencil-square"></i></a></td>
+            <td>
+                <a th:if="${board.category.toString() != 'NOTICE'}"
+                   th:href="@{|/${board.category.toString().toLowerCase()}/edit/${board.bid}|}">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a th:unless="${board.category.toString() != 'NOTICE'}"
+                   th:href="@{|/notice/edit/${board.bid}|}">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </td>
             <td><form th:action="@{|/${board.category.toString().toLowerCase()}/delete/${board.bid}|}" method="post"
                 onsubmit="return confirmDelete()">
                 <input type="hidden" name="id" th:value="${board.bid}">

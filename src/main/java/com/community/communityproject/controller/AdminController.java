@@ -41,7 +41,7 @@ public class AdminController {
                 }
         );
         log.info("======================================");
-        model.addAttribute("board", boards);
+        model.addAttribute("boards", boards);
         model.addAttribute("category", category);
         model.addAttribute("kw", kw);
         return "admin/manageBoards";

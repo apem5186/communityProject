@@ -4,6 +4,8 @@ import com.community.communityproject.dto.board.BoardEditRequestDTO;
 import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.service.board.BoardService;
+import com.community.communityproject.service.jwt.AuthService;
+import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.util.BoardUtilService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +28,8 @@ public class BoardController {
 
     private final BoardService boardService;
     private final BoardUtilService boardUtilService;
+    private final AuthService authService;
+    private final UserService userService;
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,
@@ -162,8 +166,28 @@ public class BoardController {
                          HttpServletRequest request, HttpServletResponse response,
                          @RequestParam String id) {
         boardService.deleteBoard(request, response, Long.valueOf(id));
-        return String.format("redirect:/%s", path);
+        String role = authService.getAuthorities(SecurityContextHolder.getContext().getAuthentication());
+        if (role.equals("ROLE_ADMIN")) {
+            // 삭제 요청 보낸 url 가져오기
+            String refererUrl = request.getHeader("Referer");
+
+            log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
+            log.info(refererUrl);
+            log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
+
+            if (refererUrl != null && !refererUrl.isEmpty()) {
+                String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                refererUrl = refererUrl.replaceFirst(baseUrl, "");
+                return "redirect:" + refererUrl;
+            } else {
+                // 만약 "Referer" 헤더가 없는 경우
+                return "redirect:/admin_manage_boards";
+            }
+        } else {
+            return String.format("redirect:/%s", path);
+        }
     }
+
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}/like/{bid}")

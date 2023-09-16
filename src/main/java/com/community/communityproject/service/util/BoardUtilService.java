@@ -47,6 +47,7 @@ public class BoardUtilService {
             case "VOTE_COUNT" -> "likeCnt";
             case "COMMENT_COUNT" -> "reviewCnt";
             case "HITS_COUNT" -> "hits";
+            case "FAVORITE_COUNT" -> "favoriteCnt";
             default -> "regDate";
         };
     }

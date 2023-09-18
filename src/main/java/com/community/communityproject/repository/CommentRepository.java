@@ -5,6 +5,7 @@ import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.users.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findAllByUsersEmail(String email, Pageable pageable);
     List<Comment> findAllByUsers(Users users);
     Page<Comment> findAllByUsersId(Long uid, Pageable pageable);
+
+    Page<Comment> findAll(Specification<Comment> spec, Pageable pageable);
 }

@@ -130,6 +130,7 @@ public class Board extends BaseEntity {
     public void decreaseFavoriteCnt() {this.favoriteCnt -= 1;}
 
     public void increaseReviewCnt() { this.reviewCnt += 1; }
-
-    public void decreaseReviewCnt() { this.reviewCnt -= 1; }
+    
+    // 부모 댓글 삭제하면 대댓글까지 삭제되니 사이즈를 가져오는 방법을 써야 함
+    public void decreaseReviewCnt(int cnt) { this.reviewCnt = cnt; }
 }

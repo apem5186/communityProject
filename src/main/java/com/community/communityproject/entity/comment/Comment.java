@@ -29,6 +29,9 @@ public class Comment extends BaseEntity {
     @Column(columnDefinition = "integer default 0")
     private int likeCnt;
 
+    @Column(columnDefinition = "integer default 0")
+    private int childrenCnt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -46,7 +49,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "parent_id")
     private Comment parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
     @ToString.Exclude
     private Set<Comment> children = new LinkedHashSet<>();
 
@@ -64,4 +67,8 @@ public class Comment extends BaseEntity {
     }
     public void increaseLikeCnt() { this.likeCnt += 1;}
     public void decreaseLikeCnt() { this.likeCnt -= 1;}
+
+    public void updateChildrenCount() {
+        this.childrenCnt = children.size();
+    }
 }

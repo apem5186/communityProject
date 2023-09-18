@@ -167,8 +167,11 @@ public class CommentService {
                         .parent(parent)
                         .build();
             }
-
             commentRepository.save(comment);
+            // 만약 답글 단거면 부모 댓글 가져와서 답글 갯수 업데이트
+            if (comment.getParent() != null) {
+                comment.getParent().updateChildrenCount();
+            }
             increaseCnt(Long.valueOf(bid));
         } else {
             String at = null;
@@ -208,11 +211,22 @@ public class CommentService {
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
             Comment comment = commentRepository.findById(Long.valueOf(cid)).orElseThrow(CommentNotFoundException::new);
+            Comment parent = null;
             // 요청을 보낸 사용자와 댓글을 단 사용자가 같으면
             if (isOwnerOfComment(request, comment.getUsers().getEmail())) {
+                int childrenCnt = comment.getChildrenCnt();
+                // 자식 댓글이면 부모 댓글 가져옴
+                if (comment.getParent() != null) {
+                    parent = comment.getParent();
+                }
+
                 commentRepository.delete(comment);
+                // 자식 댓글이었다면 부모 댓글의 대댓글 수 업데이트
+                if (parent != null) {
+                    parent.updateChildrenCount();
+                }
                 // 삭제 한 후 board의 리뷰 카운트 하락
-                decreaseCnt(Long.valueOf(bid));
+                decreaseCnt(Long.valueOf(bid), 1 + childrenCnt);
             } else throw new CommentUserNotEqual(); // 요청을 보낸 사람과 댓글 올린 사람이 다르면 예외 발생
 
         }else {
@@ -241,9 +255,11 @@ public class CommentService {
      * 댓글 삭제하고 게시글의 reviewCnt 필드의 수 하락
      * @param bid
      */
-    private void decreaseCnt(Long bid) {
+    private void decreaseCnt(Long bid, int decreaseAmount) {
         Board board = boardRepository.getReferenceById(bid);
-        board.decreaseReviewCnt();
+        int newReviewCnt = board.getReviewCnt() - decreaseAmount;
+        if (newReviewCnt < 0) newReviewCnt = 0;
+        board.decreaseReviewCnt(newReviewCnt);
         boardRepository.save(board);
     }
 

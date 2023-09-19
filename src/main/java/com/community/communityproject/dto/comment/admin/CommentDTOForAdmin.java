@@ -22,6 +22,7 @@ public class CommentDTOForAdmin {
     private String content;
     private String category;
     private int likeCnt;
+    private boolean isDeleted;
     private List<CommentDTOForAdmin> children;
     private Long parent;
     private UserRole userRole;
@@ -37,6 +38,7 @@ public class CommentDTOForAdmin {
         this.content = comment.getContent();
         this.category = comment.getBoard().getCategory().toString();
         this.likeCnt = comment.getLikeCnt();
+        this.isDeleted = comment.isDeleted();
         setChildrenFromEntities(comment.getChildren());
         if (comment.getParent() == null) {
             this.parent = null;

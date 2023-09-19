@@ -53,6 +53,9 @@ public class Comment extends BaseEntity {
     @ToString.Exclude
     private Set<Comment> children = new LinkedHashSet<>();
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean isDeleted;
+
     @Builder
     public Comment(String content, Board board, Users users, Comment parent) {
         this.content = content;
@@ -70,5 +73,14 @@ public class Comment extends BaseEntity {
 
     public void updateChildrenCount() {
         this.childrenCnt = children.size();
+    }
+
+    // 댓글 삭제
+    public void delete() {
+        this.isDeleted = true;
+    }
+    // 댓글 복구
+    public void restoration() {
+        this.isDeleted = false;
     }
 }

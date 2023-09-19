@@ -28,6 +28,7 @@ public class CommentListResponseDTO {
         private BoardDTOInComment boardDTOInComment;
         private ProfileImgDTOInComment profileImgDTOInComment;
         private String likeStatus;
+        private boolean isDeleted;
         private String childLikeStatus;
         private List<CommentDTO> children;
         private Long parent;
@@ -41,6 +42,7 @@ public class CommentListResponseDTO {
             this.usersDTOInComment = new UsersDTOInComment(comment.getUsers());
             this.profileImgDTOInComment = new ProfileImgDTOInComment(comment.getUsers().getProfileImage());
             this.boardDTOInComment = new BoardDTOInComment(comment.getBoard());
+            this.isDeleted = comment.isDeleted();
             setChildrenFromEntities(comment.getChildren());
             if (comment.getParent() == null) {
                 this.parent = null;
@@ -60,6 +62,7 @@ public class CommentListResponseDTO {
             this.boardDTOInComment = new BoardDTOInComment(comment.getBoard());
             setChildrenFromEntities(comment.getChildren(), likeStatusFetcher);
             this.likeStatus = likeStatusFetcher.apply(comment.getId());
+            this.isDeleted = comment.isDeleted();
             if (comment.getParent() == null) {
                 this.parent = null;
             } else {

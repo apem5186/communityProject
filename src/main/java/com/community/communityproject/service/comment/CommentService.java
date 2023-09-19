@@ -208,25 +208,28 @@ public class CommentService {
      */
     @Transactional
     public void deleteComment(HttpServletRequest request, HttpServletResponse response, String cid, String bid) {
+        // 댓글 삭제를 db상에서 삭제 -> 삭제 필드로 변경으로 바꿈에 따라
+        // 댓글의 count 하락은 없는걸로 함
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
             Comment comment = commentRepository.findById(Long.valueOf(cid)).orElseThrow(CommentNotFoundException::new);
-            Comment parent = null;
+            //Comment parent = null;
             // 요청을 보낸 사용자와 댓글을 단 사용자가 같으면
             if (isOwnerOfComment(request, comment.getUsers().getEmail())) {
-                int childrenCnt = comment.getChildrenCnt();
+                //int childrenCnt = comment.getChildrenCnt();
                 // 자식 댓글이면 부모 댓글 가져옴
-                if (comment.getParent() != null) {
-                    parent = comment.getParent();
-                }
+                //if (comment.getParent() != null) {
+                //    parent = comment.getParent();
+                //}
 
-                commentRepository.delete(comment);
+                // isDeleted 필드 true로 만들기
+                comment.delete();
                 // 자식 댓글이었다면 부모 댓글의 대댓글 수 업데이트
-                if (parent != null) {
-                    parent.updateChildrenCount();
-                }
+//                if (parent != null) {
+//                    parent.updateChildrenCount();
+//                }
                 // 삭제 한 후 board의 리뷰 카운트 하락
-                decreaseCnt(Long.valueOf(bid), 1 + childrenCnt);
+                //decreaseCnt(Long.valueOf(bid), 1 + childrenCnt);
             } else throw new CommentUserNotEqual(); // 요청을 보낸 사람과 댓글 올린 사람이 다르면 예외 발생
 
         }else {

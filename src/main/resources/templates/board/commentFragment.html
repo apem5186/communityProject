@@ -1,6 +1,6 @@
 <li th:fragment="commentListItem(comments, board, commentLikeDTO)" th:each="comment, commentStat : ${comments}" class="comment-item mb-3">
-    <div th:if="${comment.parent == null}">
-        <div class="d-flex align-items-center">
+    <div>
+        <div class="d-flex align-items-center" th:if="${comment.parent == null && comment.deleted == false}">
             <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
                 <!-- Comment author's profile image goes here -->
                 <img th:src="${comment.getProfileImgDTOInComment().getPath()}" alt="Profile Image" class="img-fluid rounded-circle">
@@ -84,7 +84,9 @@
                 </div>
             </div>
         </div>
-        <p th:id="'commentContent-' + ${comment.cid}" class="commentContent" th:text="${comment.content}">Comment content goes here...</p>
+        <p th:id="'commentContent-' + ${comment.cid}" class="commentContent"
+           th:classappend="${comment.deleted == true} ? 'text-body-secondary'"
+           th:text="${comment.deleted == true ? '삭제된 댓글입니다.' : comment.content}">Comment content goes here...</p>
         <!-- 댓글 편집 영역 (초기에는 숨겨져 있음) -->
         <form th:id="'editForm-' + ${comment.cid}" class="commentEditForm my-2" action="/edit/comment" method="post" style="display:none;">
             <textarea th:id="'editArea-' + ${comment.cid}" name="content" class="commentEditArea form-control my-2" oninput="adjustHeight(this)"></textarea>

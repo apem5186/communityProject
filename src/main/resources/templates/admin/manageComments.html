@@ -52,7 +52,9 @@
             <!-- 오른쪽 항목: 드롭다운 메뉴 -->
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
-                    [[${#strings.equals(param.sort, 'VOTE_COUNT') ? '추천순' : '최신순'}]]
+                    [[${#strings.equals(param.sort, 'VOTE_COUNT') ? '추천순' :
+                    #strings.equals(param.sort, 'REPLY_COUNT') ? '답글 개수' :
+                    #strings.equals(param.sort, 'OLDEST') ? '오래된 순' : '최신순'}]]
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
                     <li><h6 class="dropdown-header">순서</h6></li>
@@ -61,6 +63,11 @@
                         <a class="dropdown-item"
                            th:classappend="${param.sort == null || param.sort.toString() == 'LATEST'} ? 'disabled'"
                            href="javascript:void(0);" onclick="updateURLParam('sort', 'LATEST')">최신순</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.sort == null || param.sort.toString() == 'OLDEST'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('sort', 'OLDEST')">오래된 순</a>
                     </li>
                     <li>
                         <a class="dropdown-item"
@@ -77,6 +84,45 @@
         </div>
         <div class="col">
             <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="option2Dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.option2, 'PARENT') ? '댓글' :
+                    #strings.equals(param.option2, 'CHILDREN') ? '답글' :
+                    #strings.equals(param.option2, 'DELETED') ? '삭제됨' :
+                    #strings.equals(param.option2, 'EXISTED') ? '삭제안 됨' : '전체'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="option2Dropdown" style="font-weight: bold;">
+                    <li><h6 class="dropdown-header">조건2</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 == null || param.option2.toString() == 'ALL'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'ALL')">전체</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'PARENT'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'PARENT')">댓글만</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'CHILDREN'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'CHILDREN')">답글만</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'DELETED'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'DELETED')">삭제됨</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'EXISTED'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'EXISTED')">삭제안 됨</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="optionDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
                     [[${#strings.equals(param.option, 'ADMIN') ? '관리자' :
                     #strings.equals(param.option, 'USER') ? '사용자' : '전체'}]]
@@ -84,7 +130,7 @@
                 <ul class="dropdown-menu" aria-labelledby="optionDropdown" style="font-weight: bold;">
                     <li><h6 class="dropdown-header">권한</h6></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li >
+                    <li>
                         <a class="dropdown-item"
                            th:classappend="${param.option == null || param.option.toString() == 'ALL'} ? 'disabled'"
                            href="javascript:void(0);" onclick="updateURLParam('option', 'ALL')">전체</a>
@@ -108,7 +154,7 @@
                     [[${#strings.equals(param.category, 'COMMUNITY') ? 'COMMUNITY' :
                     #strings.equals(param.category, 'KNOWLEDGE') ? 'KNOWLEDGE' :
                     #strings.equals(param.category, 'NOTICE') ? 'NOTICE' :
-                    #strings.equals(param.category, 'QUESTIONS') ? 'QUESTIONS' : 'ALL'}]]
+                    #strings.equals(param.category, 'QUESTIONS') ? 'QUESTIONS' : '전체'}]]
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="categoryDropdown" style="font-weight: bold;">
                     <li><h6 class="dropdown-header">카테고리</h6></li>
@@ -116,7 +162,7 @@
                     <li>
                         <a class="dropdown-item"
                            th:classappend="${param.category == null || param.category.toString() == 'ALL'} ? 'disabled'"
-                           href="javascript:void(0);" onclick="updateURLParam('category', 'ALL')">ALL</a>
+                           href="javascript:void(0);" onclick="updateURLParam('category', 'ALL')">전체</a>
                     </li>
                     <li>
                         <a class="dropdown-item"
@@ -150,10 +196,11 @@
         <th>게시글 번호(BID)</th>
         <th>댓글 번호(CID)</th>
         <th>내용</th>
-        <th>좋아요</th>
+        <th class="text-center">좋아요</th>
         <th>카테고리</th>
-        <th>부모 댓글 여부</th>
-        <th>답글 갯수</th>
+        <th class="text-center">부모 댓글 여부</th>
+        <th class="text-center">답글 갯수</th>
+        <th class="text-center">삭제 여부</th>
         <th>게시자 이름</th>
         <th>게시자 권한</th>
         <th></th>
@@ -166,11 +213,12 @@
                class="text-decoration-none"></a></td>
         <td><a th:href="@{|/${comment.category.toString().toLowerCase()}/${comment.bid}}" th:text="${comment.cid}"
                class="text-decoration-none"></a></td>
-        <td th:text="${comment.content}"></td>
-        <td th:text="${comment.likeCnt}"></td>
+        <td th:text="${#strings.abbreviate(comment.content, 10)}"></td>
+        <td class="text-center" th:text="${comment.likeCnt}"></td>
         <td th:text="${comment.category}"></td>
-        <td th:text="${comment.parent == null} ? 'Y' : 'N'" ></td>
-        <td th:text="${comment.children.size()}"></td>
+        <td class="text-center" th:text="${comment.parent == null} ? 'Y' : 'N'"></td>
+        <td class="text-center" th:text="${comment.children.size()}"></td>
+        <td class="text-center" th:text="${comment.isDeleted() == true} ? 'Y' : 'N'"></td>
         <td><a th:href="@{|/profile/${comment.uid}}" th:text="${comment.username}" class="text-decoration-none"></a></td>
         <td th:text="${comment.userRole}"></td>
         <!-- 댓글 수정 기능 추가는 고려중 -->
@@ -249,6 +297,7 @@
     <input type="hidden" id="category" name="category" th:value="${param.category}" th:if="${param.sort != null}">
     <input type="hidden" id="searchField" name="searchField" th:value="${param.searchField}" th:if="${param.searchField != null}">
     <input type="hidden" id="option" name="option" th:value="${param.option}" th:if="${param.option != null}">
+    <input type="hidden" id="option2" name="option2" th:value="${param.option2}" th:if="${param.option2 != null}">
 </form>
 
 <div th:insert="~{fragments :: footer}"></div>
@@ -283,6 +332,11 @@
         let optionValue = url.searchParams.get('option');
         if (optionValue !== null) {
             document.getElementById('option').value = optionValue;
+        }
+
+        let option2Value = url.searchParams.get('option2');
+        if (option2Value !== null) {
+            document.getElementById('option2').value = option2Value;
         }
 
         let form = document.getElementById('searchForm');

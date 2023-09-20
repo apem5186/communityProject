@@ -77,4 +77,20 @@ public class CommentUtilService {
             return cb.equal(userJoin.get("userRole"), UserRole.valueOf(userRole));
         };
     }
+
+    public Specification<Comment> filterByOption2(String option2) {
+        return (root, query, cb) -> {
+            Predicate predicate = null;
+            switch (option2) {
+                case "PARENT" -> predicate = cb.isNull(root.get("parent"));
+                case "CHILDREN" -> predicate = cb.isNotNull(root.get("parent"));
+                case "DELETED" -> predicate = cb.isTrue(root.get("isDeleted"));
+                case "EXISTED" -> predicate = cb.isFalse(root.get("isDeleted"));
+                default -> {
+                    return null;
+                }
+            }
+            return predicate;
+        };
+    }
 }

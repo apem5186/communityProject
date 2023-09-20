@@ -59,8 +59,9 @@ public class AdminController {
                                  @RequestParam(value = "sort", defaultValue = "LATEST") String sort,
                                  @RequestParam(value = "category", defaultValue = "ALL") String category,
                                  @RequestParam(value = "searchField", defaultValue = "") String searchField,
-                                 @RequestParam(value = "option", defaultValue = "ALL") String option) {
-        Page<CommentDTOForAdmin> comments = this.adminService.getCommentForAdmin(page, kw, sort, category, searchField, option, response, request);
+                                 @RequestParam(value = "option", defaultValue = "ALL") String option,
+                                 @RequestParam(value = "option2", defaultValue = "ALL") String option2) {
+        Page<CommentDTOForAdmin> comments = this.adminService.getCommentForAdmin(page, kw, sort, category, searchField, option, option2, response, request);
         log.info("======================================");
         comments.stream().forEach(
                 commentDTOForAdmin ->

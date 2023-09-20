@@ -86,15 +86,20 @@ public class AdminService {
     }
 
     public Page<CommentDTOForAdmin> getCommentForAdmin(int page, String kw, String sort, String category,
-                                                       String searchField, String option,
+                                                       String searchField, String option, String option2,
                                                        HttpServletResponse response, HttpServletRequest request) {
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (tokenDTO != null) {
             List<Sort.Order> sorts = new ArrayList<>();
-            // 정렬 기준 LATEST, VOTE_COUNT, REPLY_COUNT
+            // 정렬 기준 LATEST, OLDEST, VOTE_COUNT, REPLY_COUNT
             // default = LATEST
-            sort = commentUtilService.sort(sort);
-            sorts.add(Sort.Order.desc(sort));
+            if (sort.equals("OLDEST")) {
+                sort = commentUtilService.sort(sort);
+                sorts.add(Sort.Order.asc(sort));
+            } else {
+                sort = commentUtilService.sort(sort);
+                sorts.add(Sort.Order.desc(sort));
+            }
             Pageable pageable = PageRequest.of(page-1, 10, Sort.by(sorts));
             Specification<Comment> spec = commentUtilService.search(kw, searchField);;
             if (!Objects.equals(category, "ALL")) {
@@ -102,6 +107,9 @@ public class AdminService {
             }
             if (!Objects.equals(option, "ALL")) {
                 spec = spec.and(commentUtilService.filterByUserRole(option));
+            }
+            if (!Objects.equals(option2, "ALL")) {
+                spec = spec.and(commentUtilService.filterByOption2(option2));
             }
             Page<Comment> comments = commentRepository.findAll(spec, pageable);
             List<CommentDTOForAdmin> commentDTOForAdmins = comments.stream().map(

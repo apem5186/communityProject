@@ -79,10 +79,10 @@
             <th>#</th>
             <th>게시글 번호(BID)</th>
             <th>제목</th>
-            <th>조회수</th>
-            <th>댓글수</th>
-            <th>좋아요</th>
-            <th>즐겨찾기</th>
+            <th class="text-center">조회수</th>
+            <th class="text-center">댓글수</th>
+            <th class="text-center">좋아요</th>
+            <th class="text-center">즐겨찾기</th>
             <th>카테고리</th>
             <th>공지 카테고리</th>
             <th>게시자 이름</th>
@@ -98,10 +98,10 @@
             class="text-decoration-none"></a></td>
             <td><a th:href="@{|/${board.category.toString().toLowerCase()}/${board.bid}}" th:text="${board.title}"
             class="text-decoration-none"></a></td>
-            <td th:text="${board.hits}"></td>
-            <td th:text="${board.reviewCnt}"></td>
-            <td th:text="${board.likeCnt}"></td>
-            <td th:text="${board.favoriteCnt}"></td>
+            <td class="text-center" th:text="${board.hits}"></td>
+            <td class="text-center" th:text="${board.reviewCnt}"></td>
+            <td class="text-center" th:text="${board.likeCnt}"></td>
+            <td class="text-center" th:text="${board.favoriteCnt}"></td>
             <td th:text="${board.category}"></td>
             <td th:text="${board.notices}"></td>
             <td><a th:href="@{|/profile/${board.uid}}" th:text="${board.username}" class="text-decoration-none"></a></td>

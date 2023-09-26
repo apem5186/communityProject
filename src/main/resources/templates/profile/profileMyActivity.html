@@ -2,7 +2,7 @@
 <html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>프로필_좋아요</title>
+    <title>프로필_최근 활동</title>
     <div th:insert="~{fragments :: linkCSS}"></div>
 </head>
 <style>
@@ -35,14 +35,14 @@
 
             <div class="target-div" th:if="${profileOwnerUid == null}">
                 <div class="container d-flex align-items-start justify-content-between">
-                    <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+                    <img src="" th:src="${profileImage}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
                 </div>
                 <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
                 <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
             </div>
             <div class="target-div" th:if="${profileOwnerUid != null}">
                 <div class="container d-flex align-items-start">
-                    <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+                    <img src="" th:src="${user.profile}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
                     <h3 class="align-self-center"><span th:text="${user != null ? user.username : ''}"></span></h3>
                 </div>
             </div>

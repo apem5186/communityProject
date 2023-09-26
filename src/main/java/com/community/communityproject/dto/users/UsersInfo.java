@@ -13,5 +13,6 @@ public class UsersInfo {
     private Long uid;
     private String username;
     private String email;
+    private String profile;
     private UserRole userRole;
 }

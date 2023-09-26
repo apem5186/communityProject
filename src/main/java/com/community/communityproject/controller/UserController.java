@@ -227,11 +227,12 @@ public class UserController {
     public String otherUserProfileBoards(Model model,
                                          @PathVariable String uid,
                                          @RequestParam(value = "page", defaultValue = "1") int page) {
+        UsersInfo usersInfo = null;
         Page<BoardListResponseDTO.BoardDTO> board = boardService.getOtherUserBoardListDTO(page, uid);
         model.addAttribute("paging", board);
         model.addAttribute("profileOwnerUid", uid);
-        model.addAttribute("user", userService.loadUser(Long.valueOf(uid)));
-
+        usersInfo = userService.loadUser(Long.valueOf(uid));
+        model.addAttribute("user", usersInfo);
         return "profile/profileMyBoard";
     }
 

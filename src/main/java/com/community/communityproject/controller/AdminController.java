@@ -3,6 +3,7 @@ package com.community.communityproject.controller;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.admin.BoardDTOForAdmin;
 import com.community.communityproject.dto.comment.admin.CommentDTOForAdmin;
+import com.community.communityproject.dto.users.admin.UsersDTOForAdmin;
 import com.community.communityproject.service.admin.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -75,6 +76,27 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin_manage_users")
+    public String manageUsers(Model model, HttpServletRequest request, HttpServletResponse response,
+                              @RequestParam(value = "page", defaultValue = "1") int page,
+                              @RequestParam(value = "kw", defaultValue = "") String kw,
+                              @RequestParam(value = "sort", defaultValue = "LATEST") String sort,
+                              @RequestParam(value = "searchField", defaultValue = "") String searchField,
+                              @RequestParam(value = "option", defaultValue = "ALL") String option,
+                              @RequestParam(value = "option2", defaultValue = "ALL") String option2) {
+        Page<UsersDTOForAdmin> users = this.adminService.getUsersForAdmin(page, kw, sort, searchField, option, option2, response, request);
+        log.info("======================================");
+        users.stream().forEach(
+                usersDTOForAdmin ->
+                        log.info("user Id : " + usersDTOForAdmin.getUid())
+        );
+        log.info("======================================");
+        model.addAttribute("users", users);
+        model.addAttribute("kw", kw);
+        return "admin/manageUsers";
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/delete/comment/{cid}")
     public String deleteCommentForAdmin(@PathVariable String cid, Model model,
                                         HttpServletRequest request, HttpServletResponse response) {
@@ -87,8 +109,15 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/admin_manage_users")
-    public String manageUsers(Model model) {
-        return "admin/manageUsers";
+    @PostMapping("/delete/user/{uid}")
+    public String deleteUserForAdmin(@PathVariable String uid,
+                                     HttpServletRequest request, HttpServletResponse response) {
+        adminService.deleteUser(uid, response, request);
+        // 요청 보낸 url 가져오기
+        String refererUrl = request.getHeader("Referer");
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        refererUrl = refererUrl.replaceFirst(baseUrl, "");
+        return "redirect:" + refererUrl;
     }
+
 }

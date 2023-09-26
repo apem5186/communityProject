@@ -34,7 +34,7 @@
 
       <div class="target-div">
         <div class="container d-flex align-items-start">
-          <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+          <img src="" th:src="${user.profile}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
           <h3 class="align-self-center"><span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
         </div>
       </div>

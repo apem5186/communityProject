@@ -37,7 +37,7 @@
         <!-- 사용자명과 이메일을 위한 입력 필드 -->
         <form th:action="@{/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
           <div class="container d-flex align-items-start justify-content-between">
-            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;" alt="Profile Image"/>
+            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
             <!-- 편집 모드를 전환하는 버튼 -->
               <div>
                 <a href="" class="editBtn btn btn-primary me-2" id="editBtnDisabled" onclick="toggleEditing(event)">Edit profile</a>

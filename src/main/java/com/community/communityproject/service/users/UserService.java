@@ -164,6 +164,7 @@ public class UserService {
                     .uid(users.getId())
                     .username(users.getUsername())
                     .email(users.getEmail())
+                    .profile(users.getProfileImage().getFilePath())
                     .userRole(users.getUserRole())
                     .build();
         } else throw new UserNotFoundException();

@@ -52,6 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if ("GET".equals(requestMethod) && "/kakao/callback".equals(requestUrl)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String accessToken = resolveToken(request);
         log.info("Access Token: " + accessToken);

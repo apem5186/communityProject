@@ -68,6 +68,23 @@ public class AuthService {
         return generateToken(SERVER, authentication.getName(), getAuthorities(authentication));
     }
 
+    public TokenDTO socialLogin(String email, String password) {
+        Optional<Users> users = userRepository.findByEmail(email);
+        if (users.isEmpty()) {
+            return null;
+        } else {
+            log.info("== users 정보 : " + users.get().getEmail() + ", " + users.get().getUsername());
+        }
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(email, password);
+
+        Authentication authentication = authenticationManagerBuilder.getObject()
+                .authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return generateToken(SERVER, authentication.getName(), getAuthorities(authentication));
+
+    }
+
     // AT가 만료일자만 초과한 유효한 토큰인지 검사
     public boolean validate(String requestAccessToken) {
         return tokenProvider.validateAccessTokenOnlyExpired(requestAccessToken); // true = 재발급

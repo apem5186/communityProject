@@ -24,6 +24,12 @@
         </div>
         <div th:if="${#fields.hasErrors('global')}" th:errors="*{global}" class="error text-danger"></div>
         <button type="submit" class="btn btn-primary">Login</button>
+        <div class="d-flex justify-content-center">
+          <a th:href="
+          @{https://kauth.kakao.com/oauth/authorize(client_id=${kakaoClientId}, redirect_uri=${kakaoRedirectUri}, response_type='code')}">
+            <img src="/img/kakao_login_medium_narrow_korean.png" alt="kakao_login_button"/>
+          </a>
+        </div>
         <p class="signup-text my-3">Don't have an account? <a href="/signup">Sign up</a></p>
       </form>
     </div>

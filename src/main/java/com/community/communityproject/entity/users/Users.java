@@ -36,6 +36,10 @@ public class Users extends BaseEntity {
     @Column
     private boolean isLogin = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private SocialUser socialUser;
+
     @OneToOne(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ProfileImage profileImage;
 

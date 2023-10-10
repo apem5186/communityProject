@@ -54,6 +54,12 @@ public class UserController {
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
 
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String KAKAO_CLIENT_ID;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String KAKAO_REDIRECT_URI;
+
     @Autowired
     public void setCookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int cookieExpiration) {
         this.RTCOOKIE_EXPIRATION = cookieExpiration;
@@ -69,6 +75,8 @@ public class UserController {
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("usersLoginDTO", new UsersLoginDTO());
+        model.addAttribute("kakaoClientId", KAKAO_CLIENT_ID);
+        model.addAttribute("kakaoRedirectUri", KAKAO_REDIRECT_URI);
         return "login";
     }
 

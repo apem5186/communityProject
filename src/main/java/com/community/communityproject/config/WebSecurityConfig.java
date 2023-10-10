@@ -8,6 +8,7 @@ import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
 import com.community.communityproject.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,12 +49,12 @@ public class WebSecurityConfig {
     private final UserSecurityService userSecurityService;
 
 
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
-//                "/css/**", "/js/**", "/img/**", "/signup/checkUsername")
-//                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
-//    }
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().requestMatchers("/h2-console/**", "/favicon.ico",
+                "/css/**", "/js/**", "/img/**", "/signup/checkUsername")
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());  // 정적 리소스
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -71,6 +73,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/signup/checkUsername").permitAll()
                                 .requestMatchers("/h2-console").permitAll()
                                 .requestMatchers("/community/new", "/notice/new", "/knowledge/new", "/questions/new").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers(new AntPathRequestMatcher("/kakao/callback/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/community/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/notice/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/knowledge/**")).permitAll()

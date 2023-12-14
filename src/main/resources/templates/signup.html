@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Registration Page</title>
+  <div th:insert="~{fragments :: linkCSS}"></div>
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <nav class="navbar d-flex justify-content-center">
+        <a class="navbar-brand mr-0" href="#" th:href="@{/}">My App</a>
+      </nav>
+      <h2 class="text-center my-4">Registration</h2>
+      <form th:action="@{/signup}" th:object="${usersSignupDTO}" method="post" enctype="multipart/form-data">
+        <div>
+          <img src="/profileImage/default/profile_default.jpg" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px;"
+               alt="Profile Image"/>
+          <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
+          <br>
+          <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
+        </div>
+        <div class="form-group">
+          <label for="username-input"><b>Username</b></label>
+          <input id="username-input" type="text" th:field="*{username}" placeholder="Enter Username" required class="form-control">
+          <small class="form-text text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</small>
+          <i id="availability-icon" style="display:none"></i>
+          <button id="username-check" type="button" class="btn btn-primary btn-sm mt-2">Check Availability</button>
+          <input id="username-checked" type="hidden" th:field="*{usernameChecked}" value="false">
+        </div>
+
+        <div class="form-group">
+          <label for="password1"><b>Password</b></label>
+          <input id="password1" type="password" th:field="*{password1}" placeholder="Enter Password" name="password1" required class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="password2"><b>Confirm Password</b></label>
+          <input id="password2" type="password" th:field="*{password2}" placeholder="Confirm Password" name="password2" required class="form-control">
+          <small class="form-text text-danger" th:if="${#fields.hasErrors('password2')}" th:errors="*{password2}">password is incorrect</small>
+        </div>
+
+        <div class="form-group">
+          <label for="email"><b>Email</b></label>
+          <input id="email" type="text" th:field="*{email}" placeholder="Enter Email" name="email" required class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+      </form>
+      <p class="login-text my-3"><a href="/login">Back to Login</a></p>
+    </div>
+  </div>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+
+<script th:inline="javascript">
+  document.getElementById("username-check").addEventListener("click", function() {
+    var username = document.getElementById("username-input").value;
+    var icon = document.getElementById("availability-icon");
+    if (username === "" || username === null) {
+      icon.style.display = "inline";
+      icon.textContent = "X"; // displays 'X' mark
+    } else {
+      var headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      fetch('/signup/checkUsername', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          username: username
+        })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.exists) {
+            icon.style.display = "inline";
+            icon.textContent = "X"; // displays 'X' mark
+          } else {
+            icon.style.display = "inline";
+            icon.textContent = "✔"; // displays 'check' mark
+            document.getElementById("username-checked").value = true;
+          }
+        })
+        .catch(error => {
+          console.error('There has been a problem with your fetch operation:', error);
+        });
+    }
+
+  });
+
+  // When the profile image preview is clicked, trigger the file input click event
+  document.getElementById("profile-image-preview").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+  });
+
+  // When a file is selected, display it in the profile image preview
+  document.getElementById("profile-image").addEventListener("change", function(e) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("profile-image-preview").src = e.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+  });
+</script>
+
+
+</body>
+</html>

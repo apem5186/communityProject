@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Login</title>
+  <div th:insert="~{fragments :: linkCSS}"></div>
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <nav class="navbar d-flex justify-content-center">
+        <a class="navbar-brand mr-0" href="#" th:href="@{/}">My App</a>
+      </nav>
+      <h2 class="text-center my-4">Login</h2>
+      <form th:action="@{/login}" th:object="${usersLoginDTO}" method="post">
+        <div class="form-group">
+          <label for="email"><b>Email</b></label>
+          <input type="email" th:field="*{email}" id="email" placeholder="Enter Email" required class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="password"><b>Password</b></label>
+          <input type="password" th:field="*{password}" id="password" placeholder="Enter Password" required class="form-control">
+        </div>
+        <div th:if="${#fields.hasErrors('global')}" th:errors="*{global}" class="error text-danger"></div>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="d-flex justify-content-center">
+<!--          <a th:href="@{|${kakaoUrl}}">-->
+          <a th:href="@{/oauth2/authorization/kakao}">
+            <img src="/img/kakao_login_medium_narrow_korean.png" alt="kakao_login_button"/>
+          </a>
+        </div>
+        <p class="signup-text my-3">Don't have an account? <a href="/signup">Sign up</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<script type="text/javascript">
+  let urlParams = new URLSearchParams(window.location.search);
+
+  if (urlParams.has("error")) {
+    alert("알 수 없는 이유로 로그아웃 되었습니다. 다시 로그인 해주세요.");
+  }
+</script>
+</body>
+</html>

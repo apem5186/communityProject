@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>유저 관리</title>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<h1>유저 관리</h1>
+<div class="container">
+    <div class="row justify-content-end row-cols-auto">
+        <div class="col pe-1 d-flex align-items-center">
+            <input class="form-control" type="search" id="search_kw" th:value="${kw}"
+                   placeholder="search" aria-label="search">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="searchFieldDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                [[${#strings.equals(param.searchField, 'id') ? '유저 번호' :
+                  #strings.equals(param.searchField, 'username') ? '닉네임' :
+                  #strings.equals(param.searchField, 'email') ? '이메일' : '전체'}]]
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">검색 조건</h6></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item"
+                       th:classappend="${param.searchField == null || param.searchField.toString() == 'ALL'} ? 'disabled'"
+                       href="javascript:void(0);" onclick="updateURLParam('searchField', 'ALL')">전체</a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       th:classappend="${param.searchField != null && param.searchField.toString() == 'id'} ? 'disabled'"
+                       href="javascript:void(0);" onclick="updateURLParam('searchField', 'id')">유저 번호</a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       th:classappend="${param.searchField != null && param.searchField.toString() == 'username'} ? 'disabled'"
+                       href="javascript:void(0);" onclick="updateURLParam('searchField', 'username')">닉네임</a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       th:classappend="${param.searchField != null && param.searchField.toString() == 'email'} ? 'disabled'"
+                       href="javascript:void(0);" onclick="updateURLParam('searchField', 'email')">이메일</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-auto px-0 d-flex align-items-center">
+            <button class="btn btn-outline-success" id="btn_search">Search</button>
+        </div>
+        <div class="col">
+            <!-- 오른쪽 항목: 드롭다운 메뉴 -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.sort, 'OLDEST') ? '오래된 순' : '최신순'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
+                    <li><h6 class="dropdown-header">순서</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.sort == null || param.sort.toString() == 'LATEST'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('sort', 'LATEST')">최신순</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.sort != null && param.sort.toString() == 'OLDEST'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('sort', 'OLDEST')">오래된 순</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="optionDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.option, 'ADMIN') ? '관리자' :
+                    #strings.equals(param.option, 'USER') ? '사용자' : '전체'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="optionDropdown" style="font-weight: bold;">
+                    <li><h6 class="dropdown-header">Option</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option == null || param.option.toString() == 'ALL'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option', 'ALL')">전체</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option != null && param.option.toString() == 'ADMIN'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option', 'ADMIN')">관리자</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option != null && param.option.toString() == 'USER'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option', 'USER')">사용자</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="option2Dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.option2, 'LOGIN') ? '접속중' :
+                    #strings.equals(param.option2, 'LOGOUT') ? '로그아웃' : '전체'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="option2Dropdown" style="font-weight: bold;">
+                    <li><h6 class="dropdown-header">Option2</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 == null || param.option2.toString() == 'ALL'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'ALL')">전체</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'LOGIN'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'LOGIN')">접속중</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:classappend="${param.option2 != null && param.option2.toString() == 'LOGOUT'} ? 'disabled'"
+                           href="javascript:void(0);" onclick="updateURLParam('option2', 'LOGOUT')">로그아웃</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>유저 번호(UID)</th>
+        <th>프로필 이미지</th>
+        <th>username</th>
+        <th>email</th>
+        <th>유저 권한</th>
+        <th class="text-center">로그인 여부</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user, userStat : ${users}">
+        <th scope="row" th:text="${users.getTotalElements() - userStat.index - 10 * users.getNumber()}"></th>
+        <td><a th:href="@{|/profile/${user.uid}}" th:text="${user.uid}"
+               class="text-decoration-none"></a></td>
+        <td><img th:src="${user.profileImage}" alt="Profile Image" style="width:40px;height:40px;border-radius:50%;"></td>
+        <td><a th:href="@{|/profile/${user.uid}}" th:text="${user.username}"
+               class="text-decoration-none"></a></td>
+        <td th:text="${user.email}"></td>
+        <td th:text="${user.userRole}"></td>
+        <td class="text-center" th:text="${user.isLogin() == true} ? 'Y' : 'N'"></td>
+
+        <td><form th:action="@{|/delete/user/${user.uid}|}" method="post"
+                  onsubmit="return confirmDelete()">
+            <input type="hidden" name="id" th:value="${user.uid}">
+            <button type="submit" class="border-0 bg-transparent"><i class="bi bi-trash"></i></button></form></td>
+    </tr>
+    </tbody>
+</table>
+<!-- 페이징 처리 시작 -->
+<div th:if="${!users.isEmpty()}">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${!users.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+                <span>처음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!users.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${users.number}">
+                <span>이전</span>
+            </a>
+        </li>
+        <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+        <li th:if="${users.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+            <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+        </li>
+        <li th:if="${users.getNumber() >= 5}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <!-- 1부터 번호 생성, page에 값 넣음 -->
+        <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+            예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+        <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+        <li th:each="page: ${#numbers.sequence(1, users.totalPages)}"
+            th:if="${page >= users.number - 2 and page <= users.number + 4}"
+            th:classappend="${page - 1 == users.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+            <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+        </li>
+        <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+            6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+        <li th:if="${users.totalPages - users.getNumber() >= 6}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <li th:if="${users.totalPages - users.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a th:text="${users.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${users.totalPages}"></a>
+        </li>
+        <li class="page-item" th:classappend="${!users.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${users.number + 2}">
+                <span>다음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!users.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${users.totalPages}">
+                <span>마지막</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- 페이징 처리 끝 -->
+<!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
+<form th:action="@{/admin_manage_users}" method="get" id="searchForm">
+    <input type="hidden" id="kw" name="kw" th:value="${kw}">
+    <input type="hidden" id="page" name="page" th:value="${users.number}">
+    <input type="hidden" id="sort" name="sort" th:value="${param.sort}" th:if="${param.sort != null}">
+    <input type="hidden" id="searchField" name="searchField" th:value="${param.searchField}" th:if="${param.searchField != null}">
+    <input type="hidden" id="option" name="option" th:value="${param.option}" th:if="${param.option != null}">
+    <input type="hidden" id="option2" name="option2" th:value="${param.option2}" th:if="${param.option2 != null}">
+</form>
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<div th:insert="~{fragments :: linkCSS}"></div>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+    function updateParamsAndSubmit(page) {
+        let url = new URL(window.location.href);
+
+        let kwValue = document.getElementById('search_kw').value;
+        url.searchParams.set('kw', kwValue);
+        document.getElementById('kw').value = kwValue;
+
+        url.searchParams.set('page', page);
+        document.getElementById('page').value = page;
+
+        let sortValue = url.searchParams.get('sort');
+        if (sortValue !== null) {
+            document.getElementById('sort').value = sortValue;
+        }
+
+        let form = document.getElementById('searchForm');
+        form.action = url.toString();
+        form.submit();
+    }
+
+    Array.from(document.getElementsByClassName("page-link")).forEach(function(element) {
+        element.addEventListener('click', function() {
+            updateParamsAndSubmit(this.dataset.page);
+        });
+    });
+
+    document.getElementById("btn_search").addEventListener('click', function() {
+        updateParamsAndSubmit(1);  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
+    });
+
+
+
+    function updateURLParam(paramName, newValue) {
+        let currentURL = window.location.href;
+        let url = new URL(currentURL);
+
+        // 쿼리 파라미터 업데이트 (이미 존재하면 값을 바꾸고, 없으면 추가)
+        url.searchParams.set(paramName, newValue);
+        url.searchParams.set('page', '1');
+        // 변경된 URL로 리디렉션
+        window.location.href = url.toString();
+    }
+
+    function confirmDelete() {
+        return window.confirm("삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
+    }
+</script>
+</body>
+</html>

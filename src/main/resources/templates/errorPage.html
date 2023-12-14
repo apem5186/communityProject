@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <script th:inline="javascript">
+        window.onload = function() {
+            let errorMessage = /*[[${errorMessage}]]*/ 'default value';
+            let errorNumber = /*[[${errorNumber}]]*/ '0';
+            if (errorMessage && errorMessage !== 'default value' && errorNumber !== '4') {
+                console.log(errorMessage);
+                alert(errorMessage);
+                window.history.back();  // 브라우저의 뒤로 가기 기능을 트리거
+            } else if (errorNumber === '4') {
+                console.log(errorMessage);
+                alert(errorMessage);
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</head>
+<body>
+<!-- 본문 내용 (필요한 경우) -->
+</body>
+</html>

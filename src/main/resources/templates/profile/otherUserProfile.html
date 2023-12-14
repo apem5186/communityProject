@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+  <title>프로필</title>
+  <div th:insert="~{fragments :: linkCSS}"></div>
+  <style>
+    .custom-hover {
+      color: black;
+      border: none;
+    }
+    .custom-hover:hover{
+      color: dodgerblue;
+      border-bottom: 3px solid dodgerblue;
+    }
+    .btn-group .btn:first-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .btn-group .btn:last-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+  </style>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1>다른 유저 프로필</h1>
+      <hr/>
+
+      <div class="target-div">
+        <div class="container d-flex align-items-start">
+          <img src="" th:src="${user.profile}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
+          <h3 class="align-self-center"><span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="buttonMenu btn-group" id="buttonMenu">
+        <!-- For getting My Board -->
+        <button th:attr="data-action-url='/profile/posts/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+          게시글
+        </button>
+
+        <!-- For getting My Comments -->
+        <button th:attr="data-action-url='/profile/comments/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+          댓글
+        </button>
+
+        <!-- For getting My Favorite -->
+        <button th:attr="data-action-url='/profile/favorites/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+          즐겨찾기
+        </button>
+
+        <!-- For getting My Likes -->
+        <button th:attr="data-action-url='/profile/likes/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+          좋아요
+        </button>
+
+        <!-- For getting My Activity History -->
+        <button th:attr="data-action-url='/profile/activity/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+          최근 활동
+        </button>
+      </div>
+
+      <form id="profileForm" method="get" style="display: none;">
+        <input type="hidden" id="actionUrl">
+      </form>
+
+
+    </div>
+  </div>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+
+  let profileButtons = document.getElementsByClassName("profileButton");
+  Array.from(profileButtons).forEach(function(button) {
+    button.addEventListener('click', function () {
+      let form = document.getElementById('profileForm');
+
+      // Change form action based on the button clicked
+      form.action = this.getAttribute('data-action-url');
+
+      form.submit();
+    });
+  });
+
+
+  // When the profile image preview is clicked, trigger the file input click event
+  document.getElementById("profile-image-preview").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+  });
+
+  // 편집 모드 이전에는 "profile-image" 요소가 없으므로 console에서 오류남 나중에 고쳐야할듯
+  // When a file is selected, display it in the profile image preview
+  document.getElementById("profile-image").addEventListener("change", function(e) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("profile-image-preview").src = e.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+  });
+
+  // Change the default image
+  document.getElementById("defaultImage").addEventListener("click", function() {
+    document.getElementById("profile-image").value = "";
+    document.getElementById("profile-image-preview").src = "/profileImage/default/profile_default.jpg";
+  });
+
+</script>
+</body>
+</html>

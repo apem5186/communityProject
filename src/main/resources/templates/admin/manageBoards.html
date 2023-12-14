@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 관리</title>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<h1>게시글 관리</h1>
+<div class="container">
+    <div class="row justify-content-end row-cols-auto">
+        <div class="col pe-1">
+            <input class="form-control" type="search" id="search_kw" th:value="${kw}"
+                   placeholder="Search" aria-label="Search">
+        </div>
+        <div class="col-auto px-0">
+            <button class="btn btn-outline-success" id="btn_search">Search</button>
+        </div>
+        <div class="col">
+            <!-- 오른쪽 항목: 드롭다운 메뉴 -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.sort, 'VOTE_COUNT') ? '추천순' :
+                    #strings.equals(param.sort, 'COMMENT_COUNT') ? '댓글순' :
+                    #strings.equals(param.sort, 'HITS_COUNT') ? '조회순' :
+                    #strings.equals(param.sort, 'FAVORITE_COUNT') ? '즐겨찾기순' : '최신순'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-weight: bold;">
+                    <li th:if="${param.sort != null && param.sort.toString() != 'LATEST'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('sort', 'LATEST')">최신순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'VOTE_COUNT'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('sort', 'VOTE_COUNT')">추천순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'COMMENT_COUNT'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('sort', 'COMMENT_COUNT')">댓글순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'HITS_COUNT'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('sort', 'HITS_COUNT')">조회순</a>
+                    </li>
+                    <li th:if="${param.sort == null || param.sort.toString() != 'FAVORITE_COUNT'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('sort', 'FAVORITE_COUNT')">즐겨찾기순</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold;">
+                    [[${#strings.equals(param.category, 'COMMUNITY') ? 'COMMUNITY' :
+                    #strings.equals(param.category, 'KNOWLEDGE') ? 'KNOWLEDGE' :
+                    #strings.equals(param.category, 'NOTICE') ? 'NOTICE' :
+                    #strings.equals(param.category, 'QUESTIONS') ? 'QUESTIONS' : 'ALL'}]]
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="categoryDropdown" style="font-weight: bold;">
+                    <li th:if="${param.category != null && param.category.toString() != 'COMMUNITY'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('category', 'COMMUNITY')">COMMUNITY</a>
+                    </li>
+                    <li th:if="${param.category == null || param.category.toString() != 'KNOWLEDGE'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('category', 'KNOWLEDGE')">KNOWLEDGE</a>
+                    </li>
+                    <li th:if="${param.category == null || param.category.toString() != 'NOTICE'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('category', 'NOTICE')">NOTICE</a>
+                    </li>
+                    <li th:if="${param.category == null || param.category.toString() != 'QUESTIONS'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('category', 'QUESTIONS')">QUESTIONS</a>
+                    </li>
+                    <li th:if="${param.category == null || param.category.toString() != 'ALL'}">
+                        <a class="dropdown-item" href="javascript:void(0);" onclick="updateURLParam('category', 'ALL')">ALL</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>게시글 번호(BID)</th>
+            <th>제목</th>
+            <th class="text-center">조회수</th>
+            <th class="text-center">댓글수</th>
+            <th class="text-center">좋아요</th>
+            <th class="text-center">즐겨찾기</th>
+            <th>카테고리</th>
+            <th>공지 카테고리</th>
+            <th>게시자 이름</th>
+            <th>게시자 권한</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="board, boardStat : ${boards}">
+            <th scope="row" th:text="${boards.getTotalElements() - boardStat.index - 10 * boards.getNumber()}"></th>
+            <td><a th:href="@{|/${board.category.toString().toLowerCase()}/${board.bid}}" th:text="${board.bid}"
+            class="text-decoration-none"></a></td>
+            <td><a th:href="@{|/${board.category.toString().toLowerCase()}/${board.bid}}" th:text="${board.title}"
+            class="text-decoration-none"></a></td>
+            <td class="text-center" th:text="${board.hits}"></td>
+            <td class="text-center" th:text="${board.reviewCnt}"></td>
+            <td class="text-center" th:text="${board.likeCnt}"></td>
+            <td class="text-center" th:text="${board.favoriteCnt}"></td>
+            <td th:text="${board.category}"></td>
+            <td th:text="${board.notices}"></td>
+            <td><a th:href="@{|/profile/${board.uid}}" th:text="${board.username}" class="text-decoration-none"></a></td>
+            <td th:text="${board.userRole}"></td>
+            <td>
+                <a th:if="${board.category.toString() != 'NOTICE'}"
+                   th:href="@{|/${board.category.toString().toLowerCase()}/edit/${board.bid}|}">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a th:unless="${board.category.toString() != 'NOTICE'}"
+                   th:href="@{|/notice/edit/${board.bid}|}">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </td>
+            <td><form th:action="@{|/${board.category.toString().toLowerCase()}/delete/${board.bid}|}" method="post"
+                onsubmit="return confirmDelete()">
+                <input type="hidden" name="id" th:value="${board.bid}">
+                <button type="submit" class="border-0 bg-transparent"><i class="bi bi-trash"></i></button></form></td>
+        </tr>
+    </tbody>
+</table>
+<!-- 페이징 처리 시작 -->
+<div th:if="${!boards.isEmpty()}">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${!boards.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+                <span>처음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!boards.hasPrevious()} ? 'disabled'">
+            <a class="page-link" href="javascript:void(0)" th:data-page="${boards.number}">
+                <span>이전</span>
+            </a>
+        </li>
+        <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+        <li th:if="${boards.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+            <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+        </li>
+        <li th:if="${boards.getNumber() >= 5}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <!-- 1부터 번호 생성, page에 값 넣음 -->
+        <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+            예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+        <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+        <li th:each="page: ${#numbers.sequence(1, boards.totalPages)}"
+            th:if="${page >= boards.number - 2 and page <= boards.number + 4}"
+            th:classappend="${page - 1 == boards.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+            <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+        </li>
+        <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+            6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+        <li th:if="${boards.totalPages - boards.getNumber() >= 6}" class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+        </li>
+        <li th:if="${boards.totalPages - boards.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a th:text="${boards.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${boards.totalPages}"></a>
+        </li>
+        <li class="page-item" th:classappend="${!boards.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${boards.number + 2}">
+                <span>다음</span>
+            </a>
+        </li>
+        <li class="page-item" th:classappend="${!boards.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+            <a class="page-link" href="javascript:void(0)" th:data-page="${boards.totalPages}">
+                <span>마지막</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- 페이징 처리 끝 -->
+<!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
+<form th:action="@{/admin_manage_boards}" method="get" id="searchForm">
+    <input type="hidden" id="kw" name="kw" th:value="${kw}">
+    <input type="hidden" id="page" name="page" th:value="${boards.number}">
+    <input type="hidden" id="sort" name="sort" th:value="${param.sort}" th:if="${param.sort != null}">
+    <input type="hidden" id="category" name="category" th:value="${param.category}" th:if="${param.sort != null}">
+</form>
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<div th:insert="~{fragments :: linkCSS}"></div>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function(element) {
+        element.addEventListener('click', function() {
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('searchForm').submit();
+        });
+    });
+
+    const btn_search = document.getElementById("btn_search");
+    btn_search.addEventListener('click', function() {
+        document.getElementById('kw').value = document.getElementById('search_kw').value;
+        document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 0페이지부터 조회한다.
+        document.getElementById('searchForm').submit();
+    });
+
+    function updateURLParam(paramName, newValue) {
+        let currentURL = window.location.href;
+        let url = new URL(currentURL);
+
+        // 쿼리 파라미터 업데이트 (이미 존재하면 값을 바꾸고, 없으면 추가)
+        url.searchParams.set(paramName, newValue);
+
+        // 변경된 URL로 리디렉션
+        window.location.href = url.toString();
+    }
+
+    function confirmDelete() {
+        return window.confirm("삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 작성</title>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+</head>
+<body>
+<div class="container mt-4">
+    <h3><span id="username"></span>공지사항 작성</h3>
+    <form th:action="@{'/notice/new'}" th:object="${boardRequestDTO}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" required>
+            <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger"></div>
+        </div>
+        <div class="form-group">
+            <label for="content">본문</label>
+            <textarea class="form-control" id="content" th:field="*{content}" rows="10" required></textarea>
+        </div>
+        <!-- 파일 첨부 영역, 버튼 영역 -->
+        <div class="form-group">
+            <label for="boardImage">파일 첨부</label>
+            <input type="file" class="form-control-file" id="boardImage" th:field="*{boardImage}" multiple>
+            <button type="button" class="btn btn-danger mt-2" onclick="deleteFile()">첨부한 파일 삭제</button>
+            <!-- 파일 미리보기 영역 -->
+            <div id="preview"></div>
+        </div>
+        <div class="form-group">
+            <label for="notices">카테고리:</label>
+            <div th:each="noticeCategories : ${T(com.community.communityproject.entity.board.Category).values()}">
+                <input id="notices" type="checkbox" th:field="*{notices}" th:value="${noticeCategories}" th:id="'category'+${noticeCategoriesStat.index}"
+                       th:disabled="${noticeCategories.toString() == 'NOTICE'}"/>
+                <label th:for="'category'+${noticeCategoriesStat.index}"
+                       th:text="${noticeCategories.toString() == 'NOTICE'} ? ${noticeCategories} + '-필수' : ${noticeCategories}"></label>
+
+                <input type="hidden"
+                       th:if="${noticeCategories.toString() == 'NOTICE'}"
+                       name="notices"
+                       th:value="${noticeCategories}" />
+            </div>
+        </div>
+        <div class="form-group" hidden="hidden">
+            <label for="category"></label>
+            <input type="text" class="form-control" id="category" th:field="*{category}">
+        </div>
+        <div class="form-group" hidden="hidden">
+            <label for="email"></label>
+            <input type="email" class="form-control" id="email" th:field="*{email}">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">취소</button>
+        <button type="submit" class="btn btn-primary">등록</button>
+    </form>
+</div>
+
+<div th:insert="~{fragments :: linkJS}"></div>
+<script th:inline="javascript">
+    // 파일 미리보기 및 삭제 로직
+    document.getElementById('boardImage').addEventListener('change', function() {
+        const preview = document.getElementById('preview');
+        preview.innerHTML = '';
+        Array.from(this.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.width = 100;
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function deleteFile() {
+        const input = document.getElementById('boardImage');
+        input.value = '';
+        document.getElementById('preview').innerHTML = '';
+    }
+</script>
+</body>
+</html>

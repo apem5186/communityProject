@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+  <title>프로필</title>
+  <div th:insert="~{fragments :: linkCSS}"></div>
+  <style>
+    .custom-hover {
+      color: black;
+      border: none;
+    }
+    .custom-hover:hover{
+      color: dodgerblue;
+      border-bottom: 3px solid dodgerblue;
+    }
+    .btn-group .btn:first-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .btn-group .btn:last-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+  </style>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1>내 프로필</h1>
+      <hr/>
+
+      <!-- 편집 모드가 활성화되면 편집 가능한 필드만 표시 -->
+      <div class="target-div d-none">
+        <!-- 사용자명과 이메일을 위한 입력 필드 -->
+        <form th:action="@{/profile}" id="editForm" th:object="${usersEditDTO}" method="post" enctype="multipart/form-data">
+          <div class="container d-flex align-items-start justify-content-between">
+            <img src="" th:src="${profileImage}" id="profile-image-preview" style="cursor: pointer; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
+            <!-- 편집 모드를 전환하는 버튼 -->
+              <div>
+                <a href="" class="editBtn btn btn-primary me-2" id="editBtnDisabled" onclick="toggleEditing(event)">Edit profile</a>
+                <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
+              </div>
+          </div>
+          <input type="file" id="profile-image" th:field="*{profileImage}" style="display:none;"/>
+          <br>
+          <label for="profile-image" class="btn btn-primary mt-2">Upload Profile Image</label>
+          <button class="btn btn-primary mt-2" type="button" id="defaultImage">Default Image</button>
+          <div th:if="${param.usernameError != null or param.emailError != null}">
+            <span class="text-danger" th:text="${param.usernameError != null ? param.usernameError[0] : ''}"></span>
+            <span class="text-danger" th:text="${param.emailError != null ? param.emailError[0] : ''}"></span>
+          </div>
+          <!-- 사용자명과 이메일을 위한 입력 필드 -->
+          <div class="form-group">
+            <label for="username">사용자명:</label>
+            <input type="text" class="form-control" th:field="*{username}" id="username" required>
+          </div>
+          <div class="form-group">
+            <label for="email">이메일:</label>
+            <input type="text" class="form-control" id="email" th:field="*{email}" required>
+          </div>
+          <div class="form-group">
+            <label for="password">비밀번호:</label>
+            <input type="password" class="form-control" id="password" th:field="*{password}" required>
+          </div>
+          <!-- 저장과 취소 버튼 -->
+          <button type="submit" class="btn btn-primary">저장</button>
+          <a type="button" class="btn btn-secondary" id="editCancel" onclick="cancelEditing()">취소</a>
+        </form>
+      </div>
+
+      <!-- 편집 모드가 비활성화되면 편집 불가능한 필드만 표시 -->
+      <div class="target-div">
+        <div class="container d-flex align-items-start justify-content-between">
+          <img src="" th:src="${profileImage}" style="width: 100px; height: 100px;" alt="Profile Image"/>
+          <!-- 편집 모드를 전환하는 버튼 -->
+          <div>
+            <span th:if="${isSocial}">unable to modify</span>
+            <a th:if="${!isSocial}" href="" class="editBtn btn btn-primary me-2" id="editBtnEnabled" onclick="toggleEditing(event)">Edit profile</a>
+            <button type="button" class="btn btn-danger d-line-block" onclick="confirmDelete()">Delete</button>
+          </div>
+        </div>
+        <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
+        <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
+      </div>
+
+      <hr/>
+
+      <div class="buttonMenu btn-group" id="buttonMenu">
+        <!-- For getting My Board -->
+        <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
+          내 게시글
+        </button>
+
+        <!-- For getting My Comments -->
+        <button data-action-url="/profile/comments" class="btn btn-outline-light custom-hover profileButton">
+          댓글
+        </button>
+
+        <!-- For getting My Favorite -->
+        <button data-action-url="/profile/favorites" class="btn btn-outline-light custom-hover profileButton">
+          즐겨찾기
+        </button>
+
+        <!-- For getting My Likes -->
+        <button data-action-url="/profile/likes" class="btn btn-outline-light custom-hover profileButton">
+          좋아요
+        </button>
+
+        <!-- For getting My Activity History -->
+        <button data-action-url="/profile/activity" class="btn btn-outline-light custom-hover profileButton">
+          최근 활동
+        </button>
+      </div>
+
+
+
+    </div>
+  </div>
+</div>
+
+<!-- buttomMenu들 누르면 그 버튼의 data-action-url로 이동함 -->
+<form id="profileForm" method="get" style="display: none;">
+  <input type="hidden" id="actionUrl">
+</form>
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+
+  let profileButtons = document.getElementsByClassName("profileButton");
+  Array.from(profileButtons).forEach(function(button) {
+    button.addEventListener('click', function () {
+      let form = document.getElementById('profileForm');
+
+      // Change form action based on the button clicked
+      form.action = this.getAttribute('data-action-url');
+
+      form.submit();
+    });
+  });
+
+  function confirmDelete() {
+    let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
+    if (result) {
+      // 사용자가 '확인'을 클릭하면, 폼을 제출합니다.
+      document.getElementById('deleteForm').submit();
+    }
+  }
+
+  // 페이지 로드 시 토글 상태 확인 및 설정
+  document.addEventListener("DOMContentLoaded", function() {
+    if (sessionStorage.getItem('editingEnabled') === null) {
+      sessionStorage.setItem('editingEnabled', "false");
+    }
+    // JSON.parse 안해주면 false, true를 String으로 인식해서 망함
+    let editingEnabled = JSON.parse(sessionStorage.getItem('editingEnabled'));
+    console.log(editingEnabled);
+    // 편집 모드가 비활성화되면 표시되는 div
+    let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
+    // 편집 모드가 활성화되면 표시되는 div
+    let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
+    // 버튼 메뉴
+    let buttonMenu = document.getElementById("buttonMenu");
+
+    if (!editingEnabled) {
+      nonEditDiv.classList.add('d-none');
+      editDiv.classList.remove('d-none');
+      buttonMenu.classList.remove('d-none');
+      console.log("nonEditDiv : " + nonEditDiv);
+    } else {
+      nonEditDiv.classList.remove('d-none');
+      editDiv.classList.add('d-none');
+      buttonMenu.classList.add('d-none');
+      console.log("editDiv : " + editDiv);
+    }
+  });
+
+  // 토글 함수
+  function toggleEditing(event) {
+    event.preventDefault();
+    // 편집 모드가 비활성화되면 표시되는 div
+    let nonEditDiv = document.querySelector("#editBtnDisabled").closest(".target-div");
+    // 편집 모드가 활성화되면 표시되는 div
+    let editDiv = document.querySelector("#editBtnEnabled").closest(".target-div");
+    // 버튼 메뉴
+    let buttonMenu = document.getElementById("buttonMenu");
+
+    if (nonEditDiv.classList.contains('d-none')) {
+      nonEditDiv.classList.remove('d-none');
+      editDiv.classList.add('d-none');
+      buttonMenu.classList.add('d-none');
+      sessionStorage.setItem('editingEnabled', true);
+      console.log("폼 보여야 함");
+    } else {
+      nonEditDiv.classList.add('d-none');
+      editDiv.classList.remove('d-none');
+      buttonMenu.classList.remove('d-none');
+      sessionStorage.setItem('editingEnabled', false);
+      console.log("폼 안보여야 함");
+    }
+  }
+
+  // 편집 취소 시 편집 모드를 비활성화하고 원래 화면으로 돌아감
+  function cancelEditing() {
+    let link = document.getElementById('editCancel');
+    link.href = "/profile";
+    sessionStorage.setItem('editingEnabled', false);
+  }
+
+  // 페이지 로드 시 showHideElements 함수 호출하여 적절한 요소를 표시함
+  // $(document).ready(function() {
+  //   showHideElements();
+  // });
+
+  // When the profile image preview is clicked, trigger the file input click event
+  document.getElementById("profile-image-preview").addEventListener("click", function() {
+    document.getElementById("profile-image").click();
+  });
+
+  // 편집 모드 이전에는 "profile-image" 요소가 없으므로 console에서 오류남 나중에 고쳐야할듯
+  // When a file is selected, display it in the profile image preview
+  document.getElementById("profile-image").addEventListener("change", function(e) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("profile-image-preview").src = e.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+  });
+
+  // Change the default image
+  document.getElementById("defaultImage").addEventListener("click", function() {
+    document.getElementById("profile-image").value = "";
+    document.getElementById("profile-image-preview").src = "/profileImage/default/profile_default.jpg";
+  });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1251 @@
+<!--
+-------------------------------------------------------------
+||    ||  ||||||||    |||     ||||     ||||||||   ||||||
+||    ||  ||         || ||    ||  ||   ||         ||   ||
+||||||||  ||||||||   |||||    ||   ||  ||||||||   ||||||
+||    ||  ||        ||   ||   ||  ||   ||         ||   ||
+||    ||  ||||||||  ||   ||   ||||     ||||||||   ||    ||
+--------------------------------------------------------------
+-->
+<div th:fragment="header">
+  <nav class="navbar navbar-expand-lg border-bottom">
+    <a class="navbar-brand px-2 mx-2" href="#" th:href="@{/}">My App</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="d-flex ms-auto">
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Removed search form from here -->
+          <!-- if this <ul> tag removed, search-bar will be moved to left -->
+        </ul>
+
+        <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/adminMenu}" class="btn btn-primary me-3">관리자 메뉴</a>
+        <!-- Add search form here -->
+        <form class="my-2 my-lg-0" method="get" action="http://www.google.co.kr/search" target="_blank">
+          <div class="row">
+            <div class="col pe-1">
+              <input name="q" class="form-control" value="" type="search" placeholder="Search" aria-label="Search">
+            </div>
+            <div class="col-auto ps-0 me-3">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+
+
+        <div sec:authorize="isAnonymous()">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="#" th:href="@{/login}">Login</a>
+            </li>
+            <li class="nav-item pe-1 me-1">
+              <a class="nav-link" href="#" th:href="@{/signup}">Sign Up</a>
+            </li>
+          </ul>
+        </div>
+        <div sec:authorize="isAuthenticated()">
+          <ul class="navbar-nav">
+            <li class="nav-item justify-content-center" style="position: relative">
+              <button class="btn bd-0 me-3 mt-1 p-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
+                  <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+                </svg>
+              </button>
+              <span class="badge bg-primary rounded-pill" style="position: absolute; top: 0; right: 0; transform: translate(-20%, -30%); color: aliceblue">
+            <i class="fas fa-bell"></i>3</span>
+            </li>
+            <li class="nav-item">
+              <button class="nav-item bg-transparent" style="padding:0; border: none;" onclick="window.location.href='/profile'">
+                <img src="path_to_profile_image" th:src="@{|${profileImage}|}" alt="Profile Image" style="width:40px;height:40px;border-radius:50%;">
+              </button>
+            </li>
+            <li class="nav-item">
+              <form th:action="@{/logout}" method="post">
+                <button type="submit" class="nav-link pe-2 me-2" style="border: none; background-color: transparent; cursor: pointer;">Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+
+<!------------------------------------------------------------
+FFFFFF     OOO      OOO     TTTTTTTT   EEEEEEEE    RRRRRR
+F         OO OO    OO OO       TT      EE          RR   RR
+FFFFFF   OO   OO  OO   OO      TT      EEEEEEEE    RR RRR
+F         OO OO    OO OO       TT      EE          RR  RRR
+F          OOO      OOO        TT      EEEEEEEE    RR   RRR
+------------------------------------------------------------->
+
+<!-- Other code -->
+
+<div th:fragment="footer">
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Important Links</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" th:href="@{/about}">About Us</a></li>
+            <li><a href="#" th:href="@{/contact}">Contact Us</a></li>
+            <li><a href="#" th:href="@{/terms}">Terms and Conditions</a></li>
+            <li><a href="#" th:href="@{/privacy}">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6 text-md-right">
+          <small>&copy; 2023 communityProject</small>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-------------------------------------------------
+부트스트랩 CSS 5.3.1 링크 icon 포함
+
+
+--------------------------------------------------->
+<div th:fragment="linkCSS">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+</div>
+
+<!--------------------------------------------------
+부트스트랩 JS 5.3.1 링크
+
+
+---------------------------------------------------->
+<div th:fragment="linkJS">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</div>
+
+
+<!--------------------------------------------------
+공지 게시글 부분
+
+---------------------------------------------------->
+<ul th:fragment="notices_post" th:each="notice : ${notices}" class="py-1 list-unstyled mb-0 pb-0 pt-0">
+  <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
+  <li class="flex flex-col border-top">
+    <!-- 프로필 사진 및 사용자 이름 -->
+    <div class="flex shrink-0 items-center gap-x-1">
+      <a th:href="${uid == null || (notice.users != null && !uid.equals(notice.users.uid))} ? '/profile/' + ${notice.users.uid} : '/profile'" class="link-dark">
+        <img th:src="${notice.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
+      </a>
+      <a class="truncate ps-1 text-xs font-normal custom-username"
+         th:href="${uid == null || (notice.users != null && !uid.equals(notice.users.uid))} ? '/profile/' + ${notice.users.uid} : '/profile'" th:text="${notice.users.username}"></a>
+      <span>·</span>
+      <span class="fw-medium"
+            th:text="${dateFormatter.formatRegDate(notice.regDate)}" style="font-size: 14px; color: grey;"></span>
+    </div>
+    <!-- 게시글 제목 -->
+    <div class="my-2">
+      <a class="line-clamp-1 w-fit truncate whitespace-normal break-all text-sm font-semibold leading-6 text-gray-900 hover:text-blue-500 dark:text-gray-100 dark:hover:text-blue-200 sm:text-base px-2"
+         th:href="@{'/notice/' + ${notice.bid}}" th:text="${notice.title}"></a>
+    </div>
+    <div class="flex">
+      <div class="flex flex-row items-center text-gray-700 dark:text-gray-300" style="display: flex; justify-content: space-between;">
+        <div class="flex flex-row justify-content-start ms-2 border rounded p-1 mb-1" style="background-color: white; color: dodgerblue;">
+          <a href="/notice" class="fs-6" style="font-size: 0.75rem!important; color: dodgerblue;">공지사항</a>
+        </div>
+        <div class="flex flex-row justify-content-end gap-x-2 text-gray-700 dark:text-gray-300 ml-auto pe-2">
+          <!-- 조회수 -->
+          <div class="inline-flex items-center space-x-0.5 text-xs sm:text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5">
+              <!-- 아이콘 경로 -->
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963
+                            7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span class="font-medium me-2" th:text="${notice.hits}"></span>
+            <span class="sr-only"></span>
+          </div>
+          <!-- 댓글 수 -->
+          <div class="inline-flex items-center space-x-0.5 text-xs sm:text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5">
+              <!-- 아이콘 경로 -->
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0
+                            .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0
+                            01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233
+                            2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+            </svg>
+            <span class="font-medium" th:text="${notice.reviewCnt}"></span>
+            <span class="sr-only"></span>
+          </div>
+          <!-- 좋아요 수 -->
+          <div class="inline-flex items-center space-x-0.5 text-xs sm:text-sm">
+            <!--                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5">-->
+            <!--                            &lt;!&ndash; 아이콘 경로 &ndash;&gt;-->
+            <!--                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"></path>-->
+
+            <!--                        </svg>-->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5">
+              <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+            </svg>
+            <span class="font-medium" th:text="${notice.likeCnt}"></span>
+            <span class="sr-only"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </li>
+</ul>
+</div>
+
+<!--------------------------------------------------
+커뮤니티 게시판 부분
+
+---------------------------------------------------->
+<div th:fragment="community_main_post">
+  <div class="col-sm-5 w-auto p-3">
+    <ul th:each="boardC : ${community}" class="py-1 list-unstyled mb-1">
+      <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
+      <li class="flex flex-col border-top">
+        <nav class="navbar navbar-expand-lg navbar-light p-0">
+          <div class="container-fluid p-0">
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                  <!-- 프로필 사진 및 사용자 이름 -->
+                  <a th:href="${uid == null || (boardC.users != null && !uid.equals(boardC.users.uid))} ? '/profile/' + ${boardC.users.uid} : '/profile'"
+                     class="nav-link active pb-0 pt-1" style="text-align: left">
+                    <img th:src="${boardC.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
+                     th:href="${uid == null || (boardC.users != null && !uid.equals(boardC.users.uid))} ? '/profile/' + ${boardC.users.uid} : '/profile'"
+                     th:text="${boardC.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardC.regDate)}" style="font-size: 14px; color: grey;"></span>
+                </li>
+              </ul>
+            </div>
+            <!-- 조회수 -->
+            <div class="d-flex">
+              <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                      <!-- 아이콘 경로 -->
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                  </li>
+                  <li class="nav-item">
+                    <span class="font-medium me-2" th:text="${boardC.hits}"></span>
+                    <span class="sr-only"></span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 댓글 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardC.reviewCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 좋아요 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardC.likeCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <!-- 게시글 제목 -->
+        <div class="my-2 ps-2 mb-0 mt-0">
+          <a class="text-decoration-none custom-link"
+             style="font-weight: bold;"
+             th:href="@{'/community/' + ${boardC.bid}}" th:text="${boardC.title}"></a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!--------------------------------------------------
+질문 게시판 부분
+
+---------------------------------------------------->
+<div th:fragment="questions_main_post">
+  <div class="col-sm-5 w-auto p-3">
+    <ul th:each="boardQ : ${questions}" class="py-1 list-unstyled mb-1">
+      <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
+      <li class="flex flex-col border-top">
+        <nav class="navbar navbar-expand-lg navbar-light p-0">
+          <div class="container-fluid p-0">
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                  <!-- 프로필 사진 및 사용자 이름 -->
+                  <a th:href="${uid == null || (boardQ.users != null && !uid.equals(boardQ.users.uid))} ? '/profile/' + ${boardQ.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
+                    <img th:src="${boardQ.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
+                     th:href="${uid == null || (boardQ.users != null && !uid.equals(boardQ.users.uid))} ? '/profile/' + ${boardQ.users.uid} : '/profile'" th:text="${boardQ.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardQ.regDate)}" style="font-size: 14px; color: grey;"></span>
+                </li>
+              </ul>
+            </div>
+            <!-- 조회수 -->
+            <div class="d-flex">
+              <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                      <!-- 아이콘 경로 -->
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                  </li>
+                  <li class="nav-item">
+                    <span class="font-medium me-2" th:text="${boardQ.hits}"></span>
+                    <span class="sr-only"></span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 댓글 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardQ.reviewCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 좋아요 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardQ.likeCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <!-- 게시글 제목 -->
+        <div class="my-2 ps-2 mb-0 mt-0">
+          <a class="text-decoration-none custom-link"
+             style="font-weight: bold;"
+             th:href="@{'/questions/' + ${boardQ.bid}}" th:text="${boardQ.title}"></a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!--------------------------------------------------
+공지 게시판 부분
+
+---------------------------------------------------->
+<div th:fragment="notice_main_post">
+  <div class="col-md-5 w-auto p-3">
+    <ul th:each="boardN : ${notice}" class="py-1 list-unstyled mb-1">
+      <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
+      <li class="flex flex-col border-top">
+        <nav class="navbar navbar-expand-lg navbar-light p-0">
+          <div class="container-fluid p-0">
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                  <!-- 프로필 사진 및 사용자 이름 -->
+                  <a th:href="${uid == null || (boardN.users != null && !uid.equals(boardN.users.uid))} ? '/profile/' + ${boardN.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
+                    <img th:src="${boardN.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
+                     th:href="${uid == null || (boardN.users != null && !uid.equals(boardN.users.uid))} ? '/profile/' + ${boardN.users.uid} : '/profile'" th:text="${boardN.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardN.regDate)}" style="font-size: 14px; color: grey;"></span>
+                </li>
+              </ul>
+            </div>
+            <!-- 조회수 -->
+            <div class="d-flex">
+              <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                      <!-- 아이콘 경로 -->
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                  </li>
+                  <li class="nav-item">
+                    <span class="font-medium me-2" th:text="${boardN.hits}"></span>
+                    <span class="sr-only"></span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 댓글 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardN.reviewCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 좋아요 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardN.likeCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <!-- 게시글 제목 -->
+        <div class="my-2 ps-2 mb-0 mt-0">
+          <a class="text-decoration-none custom-link"
+             style="font-weight: bold;"
+             th:href="@{'/notice/' + ${boardN.bid}}" th:text="${boardN.title}"></a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!--------------------------------------------------
+잡지식 게시판 부분
+
+---------------------------------------------------->
+<div th:fragment="knowledge_main_post">
+  <div class="col-md-5 w-auto p-3">
+    <ul th:each="boardKN : ${knowledge}" class="py-1 list-unstyled mb-1">
+      <!-- board 관련은 board. 해서 쓰고 profileImg 관련은 board.profilePath user 관련은 board.users -->
+      <li class="flex flex-col border-top">
+        <nav class="navbar navbar-expand-lg navbar-light p-0">
+          <div class="container-fluid p-0">
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                  <!-- 프로필 사진 및 사용자 이름 -->
+                  <a th:href="${uid == null || (boardKN.users != null && !uid.equals(boardKN.users.uid))} ? '/profile/' + ${boardKN.users.uid} : '/profile'" class="nav-link active pb-0 pt-1" style="text-align: left">
+                    <img th:src="${boardKN.profilePath.path}" alt="프로필 사진" style="width: 30px; height: 30px;" class="h-5 w-5 rounded-full">
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="navbar-text truncate ps-1 pt-2 text-xs font-normal custom-username text-decoration-none"
+                     th:href="${uid == null || (boardKN.users != null && !uid.equals(boardKN.users.uid))} ? '/profile/' + ${boardKN.users.uid} : '/profile'" th:text="${boardKN.users.username}"></a>
+                  <span>·</span>
+                  <span class="fw-medium"
+                        th:text="${dateFormatter.formatRegDate(boardKN.regDate)}" style="font-size: 14px; color: grey;"></span>
+                </li>
+              </ul>
+            </div>
+            <!-- 조회수 -->
+            <div class="d-flex">
+              <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                      <!-- 아이콘 경로 -->
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                  </li>
+                  <li class="nav-item">
+                    <span class="font-medium me-2" th:text="${boardKN.hits}"></span>
+                    <span class="sr-only"></span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 댓글 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardKN.reviewCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 좋아요 수 -->
+              <div class="d-flex">
+                <div class="collapse navbar-collapse">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                      </svg>
+                    </li>
+                    <li class="nav-item">
+                      <span class="font-medium" th:text="${boardKN.likeCnt}"></span>
+                      <span class="sr-only"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <!-- 게시글 제목 -->
+        <div class="my-2 ps-2 mb-0 mt-0">
+          <a class="text-decoration-none custom-link"
+             style="font-weight: bold;"
+             th:href="@{'/knowledge/' + ${boardKN.bid}}" th:text="${boardKN.title}"></a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!--------------------------------------------------
+프로필에서 내 게시글 같은 버튼 눌르면 나오는 거
+
+---------------------------------------------------->
+<div th:fragment="profile_get_data">
+  <div class="container w-75">
+  <hr/>
+    <ul class="list-group">
+      <li th:each="board, stat : ${paging}" class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2">
+          <!-- index 번호 붙이는 거 : 총 게시글 수 - 현재 페이지 index - 10 * 몇 번째 페이지 -->
+          <span th:text="${paging.getTotalElements() - stat.index - 10 * paging.getNumber()} + '. '"></span>
+            <a th:href="@{|/${board.getCategory().toLowerCase()}|}" class="fs-6 text-decoration-none border rounded p-1 mb-1"
+               style="font-size: 1rem!important; color: dodgerblue; background-color: white;"
+              th:text="${board.getCategory().toLowerCase()}"></a>
+            <span>게시판에 게시글을 남겼어요!</span>
+          <div>
+            <a href="" th:href="@{|/${board.getCategory().toLowerCase()}/${board.getBid()}|}" class="link-dark link-underline-opacity-0
+            link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${board.getTitle}"></span>
+            </a>
+          </div>
+        </div>
+        <div class="d-flex mt-auto">
+            <ul class="nav mb-2 mb-lg-0">
+              <li class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                  <!-- 아이콘 경로 -->
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </li>
+              <li class="nav-item">
+                <span class="font-medium me-2" th:text="${board.hits}"></span>
+                <span class="sr-only"></span>
+              </li>
+            </ul>
+
+          <!-- 댓글 수 -->
+          <div class="d-flex">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                    <!-- 아이콘 경로 -->
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.reviewCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+          </div>
+
+          <!-- 좋아요 수 -->
+          <div class="d-flex mt-auto">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                    <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.likeCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 시작 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+          <span>처음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+          <span>이전</span>
+        </a>
+      </li>
+      <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+      <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+        <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+      </li>
+      <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <!-- 1부터 번호 생성, page에 값 넣음 -->
+      <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+          예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+      <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+      <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+          th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+          th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+        <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+      </li>
+      <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+          6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+      <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+          <span>다음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+          <span>마지막</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+</div>
+
+<!--------------------------------------------------
+프로필에서 내 게시글 같은 버튼 눌르면 나오는 거 - 즐겨찾기
+
+---------------------------------------------------->
+<div th:fragment="profile_get_data_favorites">
+  <div class="container w-75">
+    <hr/>
+    <ul class="list-group">
+      <li th:each="board, stat : ${paging}" class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center">
+            <!-- index 번호 붙이는 거 : 총 게시글 수 - 현재 페이지 index - 10 * 몇 번째 페이지 -->
+            <span th:text="${paging.getTotalElements() - stat.index - 10 * paging.getNumber()} + '. '"></span>
+            <a href="" th:href="@{|/${board.getCategory().toLowerCase()}/${board.getBid()}|}" class="fs-6 text-decoration-none border rounded-3 p-1 ms-2">
+              <span th:text="${board.getCategory().toLowerCase()}"></span>
+            </a>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <a href="" class="link-blue link-underline-opacity-0 link-underline-opacity-50-hover text-decoration-none" th:text="${board.users.username}"></a>
+            <span>님의
+            <a href="" th:href="@{|/${board.getCategory().toLowerCase()}/${board.getBid()}|}" class="link-dark link-underline-opacity-0
+              link-underline-opacity-50-hover">
+                <span class="fw-bold" th:text="${board.getTitle}"></span>
+            </a>
+            게시글을 즐겨찾기에 추가했어요!</span>
+          </div>
+          <div class="d-flex mt-auto">
+            <ul class="nav mb-2 mb-lg-0">
+              <li class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                  <!-- 아이콘 경로 -->
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </li>
+              <li class="nav-item">
+                <span class="font-medium me-2" th:text="${board.hits}"></span>
+                <span class="sr-only"></span>
+              </li>
+            </ul>
+
+            <!-- 댓글 수 -->
+            <div class="d-flex mt-auto">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                    <!-- 아이콘 경로 -->
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.reviewCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 좋아요 수 -->
+            <div class="d-flex">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                    <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.likeCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 시작 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+          <span>처음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+          <span>이전</span>
+        </a>
+      </li>
+      <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+      <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+        <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+      </li>
+      <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <!-- 1부터 번호 생성, page에 값 넣음 -->
+      <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+          예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+      <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+      <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+          th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+          th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+        <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+      </li>
+      <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+          6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+      <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+          <span>다음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+          <span>마지막</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+</div>
+
+<!--------------------------------------------------
+프로필에서 내 게시글 같은 버튼 눌르면 나오는 거 - 좋아요
+
+---------------------------------------------------->
+<div th:fragment="profile_get_data_like">
+  <div class="container w-75">
+    <hr/>
+    <ul class="list-group">
+      <li th:each="board, stat : ${paging}" class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center">
+          <!-- index 번호 붙이는 거 : 총 게시글 수 - 현재 페이지 index - 10 * 몇 번째 페이지 -->
+          <span th:text="${paging.getTotalElements() - stat.index - 10 * paging.getNumber()} + '. '"></span>
+          <a href="" th:href="@{|/${board.boardDTO.getCategory().toLowerCase()}/${board.boardDTO.getBid()}|}" class="fs-6 text-decoration-none border rounded-3 p-1 ms-2">
+            <span th:text="${board.boardDTO.getCategory().toLowerCase()}"></span>
+          </a>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <!-- title -->
+            <a href="" class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover" th:text="${board.boardDTO.users.username}"></a>
+            <span th:if="${board.likeStatus == 'LIKE'}">님의
+              <a href="" th:href="@{|/${board.boardDTO.getCategory().toLowerCase()}/${board.boardDTO.getBid()}|}" class="link-dark link-underline-opacity-0
+              link-underline-opacity-50-hover">
+                <span class="fw-bold" th:text="${board.boardDTO.getTitle}"></span>
+            </a>
+              게시글을 추천했어요!</span>
+            <span th:if="${board.likeStatus == 'DISLIKE'}">님의
+              <a href="" th:href="@{|/${board.boardDTO.getCategory().toLowerCase()}/${board.boardDTO.getBid()}|}" class="link-dark link-underline-opacity-0
+              link-underline-opacity-50-hover">
+                <span class="fw-bold" th:text="${board.boardDTO.getTitle}"></span>
+            </a>
+              게시글을 비추했어요!</span>
+          </div>
+
+
+
+          <div class="d-flex mt-auto">
+            <!-- 좋아요 눌렀으면 thumb_up 아니면 thumb_down -->
+            <ul class="nav mb-2 mb-lg-0 mx-3">
+              <li class="nav-item">
+                <i th:if="${board.likeStatus == 'LIKE'}" class="bi bi-hand-thumbs-up-fill" style="color: dodgerblue;"></i>
+                <i th:if="${board.likeStatus == 'DISLIKE'}" class="bi bi-hand-thumbs-down-fill" style="color: tomato;"></i>
+              </li>
+            </ul>
+
+            <!-- 조회수 -->
+            <ul class="nav mb-2 mb-lg-0">
+              <li class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                  <!-- 아이콘 경로 -->
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </li>
+              <li class="nav-item">
+                <span class="font-medium me-2" th:text="${board.boardDTO.hits}"></span>
+                <span class="sr-only"></span>
+              </li>
+            </ul>
+
+            <!-- 댓글 수 -->
+            <div class="d-flex">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 20px; height: 20px;" class="h-5 w-5 me-1">
+                    <!-- 아이콘 경로 -->
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.boardDTO.reviewCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 좋아요 수 -->
+            <div class="d-flex">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                    <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${board.boardDTO.likeCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 시작 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+          <span>처음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+          <span>이전</span>
+        </a>
+      </li>
+      <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+      <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+        <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+      </li>
+      <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <!-- 1부터 번호 생성, page에 값 넣음 -->
+      <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+          예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+      <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+      <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+          th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+          th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+        <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+      </li>
+      <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+          6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+      <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+          <span>다음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+          <span>마지막</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+</div>
+
+<!--------------------------------------------------
+프로필에서 내 게시글 같은 버튼 눌르면 나오는 거 - 댓글
+
+---------------------------------------------------->
+<div th:fragment="profile_get_data_comments">
+  <div class="container w-75">
+    <hr/>
+    <ul class="list-group">
+      <li th:each="comment, stat : ${paging}" class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center">
+            <!-- index 번호 -->
+            <span th:text="${paging.getTotalElements() - stat.index - 10 * paging.getNumber()} + '. '"></span>
+            <!-- category -->
+            <a href="" th:href="@{|/${comment.boardDTOInComment.category.toLowerCase()}/${comment.boardDTOInComment.bid}|}" class="fs-6 text-decoration-none border rounded-3 p-1 ms-2">
+              <span th:text="${comment.boardDTOInComment.category.toLowerCase()}"></span>
+            </a>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <!-- title -->
+            <a href="" th:href="@{|/${comment.boardDTOInComment.category.toLowerCase()}/${comment.boardDTOInComment.bid}|}" class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${comment.boardDTOInComment.title}"></span>
+            </a>
+            <!-- comment message -->
+            <span th:if="${comment.parent == null}"> 게시글에 댓글을 남겼어요!</span>
+            <span th:if="${comment.parent}"> 게시글에 대댓글을 남겼어요!</span>
+          </div>
+          <div class="d-flex">
+            <!-- 좋아요 수 -->
+            <div class="d-flex">
+              <ul class="nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-width="0.3" stroke="currentColor" aria-hidden="true" viewBox="-3 -3 14 24" style="width: 22px; height: 22px;" class="h-5 w-5 me-1">
+                    <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                  </svg>
+                </li>
+                <li class="nav-item">
+                  <span class="font-medium" th:text="${comment.likeCnt}"></span>
+                  <span class="sr-only"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 시작 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+          <span>처음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+          <span>이전</span>
+        </a>
+      </li>
+      <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+      <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+        <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+      </li>
+      <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <!-- 1부터 번호 생성, page에 값 넣음 -->
+      <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+          예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+      <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+      <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+          th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+          th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+        <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+      </li>
+      <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+          6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+      <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+          <span>다음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+          <span>마지막</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+</div>
+
+<!--------------------------------------------------
+프로필에서 내 게시글 같은 버튼 눌르면 나오는 거 - 활동 내역
+
+---------------------------------------------------->
+<div th:fragment="profile_get_data_activities">
+  <div class="container w-75">
+    <hr/>
+    <ul class="list-group">
+      <li th:each="activity, stat : ${paging}" class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2">
+          <!-- index 번호 붙이는 거 : 총 게시글 수 - 현재 페이지 index - 10 * 몇 번째 페이지 -->
+          <span th:text="${paging.getTotalElements() - stat.index - 10 * paging.getNumber()} + '. '"></span>
+<!--          <a href="" th:href="@{|/${comment.boardDTOInComment.category.toLowerCase()}/${comment.boardDTOInComment.bid}|}" class="link-dark link-underline-opacity-0-->
+<!--            link-underline-opacity-50-hover">-->
+<!--            <span class="fw-bold"></span>-->
+<!--          </a>-->
+          <a th:href="@{|/${activity.category}|}" class="fs-6 text-decoration-none border rounded-3 p-1 mb-1"
+             style="font-size: 1rem!important; color: dodgerblue; background-color: white;"
+             th:text="${activity.category}"></a>
+          <div th:if="${activity.activityType == 'Board'}">
+            <a href="" th:href="@{|/${activity.boardHistoryDTO.boardCategory}/${activity.boardHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.boardHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글을 남겼어요!</span>
+          </div>
+          <div th:if="${activity.activityType == 'Comment' && activity.commentHistoryDTO.commentParentId == null}">
+            <a href=""  class="link-blud text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의 </span>
+            <a href="" th:href="@{|/${activity.commentHistoryDTO.boardCategory}/${activity.commentHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.commentHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글에 댓글을 남겼어요!</span>
+          </div>
+          <div th:if="${activity.activityType == 'Comment' && activity.commentHistoryDTO.commentParentId != null}">
+            <a href=""
+               class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의
+              <a href="" th:href="@{|/${activity.commentHistoryDTO.boardCategory}/${activity.commentHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover"></a>
+              <span class="fw-bold" th:text="${activity.commentHistoryDTO.boardTitle}"></span>
+              게시글의 댓글에 답글을 남겼어요!</span>
+          </div>
+          <div th:if="${activity.activityType == 'BoardLike'}">
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.boardLikeHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의 </span>
+            <a href="" th:href="@{|/${activity.boardLikeHistoryDTO.boardCategory}/${activity.boardLikeHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.boardLikeHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글을
+              <span th:if="${activity.boardLikeHistoryDTO.likeStatus == 'LIKE'}" style="color: dodgerblue;">추천</span>
+              <span th:if="${activity.boardLikeHistoryDTO.likeStatus == 'DISLIKE'}" style="color: tomato;">반대</span>
+              했어요!
+            </span>
+          </div>
+          <div th:if="${activity.activityType == 'BoardFavorite'}">
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.boardFavoriteHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의 </span>
+            <a href="" th:href="@{|/${activity.boardFavoriteHistoryDTO.boardCategory}/${activity.boardFavoriteHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.boardFavoriteHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글을 즐겨찾기에 추가 했어요!</span>
+          </div>
+          <div th:if="${activity.activityType == 'CommentLike' && activity.commentLikeHistoryDTO.commentParentId == null}">
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentLikeHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의 </span>
+            <a href="" th:href="@{|/${activity.commentLikeHistoryDTO.boardCategory}/${activity.commentLikeHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.commentLikeHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글의 </span>
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentLikeHistoryDTO.commentOwnerUsername}"></span>
+            </a>
+            <span>님의 댓글을
+              <span th:if="${activity.commentLikeHistoryDTO.likeStatus == 'LIKE'}" style="color: dodgerblue;">추천</span>
+              <span th:if="${activity.commentLikeHistoryDTO.likeStatus == 'DISLIKE'}" style="color: tomato;">반대</span>
+              했어요!
+            </span>
+          </div>
+          <div th:if="${activity.activityType == 'CommentLike' && activity.commentLikeHistoryDTO.commentParentId != null}">
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentLikeHistoryDTO.boardOwnerUsername}"></span>
+            </a>
+            <span>님의 </span>
+            <a href="" th:href="@{|/${activity.commentLikeHistoryDTO.boardCategory}/${activity.commentLikeHistoryDTO.bId}|}"
+               class="link-dark text-decoration-none link-underline-opacity-50-hover">
+              <span class="fw-bold" th:text="${activity.commentLikeHistoryDTO.boardTitle}"></span>
+            </a>
+            <span>게시글의 </span>
+            <a href=""  class="link-blue text-decoration-none link-underline-opacity-50-hover">
+              <span th:text="${activity.commentLikeHistoryDTO.commentOwnerUsername}"></span>
+            </a>
+            <span>님의 답글을
+              <span th:if="${activity.commentLikeHistoryDTO.likeStatus == 'LIKE'}" style="color: dodgerblue;">추천</span>
+              <span th:if="${activity.commentLikeHistoryDTO.likeStatus == 'DISLIKE'}" style="color: tomato;">반대</span>
+              했어요!
+            </span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 시작 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${1}"> <!--  th:href="@{|?page=${1}|}" -->
+          <span>처음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number}">
+          <span>이전</span>
+        </a>
+      </li>
+      <!-- 4페이지 이상이면 1을 표시하고 5페이지 이상이면 그 옆에 ...을 표시함 -->
+      <li th:if="${paging.getNumber() >= 4}" class="page-item">           <!--  th:href="@{|?page=${1}|}" -->
+        <a th:text="${1}" class="page-link" href="javascript:void(0)" th:data-page="${1}"></a>
+      </li>
+      <li th:if="${paging.getNumber() >= 5}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <!-- 1부터 번호 생성, page에 값 넣음 -->
+      <!-- 현재 페이지 번호(paging.number)를 기준으로 앞 뒤로 2페이지와 4페이지 범위 내의 번호만 표시
+          예를 들면 현재 페이지가 5라면 3,4,5,6,7,8,9 가 표시 됨 -->
+      <!-- 그리고 현재 페이지(paging.number)가 page - 1과 같다면 클릭 못하게 함 -->
+      <li th:each="page: ${#numbers.sequence(1, paging.totalPages)}"
+          th:if="${page >= paging.number - 2 and page <= paging.number + 4}"
+          th:classappend="${page - 1 == paging.number} ? 'disabled'" class="page-item"> <!--  th:href="@{|?page=${page}|} -->
+        <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+      </li>
+      <!-- 현재 페이지하고 끝 페이지의 간격이 5페이지 이상 있을 경우 마지막 페이지로의 링크를 표시하고
+          6페이지 이상 있을 경우 그 옆에 왼쪽에 ...을 붙임 -->
+      <li th:if="${paging.totalPages - paging.getNumber() >= 6}" class="page-item disabled">
+        <a class="page-link" tabindex="-1" aria-disabled="true">...</a>
+      </li>
+      <li th:if="${paging.totalPages - paging.getNumber() >= 5}" class="page-item">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a th:text="${paging.totalPages}" class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}"></a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.number + 2}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number + 2}">
+          <span>다음</span>
+        </a>
+      </li>
+      <li class="page-item" th:classappend="${!paging.hasNext()} ? 'disabled'">   <!--  th:href="@{|?page=${paging.totalPages}|} -->
+        <a class="page-link" href="javascript:void(0)" th:data-page="${paging.totalPages}">
+          <span>마지막</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+</div>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+    <style>
+        a.custom-hover {
+            font-weight: bold;
+            color: black;
+        }
+        a.custom-hover:hover {
+            color: cornflowerblue;
+        }
+
+        .text-container {
+            min-height: 100px;
+            overflow: auto;
+        }
+
+        /* Remove the ability to resize the textarea */
+        textarea {
+            resize: none;
+            overflow-y: hidden; /* Hide vertical scrollbar */
+        }
+
+        .replyBtn,
+        .replyCollapse {
+            border: none;
+        }
+        .replyBtn:hover,
+        .replyBtn:active,
+        .replyCollapse:hover,
+        .replyCollapse:active {
+            background-color: transparent!important;
+            color: dodgerblue!important;
+        }
+
+        .likeCnt,
+        .likeCnt:disabled {
+            font-weight: bold;
+            color: black!important;
+            border-left: none;
+            border-right: none;
+        }
+
+        .commentLikeBtn:hover,
+        .commentLikeBtn:active {
+            background-color: lightblue!important;
+        }
+
+        .commentDisLikeBtn:hover,
+        .commentDisLikeBtn:active {
+            background-color: lightpink!important;
+        }
+
+        .commentTrash {
+            border: none;
+            padding: 0;
+        }
+
+        .commentEdit {
+            height: 26px;
+            border: none;
+            border-radius: 25%!important;
+            padding: 0;
+        }
+
+        .comment-item:last-child .comment-separator {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="d-flex justify-content-center">
+    <div class="w-50">
+        <div class="d-flex align-items-center mt-5">
+            <div class="flex-grow-1 border-top"></div>
+            <span class="px-3 bg-white" th:text="${board.getCategory()}"></span>
+            <div class="flex-grow-1 border-top"></div>
+        </div>
+        <div class="d-flex align-items-center flex-row">
+            <a href="#">
+                <img class="img-fluid rounded-full" th:src="@{${board.getProfilePath().getPath()}}" alt="프로필 사진"
+                     style="height: 40px; width: 40px">
+            </a>
+            <div class="ms-1 d-flex align-items-start flex-column">
+                <a class="ps-1 custom-hover text-decoration-none" href="#" th:text="${board.users.getUsername()}"></a>
+                <div class="flex items-center text-sm font-normal">
+                    <span>
+                        <!-- 조회수 -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" style="width: 16px; height: 16px;" >
+                        <!-- 아이콘 경로 -->
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span th:text="${board.getHits()}"></span>
+                        <span>·</span>
+                        <!-- 즐겨찾기 수 -->
+                        <i class="bi bi-star"></i>
+                        <span th:text="${board.getFavoriteCnt()}"></span>
+                        <span>·</span>
+                        <span th:text="${dateFormatter.formatRegDate(board.regDate)}"></span>
+                    </span>
+                </div>
+            </div>
+
+            <div th:if="${board.users != null and #authentication.name.equals(board.users.email)}" class="ms-auto">
+                <a type="button" class="btn btn-outline-danger" th:href="@{|/${board.getCategory().toLowerCase()}/edit/${board.getBid()}|}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" fill="currentColor" class="bi bi-pencil-square" viewBox="0 2 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <h1 class="fs-2 fw-bold my-4" th:text="${board.getTitle()}"></h1>
+
+        <div th:if="${#lists.size(board.getImgPathList) > 0}" id="carouselIndicators" class="carousel slide carousel-fade">
+            <div class="carousel-indicators" aria-hidden="true">
+                <button th:each="img, iterStat : ${board.getImgPathList}" type="button" style="filter: invert(1)" data-bs-target="#carouselIndicators" th:data-bs-slide-to="${iterStat.index}" th:class="${iterStat.first} ? 'active' : ''" aria-label="Slide + ${iterStat.count}"></button>
+            </div>
+            <div class="carousel-inner">
+                <div th:each="img, iterStat : ${board.getImgPathList}" th:class="${iterStat.first} ? 'carousel-item active d-flex justify-content-center' : 'carousel-item d-flex justify-content-center'">
+                    <div th:if="${#lists.size(board.getImgPathList) > 1}">
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" style="filter: invert(1)" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                    </div>
+                    <img th:src="@{${img}}" class="d-block mx-auto w-75 h-auto" style="width: 500px" alt="Image">
+                    <div th:if="${#lists.size(board.getImgPathList) > 1}">
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" style="filter: invert(1)" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!--            <div th:if="${#lists.size(board.getImgPathList) > 1}">-->
+            <!--                <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">-->
+            <!--                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
+            <!--                    <span class="visually-hidden">Previous</span>-->
+            <!--                </button>-->
+            <!--                <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">-->
+            <!--                    <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
+            <!--                    <span class="visually-hidden">Next</span>-->
+            <!--                </button>-->
+            <!--            </div>-->
+        </div>
+
+        <div class="text-start fs-4 text-container" th:text="${board.getContent()}"></div>
+        <div class="container text-container">
+            <div sec:authorize="isAuthenticated()" class="row">
+                <!-- 왼쪽 끝에 위치할 요소 -->
+                <div class="col-sm-auto fs-5 ps-0">
+                    <div class="btn-group">
+                        <a type="button" class="btn btn-outline-secondary p-2" style="--bs-btn-hover-bg: ghostwhite;" th:href="@{|/${board.getCategory().toLowerCase()}/favorite/${board.getBid()}|}">
+                            <i th:unless="${isFavorite}" class="bi bi-star" style="color: lightgrey"></i>
+                            <i th:if="${isFavorite}" class="bi bi-star-fill" style="color: sandybrown"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 나머지 요소들 (오른쪽으로 정렬) -->
+                <div class="col d-flex justify-content-end">
+                    <div class="col-sm-auto pe-0">
+                        <a href="javascript:void(0);" class="dislike btn btn-outline-dark align-items-center"
+                           th:data-uri="@{|/${board.getCategory().toLowerCase()}/dislike/${board.getBid()}|}">
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-auto">
+                        <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                    </div>
+                    <div class="col-sm-auto ps-0">
+                        <a href="javascript:void(0);" class="like btn btn-outline-dark align-items-center" type="button"
+                           th:data-uri="@{|/${board.getCategory().toLowerCase()}/like/${board.getBid()}|}">
+                            <i class="bi bi-chevron-up"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div sec:authorize="isAnonymous()" class="row">
+                <div class="col d-flex justify-content-end">
+                    <div class="col-sm-auto pe-0">
+                        <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-auto">
+                        <span class="fw-bold d-flex align-items-center justify-content-center px-2 py-1" th:text="${board.getLikeCnt()}"></span>
+                    </div>
+                    <div class="col-sm-auto ps-0">
+                        <a class="btn btn-outline-dark align-items-center" onclick="redirectLogin()">
+                            <i class="bi bi-chevron-up"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-top my-3"></div>
+        <!-- 댓글 부분 -->
+        <div>
+            <span class="fs-5" th:text="${board.getReviewCnt() + '개의 댓글'}"></span>
+            <div sec:authorize="isAnonymous()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                        <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
+                    </div>
+                    <div class="form-control" contenteditable="false" style="height: 90px;">
+                        <a href="/login" style="text-decoration: none;">로그인</a>
+                        후 이용가능합니다.
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                    <button class="btn btn-primary" disabled>댓글 작성</button>
+                </div>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="my-4 rounded border p-3 my-sm-5 p-sm-4">
+                <form action="/post/comment" method="post">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle me-3" style="width: 65px; height: 65px;">
+                            <img th:src="${profileImage}" alt="Profile Image" class="img-fluid rounded-circle"/>
+                        </div>
+                        <textarea id="commentTextarea" name="content" class="form-control" rows="3" placeholder="댓글을 작성하세요..." oninput="adjustHeight(this)"></textarea>
+                    </div>
+                    <input type="hidden" name="bid" th:value="${bid}" />
+                    <input type="hidden" name="category" th:value="${board.getCategory().toLowerCase()}">
+                    <div class="d-flex justify-content-end align-items-center mt-2">
+                        <button type="submit" class="btn btn-primary me-2">댓글 작성</button>
+                        <i th:if="${emptyContent}" class="bi bi-exclamation-circle me-2" style="color: tomato;"></i>
+                        <p th:if="${emptyContent}" th:text="${emptyContent}" class="mb-0 text-danger">내용을 추가해 주세요.</p>
+                    </div>
+                </form>
+
+            </div>
+            <div class="my-8">
+                <ul class="list-unstyled" id="commentList">
+                    <template th:replace="~{board/commentFragment :: commentListItem(${comments}, ${board}, ${commentLikeDTO})}"></template>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    let currentPage = 1; // Assuming you start from the first page
+    const bid = [[${board.getBid}]];
+    const reply = [[${comments}]];
+    /*]]>*/
+    console.log(reply.content);
+    /**
+     * 스크롤 끝까지 내렸을 때 댓글 더 불러오는 함수 실행함
+     */
+    window.addEventListener('scroll', function() {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) { // 500 is a threshold, can be adjusted
+            loadMoreComments(event);
+        }
+    });
+
+    let isLoading = false;
+
+    /**
+     * 댓글 더 불러오는 함수
+     * @param event
+     */
+    function loadMoreComments(event) {
+        if (isLoading) {
+            return; // Early exit if already fetching
+        }
+
+        isLoading = true; // Set loading state to true
+        currentPage++;
+
+        fetch(`/get/comment/${bid}?page=${currentPage}`)
+            .then(response => {
+                if (response.status === 204) {
+                    console.log("no more comments to load.");
+                    --currentPage;
+                    console.log(currentPage);
+                    event.preventDefault();
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text(); // Convert the response to text
+            })
+            .then(html => {
+                const commentList = document.getElementById('commentList');
+                commentList.insertAdjacentHTML('beforeend', html);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                isLoading = false; // Reset loading state in the end
+            });
+    }
+
+
+    let likeStatus = /*[[${likeStatus}]]*/ 'none';
+    const like_elements = document.getElementsByClassName("like");
+    const dislike_elements = document.getElementsByClassName("dislike");
+    // 추천을 누른 상태면
+    if (likeStatus !== 'none' && likeStatus === 'LIKE') {
+        for (let i = 0; i < like_elements.length; i++) {
+            // 추천 버튼 파랗게 만들고 활성화시킴
+            like_elements[i].classList.remove('btn-outline-dark');
+            like_elements[i].classList.remove('disabled');
+            like_elements[i].classList.add('btn-outline-primary');
+        }
+        for (let i = 0; i < dislike_elements.length; i++) {
+            // 비추 버튼 비활시킴
+            dislike_elements[i].classList.add('disabled');
+        }
+        // 비추 누른 상태면
+    } else if (likeStatus !== 'none' && likeStatus === 'DISLIKE') {
+        for (let i = 0; i < dislike_elements.length; i++) {
+            // 비추 버튼 빨갛게 만들고 활성화 시킴
+            dislike_elements[i].classList.remove('disabled');
+            dislike_elements[i].classList.remove('btn-outline-dark');
+            dislike_elements[i].classList.add('btn-outline-danger');
+        }
+        for (let i = 0; i < like_elements.length; i++) {
+            // 추천 버튼 비활시킴
+            like_elements[i].classList.add('disabled');
+        }
+    }
+    Array.from(like_elements).forEach(function (element) {
+        element.addEventListener('click', function () {
+            location.href = this.dataset.uri;
+        });
+    })
+    Array.from(dislike_elements).forEach(function (element) {
+        element.addEventListener('click', function () {
+            location.href = this.dataset.uri;
+        });
+    })
+
+    /**
+     * 대댓글 요청
+     * @param event
+     * @param cid
+     */
+    function replySaveToggle(event, cid) {
+        event.preventDefault();
+        const replyBtn = document.getElementById('replyBtn-' + cid);
+        const replyForm = document.getElementById('replyForm-' + cid);
+        const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+        const replyCollapse = document.getElementById('replyCollapse-' + cid);
+
+        if (editDeleteBtn) {
+            editDeleteBtn.style.display = 'none';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = 'none';
+        }
+        replyBtn.style.display = 'none';
+        replyForm.style.display = 'block';
+    }
+
+    /**
+     * 답글 달기 눌렀을 때 나오는 form 닫기
+     * @param event
+     * @param cid
+     */
+    function cancelReplyBtn(event, cid) {
+        event.preventDefault();
+        const replyBtn = document.getElementById('replyBtn-' + cid);
+        const replyForm = document.getElementById('replyForm-' + cid);
+        const editDeleteBtn = document.getElementById('editDeleteBtn-' + cid);
+        const replyCollapse = document.getElementById('replyCollapse-' + cid);
+
+
+        if (editDeleteBtn) {
+            editDeleteBtn.style.display = '';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = '';
+        }
+        replyForm.style.display = 'none';
+        replyBtn.style.display = 'inline-block';
+    }
+
+    /**
+     * 대댓글 텍스트 전환하는 함수 대댓글이 접힌 상태에선 답글 보기, 펼쳐진 상태에선 답글 접기
+     * @param element
+     */
+    function toggleReplyText(element) {
+        let currentText = element.textContent || element.innerText;
+        element.textContent = currentText === '답글 보기' ? '답글 접기' : '답글 보기';
+    }
+
+    /**
+     * 답글 달기 눌렀을 때 form 나오게 하기
+     * @param commentId
+     */
+    function commentEditToggle(commentId) {
+        console.log(commentId);
+        const commentElem = document.getElementById('comment-' + commentId);
+        const contentElem = document.getElementById('commentContent-' + commentId);
+        const editFormElem = document.getElementById('editForm-' + commentId);
+        const editAreaElem = document.getElementById('editArea-' + commentId);
+        const editBtn = document.getElementById('editBtn-' + commentId);
+        const replyBtn = document.getElementById('replyBtn-' + commentId);
+        const replyCollapse = document.getElementById('replyCollapse-' + commentId);
+
+
+        editAreaElem.value = contentElem.textContent;
+
+        editBtn.classList.add('disabled');
+        if (replyBtn) {
+            replyBtn.style.display = 'none';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = 'none';
+        }
+        contentElem.style.display = 'none';
+        editFormElem.style.display = 'block';
+    }
+
+
+    /**
+     * 댓글 수정 form 닫기
+     * @param event
+     * @param commentId
+     */
+    function cancelCommentEdit(event, commentId) {
+        console.log("cancel : " + commentId);
+        event.preventDefault();
+        const commentElem = document.getElementById('comment-' + commentId);
+        const contentElem = document.getElementById('commentContent-' + commentId); // 여기를 수정했습니다.
+        const editFormElem = document.getElementById('editForm-' + commentId);
+        const editBtn = document.getElementById('editBtn-' + commentId);
+        const replyBtn = document.getElementById('replyBtn-' + commentId);
+        const replyCollapse = document.getElementById('replyCollapse-' + commentId);
+
+
+        if (replyBtn) {
+            replyBtn.style.display = 'inline-block';
+        }
+        if (replyCollapse) {
+            replyCollapse.style.display = '';
+        }
+        contentElem.style.display = 'block';
+        editFormElem.style.display = 'none';
+        editBtn.classList.remove('disabled');
+    }
+
+    /**
+     * 댓글 삭제 요청 함수
+     * @param event
+     * @param formElement
+     */
+    function commentDeleteConfirm(event, formElement) {
+        event.preventDefault();
+        const isConfirmed = confirm("삭제하시면 복구하실 수 없습니다. 삭제하시겠습니까?");
+        if (isConfirmed) {
+            formElement.submit();
+        }
+    }
+
+    /**
+     * 인증이 필요한 기능 수행 시 로그인 안 했을 때 로그인 페이지로 이동
+     */
+    function redirectLogin() {
+        const isConfirmed = confirm("로그인 하셔야 이용 가능합니다. 로그인 하시겠습니까?");
+
+        if (isConfirmed) {
+            window.location.href = "/login";
+        }
+    }
+
+    /**
+     * textarea 텍스트에 맞춰서 높이 자동으로 조절
+     * @param textarea
+     */
+    function adjustHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>프로필_즐겨찾기</title>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+</head>
+<style>
+    .custom-hover {
+        color: black;
+        border: none;
+    }
+    .custom-hover:hover{
+        color: dodgerblue;
+        border-bottom: 3px solid dodgerblue;
+    }
+    .btn-group .btn:first-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .btn-group .btn:last-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+</style>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h1 th:text="${profileOwnerUid == null} ? '내 프로필' : '다른 유저 프로필'"></h1>
+            <hr/>
+
+            <div class="target-div" th:if="${profileOwnerUid == null}">
+                <div class="container d-flex align-items-start justify-content-between">
+                    <img src="" th:src="${profileImage}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
+                </div>
+                <h3>사용자명: <span th:text="${user != null ? user.getUsername() : ''}"></span></h3>
+                <h3>Email: <span th:text="${user != null ? user.getEmail() : ''}"></span></h3>
+            </div>
+            <div class="target-div" th:if="${profileOwnerUid != null}">
+                <div class="container d-flex align-items-start">
+                    <img src="" th:src="${user.profile}" style="margin: 8px; width: 100px; height: 100px; border-radius: 50%;" alt="Profile Image"/>
+                    <h3 class="align-self-center"><span th:text="${user != null ? user.username : ''}"></span></h3>
+                </div>
+            </div>
+
+
+            <hr/>
+
+            <div class="buttonMenu btn-group">
+                <div th:if="${profileOwnerUid == null}">
+                    <!-- For getting My Board -->
+                    <button data-action-url="/profile/posts" class="btn btn-outline-light custom-hover profileButton">
+                        내 게시글
+                    </button>
+
+                    <!-- For getting My Comments -->
+                    <button data-action-url="/profile/comments" class="btn btn-outline-light custom-hover profileButton">
+                        댓글
+                    </button>
+
+                    <!-- Go to profile -->
+                    <button data-action-url="/profile" class="btn btn-outline-light custom-hover profileButton">
+                        즐겨찾기
+                    </button>
+
+                    <!-- For getting My Likes -->
+                    <button data-action-url="/profile/likes" class="btn btn-outline-light custom-hover profileButton">
+                        좋아요
+                    </button>
+
+                    <!-- For getting My Activity History -->
+                    <button data-action-url="/profile/activity" class="btn btn-outline-light custom-hover profileButton">
+                        최근 활동
+                    </button>
+                </div>
+                <div th:if="${profileOwnerUid != null}">
+                    <!-- For getting My Board -->
+                    <button th:attr="data-action-url='/profile/posts/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        게시글
+                    </button>
+
+                    <!-- For getting My Comments -->
+                    <button th:attr="data-action-url='/profile/comments/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        댓글
+                    </button>
+
+                    <!-- For getting My Favorite -->
+                    <button th:attr="data-action-url='/profile/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        즐겨찾기
+                    </button>
+
+                    <!-- For getting My Likes -->
+                    <button th:attr="data-action-url='/profile/likes/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        좋아요
+                    </button>
+
+                    <!-- For getting My Activity History -->
+                    <button th:attr="data-action-url='/profile/activity/' + ${user.uid}" class="btn btn-outline-light custom-hover profileButton">
+                        최근 활동
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div th:insert="~{fragments :: profile_get_data_favorites}"></div>
+
+    </div>
+</div>
+<!-- 페이지 링크 누르면 페이지에 맞는 게시글 데이터 받아옴 -->
+<form th:action="@{'/profile/favorites' + ${profileOwnerUid != null ? '/' + profileOwnerUid : ''}}" method="get" id="pageForm">
+    <input type="hidden" id="page" name="page" th:value="${paging.number}">
+</form>
+<!-- buttonMenu 누르면 button의 data-action-url로 이동함 -->
+<form id="profileForm" method="get" style="display: none;">
+    <input type="hidden" id="actionUrl">
+</form>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+<script layout:fragment="script" type='text/javascript' th:inline="javascript">
+    let profileButtons = document.getElementsByClassName("profileButton");
+    Array.from(profileButtons).forEach(function(button) {
+        button.addEventListener('click', function () {
+            let form = document.getElementById('profileForm');
+
+            // Change form action based on the button clicked
+            form.action = this.getAttribute('data-action-url');
+
+            form.submit();
+        });
+    });
+
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function(element) {
+        element.addEventListener('click', function() {
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('pageForm').submit();
+        });
+    });
+
+
+</script>
+</body>
+</html>

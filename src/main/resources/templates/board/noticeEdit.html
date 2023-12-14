@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <div th:insert="~{fragments :: linkCSS}"></div>
+
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+</head>
+<body>
+<div th:insert="~{fragments :: header}"></div>
+<div class="container w-75 justify-content-center">
+    <div class="d-flex align-items-center">
+        <span class="fw-bold fs-1 my-3">
+            게시글 수정
+        </span>
+        <form th:action="@{'/' + ${category} + '/' + delete + '/' + ${bid}}" method="post" class="ms-auto"
+              onsubmit="return confirmDelete()">
+            <input type="hidden" name="id" th:value="${bid}"/>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+    <form th:action="@{'/' + ${category} + '/' + edit + '/' + ${bid}}" th:object="${boardEditRequestDTO}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <span th:text="${noCategory}"></span>
+            <label for="notices">카테고리:</label>
+            <div th:each="noticeCategories : ${T(com.community.communityproject.entity.board.Category).values()}">
+                <input id="notices" type="checkbox" name="notices" th:value="${noticeCategories}" th:id="'category'+${noticeCategoriesStat.index}"
+                       th:disabled="${noticeCategories.toString() == 'NOTICE'}"
+                       th:checked="${noCategory.contains(noticeCategories)}" />
+                <label th:for="'category'+${noticeCategoriesStat.index}"
+                       th:text="${noticeCategories.toString() == 'NOTICE'} ? ${noticeCategories} + '-필수' : ${noticeCategories}"></label>
+
+                <input type="hidden"
+                       th:if="${noticeCategories.toString() == 'NOTICE'}"
+                       name="notices"
+                       th:value="${noticeCategories}" />
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="title">Title</label>
+            <input type="text" id="title" th:field="*{title}" class="form-control" placeholder="Edit Title" required>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="content">Content</label>
+            <textarea class="form-control" id="content" th:field="*{content}" placeholder="Edit content" required></textarea>
+        </div>
+
+        <div class="input-group mb-1">
+            <input type="file" class="form-control" id="boardImage" th:field="*{boardImage}" multiple>
+            <label class="input-group-text" for="boardImage">Upload</label>
+        </div>
+        <button type="button" class="btn btn-danger mt-2" onclick="deleteFile()">첨부한 파일 삭제</button>
+        <div id="preview"></div>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">취소</button>
+        <button type="submit" class="btn btn-primary">등록</button>
+    </form>
+</div>
+
+<div th:insert="~{fragments :: footer}"></div>
+<div th:insert="~{fragments :: linkJS}"></div>
+
+<script th:inline="javascript">
+    // 파일 미리보기 및 삭제 로직
+    document.getElementById('boardImage').addEventListener('change', function() {
+        const preview = document.getElementById('preview');
+        preview.innerHTML = '';
+        Array.from(this.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.width = 100;
+                img.style.margin = '12px';
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function deleteFile() {
+        const input = document.getElementById('boardImage');
+        input.value = '';
+        document.getElementById('preview').innerHTML = '';
+    }
+
+    function confirmDelete() {
+        return window.confirm("삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
+    }
+</script>
+</body>
+</html>

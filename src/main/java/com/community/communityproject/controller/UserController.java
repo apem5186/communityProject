@@ -8,7 +8,7 @@ import com.community.communityproject.dto.users.*;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.board.BoardService;
 import com.community.communityproject.service.comment.CommentService;
-import com.community.communityproject.service.users.UserSecurityService;
+import com.community.communityproject.service.oauth.OAuthService;
 import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.jwt.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -36,8 +36,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -47,18 +45,12 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final AuthService authService;
-    private final UserSecurityService userSecurityService;
     private final BoardService boardService;
     private final CommentService commentService;
+    private final OAuthService oAuthService;
 
     private int RTCOOKIE_EXPIRATION;
     private int ATCOOKIE_EXPIRATION;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String KAKAO_CLIENT_ID;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String KAKAO_REDIRECT_URI;
 
     @Autowired
     public void setCookieExpiration(@Value("${jwt.refresh-token-validity-in-seconds}") int cookieExpiration) {
@@ -75,8 +67,7 @@ public class UserController {
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("usersLoginDTO", new UsersLoginDTO());
-        model.addAttribute("kakaoClientId", KAKAO_CLIENT_ID);
-        model.addAttribute("kakaoRedirectUri", KAKAO_REDIRECT_URI);
+        model.addAttribute("kakaoUrl", oAuthService.getKakaoLoginUrl());
         return "login";
     }
 
@@ -454,11 +445,19 @@ public class UserController {
     @PostMapping("/logout")
     public String logout(@CookieValue(name = "access-token", required = false) String requestAccessToken,
                          @CookieValue(name = "refresh-token", required = false) String requestRefreshToken,
-                         HttpServletResponse response, HttpSession session) {
-        log.info("hihiihihhi");
-        if (requestAccessToken != null) {
-            authService.logout(requestAccessToken, "logout");
+                         HttpServletResponse response, HttpSession session,
+                         HttpServletRequest request) throws Exception {
+        if (requestAccessToken == null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            TokenDTO tokenDTO = authService.generateToken
+                    ("Server", authentication.getName(), authService.getAuthorities(authentication));
+            requestAccessToken = tokenDTO.getAccessToken();
+            requestRefreshToken = tokenDTO.getRefreshToken();
         }
+        if (oAuthService.isSocialUser()) {
+            oAuthService.kakaoLogout(session);
+        }
+        authService.logout(requestAccessToken, "logout");
 
         // access-token 쿠키 삭제
         Cookie accessTokenCookie = new Cookie("access-token", "");
@@ -479,6 +478,8 @@ public class UserController {
         session.removeAttribute("username");
         session.removeAttribute("email");
         session.removeAttribute("viewedBoards");
+
+        request.getSession().invalidate();
 
         return "redirect:/login";
     }

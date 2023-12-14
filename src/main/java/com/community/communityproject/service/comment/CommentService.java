@@ -5,7 +5,6 @@ import com.community.communityproject.config.exception.CommentUserNotEqual;
 import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.comment.CommentEditDTO;
-import com.community.communityproject.dto.comment.CommentLikeDTO;
 import com.community.communityproject.dto.comment.CommentListResponseDTO;
 import com.community.communityproject.dto.comment.CommentRequestDTO;
 import com.community.communityproject.entity.board.Board;
@@ -19,7 +18,7 @@ import com.community.communityproject.repository.CommentRepository;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.jwt.TokenProvider;
-import com.community.communityproject.service.users.UserService;
+import com.community.communityproject.service.util.UsersUtilService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,9 +45,9 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final AuthService authService;
-    private final UserService userService;
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final UsersUtilService usersUtilService;
 
     /**
      * 한 게시글의 댓글들 가져오기
@@ -155,14 +153,14 @@ public class CommentService {
             if (commentRequestDTO.getParentId() == null) {
                 comment = Comment.builder()
                         .content(commentRequestDTO.getContent())
-                        .users(userService.getUsers())
+                        .users(usersUtilService.getUsers())
                         .board(boardRepository.getReferenceById(Long.valueOf(bid)))
                         .build();
             } else {
                 Comment parent = commentRepository.findById(commentRequestDTO.getParentId()).orElseThrow(CommentNotFoundException::new);
                 comment = Comment.builder()
                         .content(commentRequestDTO.getContent())
-                        .users(userService.getUsers())
+                        .users(usersUtilService.getUsers())
                         .board(boardRepository.getReferenceById(Long.valueOf(bid)))
                         .parent(parent)
                         .build();

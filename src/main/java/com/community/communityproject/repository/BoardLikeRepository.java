@@ -2,14 +2,12 @@ package com.community.communityproject.repository;
 
 import com.community.communityproject.entity.board.Board;
 import com.community.communityproject.entity.board.BoardLike;
-import com.community.communityproject.entity.board.LikeStatus;
 import com.community.communityproject.entity.users.Users;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;

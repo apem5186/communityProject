@@ -1,7 +1,5 @@
 package com.community.communityproject.repository;
 
-import com.community.communityproject.entity.board.Board;
-import com.community.communityproject.entity.board.BoardLike;
 import com.community.communityproject.entity.comment.Comment;
 import com.community.communityproject.entity.comment.CommentLike;
 import com.community.communityproject.entity.users.Users;

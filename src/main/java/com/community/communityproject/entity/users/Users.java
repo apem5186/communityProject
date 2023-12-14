@@ -38,7 +38,10 @@ public class Users extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private SocialUser socialUser;
+    private Provider provider;
+
+    @Column
+    private String providerId;
 
     @OneToOne(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ProfileImage profileImage;

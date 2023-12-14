@@ -5,6 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum SocialUser {
+public enum Provider {
     KAKAO, NAVER, GOOGLE
 }

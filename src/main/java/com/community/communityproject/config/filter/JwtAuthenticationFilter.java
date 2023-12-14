@@ -35,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        if (path.startsWith("/profileImage/")) {
+        if (path.startsWith("/profileImage/") || path.startsWith("/login") ||
+        path.startsWith("/kakao") || path.startsWith("/kauth")) {
             return true;
         }
         return super.shouldNotFilter(request);
@@ -52,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        if ("GET".equals(requestMethod) && "/kakao/callback".equals(requestUrl)) {
+        if ("GET".equals(requestMethod) && "/test/oauth/login".equals(requestUrl)) {
             filterChain.doFilter(request, response);
             return;
         }

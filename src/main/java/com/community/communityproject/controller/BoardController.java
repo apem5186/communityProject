@@ -5,7 +5,6 @@ import com.community.communityproject.dto.board.BoardListResponseDTO;
 import com.community.communityproject.dto.board.BoardRequestDTO;
 import com.community.communityproject.service.board.BoardService;
 import com.community.communityproject.service.jwt.AuthService;
-import com.community.communityproject.service.users.UserService;
 import com.community.communityproject.service.util.BoardUtilService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +20,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -31,7 +29,6 @@ public class BoardController {
     private final BoardService boardService;
     private final BoardUtilService boardUtilService;
     private final AuthService authService;
-    private final UserService userService;
 
     @GetMapping("/{path:(?:community|notice|questions|knowledge)}")
     public String list(Model model, @PathVariable String path,

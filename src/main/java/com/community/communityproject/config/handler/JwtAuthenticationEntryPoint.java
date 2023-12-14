@@ -21,7 +21,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-
+        log.error("401 에러 발생");
+        log.error("error : " + authException.getMessage());
         response.setCharacterEncoding("utf-8");
         response.sendError(401, "잘못된 접근입니다.");
     }

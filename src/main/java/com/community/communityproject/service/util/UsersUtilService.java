@@ -1,6 +1,6 @@
 package com.community.communityproject.service.util;
 
-import com.community.communityproject.entity.comment.Comment;
+import com.community.communityproject.config.exception.UserNotFoundException;
 import com.community.communityproject.entity.users.UserRole;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
@@ -8,6 +8,8 @@ import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.Serial;
@@ -56,6 +58,20 @@ public class UsersUtilService {
         else if (option2.equals("LOGOUT"))
             return (root, query, cb) -> cb.isFalse(root.get("isLogin"));
         else return null;
+    }
+
+    /**
+     * SecurityContextHolder를 이용해 Users를 찾음
+     * @return Users
+     */
+    public Users getUsers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    public boolean isLogin() {
+        return getUsers().isLogin();
     }
 
 }

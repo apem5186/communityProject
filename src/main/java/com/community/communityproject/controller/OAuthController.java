@@ -1,47 +1,43 @@
 package com.community.communityproject.controller;
 
-import com.community.communityproject.dto.TokenDTO;
-import com.community.communityproject.service.jwt.AuthService;
 import com.community.communityproject.service.oauth.OAuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
+
 @Slf4j
-@RestController
+@Controller
 @AllArgsConstructor
 public class OAuthController {
 
     private final OAuthService oAuthService;
-    private final AuthService authService;
 
-    @GetMapping("/kakao/callback")
-    public String kakaoCallback(@RequestParam("code") String code,
-                                HttpSession session, HttpServletResponse response) {
-        // TODO : redirect-uri 설정해 놓은 곳 까진 가는데 이 컨트롤러가 실행이 아예 안됨
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+    @ResponseBody
+    @GetMapping("/test/oauth/login")
+    public String testOAuthLogin(
+            Authentication authentication,
+            @AuthenticationPrincipal OAuth2User oauth
+            ) {
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-        TokenDTO tokenDTO = oAuthService.kakaoLogin(code, session);
+        log.info("authentication: " + oAuth2User.getAttributes());
+        log.info("OAuth2User: " + oauth.getAttributes());
 
-        if (tokenDTO == null) {
-            log.info("-- user 정보가 틀림 -- at login controller");
-            return "login";
-        }
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("CODE : " + code);
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        // 쿠키랑 헤더 설정
-        authService.setCookie(response, tokenDTO.getAccessToken(),
-                tokenDTO.getRefreshToken());
+        return "OAuth 세션 정보 확인";
+    }
 
-        return "redirect:/";
+    @ResponseBody
+    @GetMapping("/kakao/getToken")
+    public String kakaoGetToken(HttpSession session) {
+        LinkedHashMap<String, String> map = oAuthService.getToken(session);
+
+        return String.format("at : %s\n rt : %s", map.get("kakao_access_token"), map.get("kakao_refresh_token"));
     }
 }

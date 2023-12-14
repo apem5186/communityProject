@@ -5,6 +5,7 @@ import com.community.communityproject.dto.users.UsersLoginDTO;
 import com.community.communityproject.entity.users.Users;
 import com.community.communityproject.repository.UserRepository;
 import com.community.communityproject.service.redis.RedisService;
+import com.community.communityproject.service.util.UsersUtilService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,6 +36,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
     private final RedisService redisService;
+    private final UsersUtilService usersUtilService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final String SERVER = "Server";
@@ -66,23 +68,6 @@ public class AuthService {
                 .authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return generateToken(SERVER, authentication.getName(), getAuthorities(authentication));
-    }
-
-    public TokenDTO socialLogin(String email, String password) {
-        Optional<Users> users = userRepository.findByEmail(email);
-        if (users.isEmpty()) {
-            return null;
-        } else {
-            log.info("== users 정보 : " + users.get().getEmail() + ", " + users.get().getUsername());
-        }
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(email, password);
-
-        Authentication authentication = authenticationManagerBuilder.getObject()
-                .authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return generateToken(SERVER, authentication.getName(), getAuthorities(authentication));
-
     }
 
     // AT가 만료일자만 초과한 유효한 토큰인지 검사
@@ -166,17 +151,18 @@ public class AuthService {
     @Transactional
     public void logout(String requestAccessToken, String logoutOrDelete) {
         log.info("AUTH Service Logout Process");
-        String principal = getPrincipal(requestAccessToken);
-
+//        String principal = getPrincipal(requestAccessToken);
+//
         // isLogin -> false
-        Users users = userRepository.findByEmail(principal).orElseThrow();
+//        Users users = userRepository.findByEmail(principal).orElseThrow();
+        Users users = usersUtilService.getUsers();
         users.setLogin(false);
         userRepository.save(users);
 
         // Redis에 저장되어 있는 RT 삭제
-        String refreshTokenInRedis = redisService.getValues("RT(" + SERVER + "):" + principal);
+        String refreshTokenInRedis = redisService.getValues("RT(" + SERVER + "):" + users.getEmail());
         if (refreshTokenInRedis != null) {
-            redisService.deleteValues("RT(" + SERVER + "):" + principal);
+            redisService.deleteValues("RT(" + SERVER + "):" + users.getEmail());
         }
 
         // Redis에 로그아웃 처리한 AT 저장 계정 삭제면 value를 "delete"로
@@ -196,9 +182,7 @@ public class AuthService {
         // SecurityContextHolder의 user 정보 삭제
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Logout Auth : " + authentication.getName());
-        if (authentication != null) {
-            SecurityContextHolder.clearContext();
-        }
+        SecurityContextHolder.clearContext();
     }
 
     /**
@@ -261,6 +245,28 @@ public class AuthService {
         atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
         atCookie.setHttpOnly(true);
         atCookie.setSecure(true);
+        response.addCookie(atCookie);
+
+        response.setHeader("Authorization", "Bearer " + at);
+
+    }
+
+    public void setSocialCookie(HttpServletResponse response,
+                          String at, String rt) {
+        // RT 저장
+        Cookie rtCookie = new Cookie("refresh-token", rt);
+        rtCookie.setMaxAge(RTCOOKIE_EXPIRATION);
+        rtCookie.setHttpOnly(true);
+        rtCookie.setSecure(false);
+        rtCookie.setDomain("localhost");
+        response.addCookie(rtCookie);
+
+        // AT 저장
+        Cookie atCookie = new Cookie("access-token", at);
+        atCookie.setMaxAge(ATCOOKIE_EXPIRATION);
+        atCookie.setHttpOnly(true);
+        atCookie.setSecure(false);
+        atCookie.setDomain("localhost");
         response.addCookie(atCookie);
 
         response.setHeader("Authorization", "Bearer " + at);

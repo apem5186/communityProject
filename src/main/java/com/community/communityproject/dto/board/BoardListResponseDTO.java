@@ -2,7 +2,6 @@ package com.community.communityproject.dto.board;
 
 import com.community.communityproject.entity.board.Board;
 import com.community.communityproject.entity.board.BoardImage;
-import com.community.communityproject.entity.board.BoardLike;
 import com.community.communityproject.entity.users.ProfileImage;
 import com.community.communityproject.entity.users.Users;
 import lombok.*;

@@ -1,6 +1,5 @@
 package com.community.communityproject.dto.board;
 
-import com.community.communityproject.entity.board.LikeStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

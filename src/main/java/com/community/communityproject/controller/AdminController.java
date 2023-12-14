@@ -1,6 +1,5 @@
 package com.community.communityproject.controller;
 
-import com.community.communityproject.dto.TokenDTO;
 import com.community.communityproject.dto.board.admin.BoardDTOForAdmin;
 import com.community.communityproject.dto.comment.admin.CommentDTOForAdmin;
 import com.community.communityproject.dto.users.admin.UsersDTOForAdmin;

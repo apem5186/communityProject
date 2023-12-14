@@ -41,11 +41,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -64,8 +62,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthService authService;
-
-    private final UserSecurityService userSecurityService;
 
     private final TokenProvider tokenProvider;
 
@@ -625,8 +621,11 @@ public class UserService {
      */
     public String findImage(String email) {
         Users users = userRepository.findByEmail(email).orElseThrow();
-
         ProfileImage profileImage = profileImageRepository.findByUsers(users);
+        if (!(users.getProviderId() == null)) {
+            return profileImage.getFilePath();
+        }
+
         // 기본 프로필이면 로컬에 있는 디폴트 프로필 url 반환
         if (profileImage.getOriginName().equals("profile_default.jpg")) {
             return profileImage.getFilePath();
@@ -649,13 +648,4 @@ public class UserService {
         return String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
     }
 
-    /**
-     * SecurityContextHolder를 이용해 Users를 찾음
-     * @return Users
-     */
-    public Users getUsers() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-    }
 }

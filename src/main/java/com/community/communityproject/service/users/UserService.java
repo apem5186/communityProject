@@ -113,7 +113,7 @@ public class UserService {
         // 기본 프로필
         if(originName.isEmpty() || originName.equals("profile_default.jpg")) {
             originName = "profile_default.jpg";
-            filePath = String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
+            filePath = String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
             fileSize = 8636L;
         } else {
             // s3에 파일 저장
@@ -207,7 +207,7 @@ public class UserService {
                          HttpServletResponse response, HttpSession session) {
 
 
-        log.info("PROFILE NAME CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename());
+        log.info("PROFILE NAME CHECK : " + usersEditDTO.getProfileImage().getOriginalFilename() + " 만약 공백이면 default 이미지");
         // 토큰 검증
         TokenDTO tokenDTO = authService.validateToken(response, request);
         if (!tokenDTO.isEmpty()) {
@@ -476,7 +476,7 @@ public class UserService {
      */
     private String editProfileImage(MultipartFile multipartFile, String email) {
         String originName = multipartFile.getOriginalFilename();
-        String filePath = String.valueOf(amazonS3Client.getUrl(bucket, "/image/profileImage/default/profile_default.jpg"));
+        String filePath = String.valueOf(amazonS3Client.getUrl(bucket, "image/profileImage/default/profile_default.jpg"));
         long fileSize = multipartFile.getSize();
         ProfileImage profileImage = getProfileImage(email);
         // 현재 filePath 가져오기

@@ -66,7 +66,7 @@
             <input type="password" class="form-control" id="password" th:field="*{password}" required>
           </div>
           <!-- 저장과 취소 버튼 -->
-          <button type="submit" class="btn btn-primary">저장</button>
+          <button type="button" class="btn btn-primary" onclick="confirmEdit()">저장</button>
           <a type="button" class="btn btn-secondary" id="editCancel" onclick="cancelEditing()">취소</a>
         </form>
       </div>
@@ -136,15 +136,21 @@
 
       // Change form action based on the button clicked
       form.action = this.getAttribute('data-action-url');
-
       form.submit();
     });
   });
-
+  function confirmEdit() {
+    let result = confirm("사용자 정보를 수정하시겠습니까?");
+    if (result) {
+      sessionStorage.setItem('isEdited', true);
+      document.getElementById('editForm').submit();
+    }
+  }
   function confirmDelete() {
     let result = confirm("계정을 삭제하면 복구할 수 없습니다. 정말로 삭제하시겠습니까?");
     if (result) {
       // 사용자가 '확인'을 클릭하면, 폼을 제출합니다.
+
       document.getElementById('deleteForm').submit();
     }
   }
@@ -152,7 +158,12 @@
   // 페이지 로드 시 토글 상태 확인 및 설정
   document.addEventListener("DOMContentLoaded", function() {
     if (sessionStorage.getItem('editingEnabled') === null) {
-      sessionStorage.setItem('editingEnabled', "false");
+      sessionStorage.setItem('editingEnabled', false);
+    }
+    if (sessionStorage.getItem("isEdited") === "true") {
+      sessionStorage.setItem('editingEnabled', false);
+      sessionStorage.removeItem("isEdited");
+
     }
     // JSON.parse 안해주면 false, true를 String으로 인식해서 망함
     let editingEnabled = JSON.parse(sessionStorage.getItem('editingEnabled'));

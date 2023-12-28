@@ -65,19 +65,11 @@
 #### Build Tool
 - Gradle 7.3.3
 
-<details>
-  <summary><h3>DB 설계</h3></summary>
-  <image src="https://github.com/apem5186/communityProject/assets/81023500/0aa2a9b3-c7d1-44d5-85b3-22a811743260"/>
-</details>
-
-
 ### ERD
 
 <details>
-  <summary>DB 설계</summary>
-
-  <image src="https://github.com/apem5186/communityProject/assets/81023500/ce193fe4-4f8b-4699-922e-c201168dbb9b"/>
-
+  <summary><h3>DB 설계</h3></summary>
+  <image src="https://github.com/apem5186/communityProject/assets/81023500/0aa2a9b3-c7d1-44d5-85b3-22a811743260"/>
 </details>
 
 ### 주요 실행 화면

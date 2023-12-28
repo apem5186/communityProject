@@ -68,7 +68,7 @@
                                 </button>
                             </form>
                         </div>
-                        <div th:id="'editDeleteBtn-' + ${reply.cid}" class="btn-group ms-2" th:if="${comment.getUsersDTOInComment().getEmail()} == ${#authentication.name}">
+                        <div th:id="'editDeleteBtn-' + ${reply.cid}" class="btn-group ms-2" th:if="${reply.getUsersDTOInComment().getEmail()} == ${#authentication.name}">
                             <button th:id="'editBtn-' + ${reply.cid}" class="commentEdit btn btn-outline-primary px-2" th:onclick="'commentEditToggle(\'' + ${reply.cid} + '\')'">
                                 <i class="bi bi-pencil"></i>
                             </button>
